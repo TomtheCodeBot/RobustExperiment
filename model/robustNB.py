@@ -283,6 +283,8 @@ class RobustNaiveBayesMultiClassifierPercentage(BaseEstimator):
                 self.prior_probability[i]) + np.sum(X@np.log(self.theta[i]).T, axis=-1), axis=-1))
 
         output = np.concatenate(result, axis=1)
+        if len(output.shape)>2:
+            output = np.squeeze(np.array(output),axis=-1)
         B = np.exp(output - np.amax(output,axis=-1)[:, np.newaxis])
         C = np.sum(B,axis=-1)
         return B/C[:, np.newaxis]
