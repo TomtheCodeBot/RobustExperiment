@@ -211,7 +211,7 @@ if __name__=='__main__':
     
     del training_features
     del test_features
-    for i in range(0,3):
+    for i in range(1,3):
         set_seed(i)
         dataset = gen_dataset(test_data)
         args.load_path=f"/home/ubuntu/RobustExperiment/text_attack_result/IMDB/{i}/"
@@ -256,7 +256,7 @@ if __name__=='__main__':
         attack(args,wrapper,"RNB_BERT_5",dataset)
         
         attack(args,BERT,"BERT",dataset)
-        
+        """
         args.attack_method="textbugger"
         
         attack(args,LSTM,"LSTM",dataset)
@@ -339,4 +339,4 @@ if __name__=='__main__':
         wrapper = SklearnModelWrapper(RNB_BERT_5,bert_vectorizer)
         attack(args,wrapper,"RNB_BERT_5",dataset)
         
-        attack(args,BERT,"BERT",dataset)
+        attack(args,BERT,"BERT",dataset)"""
