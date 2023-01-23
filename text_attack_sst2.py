@@ -201,7 +201,7 @@ if __name__=='__main__':
     model = AutoModelForSequenceClassification.from_pretrained("textattack/bert-base-uncased-SST-2")
     BERT = HuggingFaceModelWrapper(model,tokenizer)
     
-    model = LSTMForClassification.from_pretrained("lstm-imdb")
+    model = LSTMForClassification.from_pretrained("lstm-sst2")
     LSTM = PyTorchModelWrapper(
                         model, model.tokenizer
                     )
@@ -253,7 +253,7 @@ if __name__=='__main__':
         attack(args,wrapper,"RNB_BERT_5",dataset)
         
         attack(args,BERT,"BERT",dataset)
-        
+            
         args.attack_method="textbugger"
         
         attack(args,LSTM,"LSTM",dataset)
@@ -293,7 +293,7 @@ if __name__=='__main__':
         
         wrapper = SklearnModelWrapper(RNB_BERT_5,bert_vectorizer)
         attack(args,wrapper,"RNB_BERT_5",dataset)
-        
+            
         attack(args,BERT,"BERT",dataset)
         
         args.attack_method="textfooler"

@@ -11,6 +11,8 @@ from textattack.constraints.pre_transformation import (
     RepeatModification,
     StopwordModification,
 )
+from utils.dataloader import load_train_test_imdb_data
+
 from transformers import AutoModelForSequenceClassification,AutoTokenizer
 from utils.preprocessing import clean_text_imdb
 from sklearn.naive_bayes import MultinomialNB
@@ -133,7 +135,7 @@ if __name__=='__main__':
     parser.add_argument('-al', '--adv_lr', default=0.04)
     parser.add_argument('-amn','--adv_max_norm',default=None)
     parser.add_argument('-ad','--attack_dataset',default='test')#attack dataset & accuracy dataset
-    parser.add_argument('-ae','--attack_examples',default=1000)
+    parser.add_argument('-ae','--attack_examples',default=200)
     parser.add_argument('-mr','--modify_ratio',default=0.15)
     parser.add_argument('-e', '--epoch', default=10)
     parser.add_argument('-se','--save_epoch',type=str2bool,nargs='?',const=False)
@@ -146,13 +148,14 @@ if __name__=='__main__':
                             preprocessor=clean_text_imdb, 
                             min_df=0)
 
-    sst2_dataset = datasets.load_dataset("SetFit/sst2")
-    train_data = sst2_dataset["train"]
-    test_data = sst2_dataset["test"]
+    train_data , test_data = load_train_test_imdb_data("/home/ubuntu/RobustExperiment/data/aclImdb")
+    vectorizer = CountVectorizer(stop_words="english",
+                                preprocessor=clean_text_imdb, 
+                                min_df=0)
     training_features = vectorizer.fit_transform(train_data["text"])
-    training_labels = np.array(train_data["label"])
+    training_labels = train_data["label"]
     test_features = vectorizer.transform(test_data["text"])
-    test_labels = np.array(test_data["label"])
+    test_labels = test_data["label"]
     
     
     RNB = RobustNaiveBayesClassifierPercentage(100)
@@ -197,8 +200,8 @@ if __name__=='__main__':
     RNB_BERT_5 = RobustNaiveBayesClassifierPercentage(5)
     RNB_BERT_5.fit(training_features, training_labels)
     
-    tokenizer = AutoTokenizer.from_pretrained("textattack/bert-base-uncased-SST-2",use_fast=True)
-    model = AutoModelForSequenceClassification.from_pretrained("textattack/bert-base-uncased-SST-2")
+    tokenizer = AutoTokenizer.from_pretrained("textattack/bert-base-uncased-imdb",use_fast=True)
+    model = AutoModelForSequenceClassification.from_pretrained("textattack/bert-base-uncased-imdb")
     BERT = HuggingFaceModelWrapper(model,tokenizer)
     
     model = LSTMForClassification.from_pretrained("lstm-imdb")
@@ -211,7 +214,7 @@ if __name__=='__main__':
     for i in range(0,3):
         set_seed(i)
         dataset = gen_dataset(test_data)
-        args.load_path=f"/home/ubuntu/RobustExperiment/text_attack_result/SST2/{i}/"
+        args.load_path=f"/home/ubuntu/RobustExperiment/text_attack_result/IMDB/{i}/"
         args.attack_method="deepwordbug"
         
         attack(args,LSTM,"LSTM",dataset)
