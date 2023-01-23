@@ -1,0 +1,10 @@
+--------------------------------------------- Result 1 ---------------------------------------------
+[[1 (100%)]] --> [[0 (69%)]]
+
+it 's a hoot and a half , and a [[great]] way for the american people to see what a candidate is like when he 's not giving the same 15-cent stump speech .
+
+it 's a hoot and a half , and a [[ɡreat]] way for the american people to see what a candidate is like when he 's not giving the same 15-cent stump speech .
+--------------------------------------------- Result 2 ---------------------------------------------
+[[0 (99%)]] --> [[[FAILED]]]
+
+no. .

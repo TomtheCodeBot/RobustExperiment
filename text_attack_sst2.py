@@ -30,39 +30,6 @@ from textattack.datasets import Dataset
 import datasets
 import numpy as np
 import os 
-class CustomModelWrapper(PyTorchModelWrapper):
-    def __init__(self,model,tokenizer):
-        super(CustomModelWrapper,self).__init__(model,tokenizer)
-
-    def __call__(self,text_input_list):
-        inputs_dict = self.tokenizer(
-            text_input_list,
-            truncation=True,
-            padding=True,
-            return_tensors="pt",
-        )
-        model_device = next(self.model.parameters()).device
-        inputs_dict.to(model_device)
-
-        with torch.no_grad():
-            outputs = self.model(**inputs_dict)
-
-        if isinstance(outputs,tuple):
-            return outputs[-1]#model-h,model-bh
-
-        if isinstance(outputs,torch.Tensor):
-            return outputs#baseline
-
-        if isinstance(outputs[0], str):
-            # HuggingFace sequence-to-sequence models return a list of
-            # string predictions as output. In this case, return the full
-            # list of outputs.
-            return outputs
-        else:
-            # HuggingFace classification models return a tuple as output
-            # where the first item in the tuple corresponds to the list of
-            # scores for each input.
-            return outputs.logits
 
 def build_attacker(model,args):
     if (args['attack_method'] == 'textfooler'):
@@ -252,7 +219,9 @@ if __name__=='__main__':
         wrapper = SklearnModelWrapper(RNB_BERT_5,bert_vectorizer)
         attack(args,wrapper,"RNB_BERT_5",dataset)
         
+        
         attack(args,BERT,"BERT",dataset)
+        
             
         args.attack_method="textbugger"
         
@@ -294,7 +263,9 @@ if __name__=='__main__':
         wrapper = SklearnModelWrapper(RNB_BERT_5,bert_vectorizer)
         attack(args,wrapper,"RNB_BERT_5",dataset)
             
+        
         attack(args,BERT,"BERT",dataset)
+        
         
         args.attack_method="textfooler"
         
@@ -336,4 +307,6 @@ if __name__=='__main__':
         wrapper = SklearnModelWrapper(RNB_BERT_5,bert_vectorizer)
         attack(args,wrapper,"RNB_BERT_5",dataset)
         
+        
         attack(args,BERT,"BERT",dataset)
+        
