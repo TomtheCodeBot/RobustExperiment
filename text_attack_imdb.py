@@ -215,48 +215,49 @@ if __name__=='__main__':
         set_seed(i)
         dataset = gen_dataset(test_data)
         args.load_path=f"/home/ubuntu/RobustExperiment/text_attack_result/IMDB/{i}/"
-        args.attack_method="deepwordbug"
+        if i==0:
+            args.attack_method="deepwordbug"
+            """
+            attack(args,LSTM,"LSTM",dataset)
+            
+            wrapper = SklearnModelWrapper(MNB,vectorizer)
+            attack(args,wrapper,"MNB",dataset)
+            
+            wrapper = SklearnModelWrapper(LR,vectorizer)
+            attack(args,wrapper,"LR",dataset)
+            
+            wrapper = SklearnModelWrapper(RNB,vectorizer)
+            attack(args,wrapper,"RNB_100",dataset)
+            
+            wrapper = SklearnModelWrapper(RNB_50,vectorizer)
+            attack(args,wrapper,"RNB_50",dataset)
+            
+            wrapper = SklearnModelWrapper(RNB_25,vectorizer)
+            attack(args,wrapper,"RNB_25",dataset)
+            
+            wrapper = SklearnModelWrapper(RNB_15,vectorizer)
+            attack(args,wrapper,"RNB_15",dataset)
+            
+            wrapper = SklearnModelWrapper(RNB_5,vectorizer)
+            attack(args,wrapper,"RNB_5",dataset)
+            
+            wrapper = SklearnModelWrapper(RNB_BERT,bert_vectorizer)
+            attack(args,wrapper,"RNB_BERT_100",dataset)
+            
+            wrapper = SklearnModelWrapper(RNB_BERT_50,bert_vectorizer)
+            attack(args,wrapper,"RNB_BERT_50",dataset)
+            
+            wrapper = SklearnModelWrapper(RNB_BERT_25,bert_vectorizer)
+            attack(args,wrapper,"RNB_BERT_25",dataset)
+            
+            wrapper = SklearnModelWrapper(RNB_BERT_15,bert_vectorizer)
+            attack(args,wrapper,"RNB_BERT_15",dataset)
+            
+            wrapper = SklearnModelWrapper(RNB_BERT_5,bert_vectorizer)
+            attack(args,wrapper,"RNB_BERT_5",dataset)
+            """
+            attack(args,BERT,"BERT",dataset)
         
-        attack(args,LSTM,"LSTM",dataset)
-        
-        wrapper = SklearnModelWrapper(MNB,vectorizer)
-        attack(args,wrapper,"MNB",dataset)
-        
-        wrapper = SklearnModelWrapper(LR,vectorizer)
-        attack(args,wrapper,"LR",dataset)
-        
-        wrapper = SklearnModelWrapper(RNB,vectorizer)
-        attack(args,wrapper,"RNB_100",dataset)
-        
-        wrapper = SklearnModelWrapper(RNB_50,vectorizer)
-        attack(args,wrapper,"RNB_50",dataset)
-        
-        wrapper = SklearnModelWrapper(RNB_25,vectorizer)
-        attack(args,wrapper,"RNB_25",dataset)
-        
-        wrapper = SklearnModelWrapper(RNB_15,vectorizer)
-        attack(args,wrapper,"RNB_15",dataset)
-        
-        wrapper = SklearnModelWrapper(RNB_5,vectorizer)
-        attack(args,wrapper,"RNB_5",dataset)
-        
-        wrapper = SklearnModelWrapper(RNB_BERT,bert_vectorizer)
-        attack(args,wrapper,"RNB_BERT_100",dataset)
-        
-        wrapper = SklearnModelWrapper(RNB_BERT_50,bert_vectorizer)
-        attack(args,wrapper,"RNB_BERT_50",dataset)
-        
-        wrapper = SklearnModelWrapper(RNB_BERT_25,bert_vectorizer)
-        attack(args,wrapper,"RNB_BERT_25",dataset)
-        
-        wrapper = SklearnModelWrapper(RNB_BERT_15,bert_vectorizer)
-        attack(args,wrapper,"RNB_BERT_15",dataset)
-        
-        wrapper = SklearnModelWrapper(RNB_BERT_5,bert_vectorizer)
-        attack(args,wrapper,"RNB_BERT_5",dataset)
-        
-        attack(args,BERT,"BERT",dataset)
-        """
         args.attack_method="textbugger"
         
         attack(args,LSTM,"LSTM",dataset)
@@ -339,4 +340,4 @@ if __name__=='__main__':
         wrapper = SklearnModelWrapper(RNB_BERT_5,bert_vectorizer)
         attack(args,wrapper,"RNB_BERT_5",dataset)
         
-        attack(args,BERT,"BERT",dataset)"""
+        attack(args,BERT,"BERT",dataset)
