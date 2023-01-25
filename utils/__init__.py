@@ -8,6 +8,9 @@ from model.robustNB  import RobustNaiveBayesMultiClassifierPercentage
 import matplotlib.pyplot as plt
 import math
 import pathlib
+import glob
+import xlsxwriter
+import json
 vectorizer = CountVectorizer(stop_words="english",
                                 preprocessor=clean_text_imdb, 
                                 min_df=0)
@@ -127,3 +130,41 @@ def plot_vocab_count(vectorizer,input_texts,name:str="sample.jpg",bins:int=100):
     plt.close()
     
 
+def draw_excel(path_to_results):
+    workbook = xlsxwriter.Workbook(path_to_results+"/results.xlsx")
+    worksheet = workbook.add_worksheet()
+    cellformat = workbook.add_format()
+    cellformat.set_align('center')
+    cellformat.set_align('vcenter')
+    
+    f = open(path_to_results+'/result.json')
+    clean_acc = json.load(f)
+    f.close()
+    lst_attack = list(clean_acc.keys())
+    first_collumn = 65
+    worksheet.merge_range(f'{chr(first_collumn)}1:{chr(first_collumn)}2',"Models",cell_format=cellformat)
+    worksheet.merge_range(f'{chr(first_collumn+1)}1:{chr(first_collumn+1)}2',"Clean Accuracy (%)",cell_format=cellformat)
+    for i in range(0,len(lst_attack)):
+        # Merge 3 cells.
+        worksheet.merge_range(f'{chr(first_collumn+(i*2)+2)}1:{chr(first_collumn+(i*2)+3)}1',lst_attack[i],cell_format=cellformat)
+        worksheet.write(f'{chr(first_collumn+(i*2)+2)}2', 'AuA(%) (ASR(%)↓)',cellformat)
+        worksheet.write(f'{chr(first_collumn+(i*2)+3)}2', 'Avg. Query↓',cellformat)
+        results = list(clean_acc[lst_attack[i]].keys())
+        results.sort()
+        for k in range(len(results)):
+            # Opening JSON file
+
+            worksheet.write(f'{chr(first_collumn)}{str(k+3)}', results[k],cellformat)
+            percentage  = clean_acc[lst_attack[i]][results[k]]["Attack success rate"]
+            AuA = clean_acc[lst_attack[i]][results[k]]["Accuracy under attack"]
+            worksheet.write(f'{chr(first_collumn+(i*2)+2)}{str(k+3)}', f"{AuA} ({percentage})",cellformat)
+            querries  = clean_acc[lst_attack[i]][results[k]]["Avg num queries"]
+            worksheet.write(f'{chr(first_collumn+(i*2)+3)}{str(k+3)}', f"{querries}",cellformat)
+            worksheet.write(f'{chr(first_collumn+1)}{str(k+3)}', clean_acc[lst_attack[i]][results[k]]["Original accuracy"],cellformat)
+
+    worksheet.autofit()
+    workbook.close()
+    pass
+
+if __name__ == "__main__":
+    draw_excel("/home/ubuntu/RobustExperiment/text_attack_result/SST2")
