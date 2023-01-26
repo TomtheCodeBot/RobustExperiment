@@ -180,7 +180,7 @@ if __name__=='__main__':
         dataset = gen_dataset(test_data)
         args.load_path=f"/home/ubuntu/RobustExperiment/text_attack_result/SST2/{i}/"
         args.attack_method="deepwordbug"
-        
+        """
         attack(args,LSTM,"LSTM",dataset)
         
         wrapper = SklearnModelWrapper(MNB,vectorizer)
@@ -220,10 +220,11 @@ if __name__=='__main__':
         attack(args,wrapper,"RNB_BERT_5",dataset)
         
         
+        """
         attack(args,BERT,"BERT",dataset)
         
-            
         args.attack_method="textbugger"
+        """
         
         attack(args,LSTM,"LSTM",dataset)
         
@@ -264,11 +265,12 @@ if __name__=='__main__':
         attack(args,wrapper,"RNB_BERT_5",dataset)
             
         
+        """
         attack(args,BERT,"BERT",dataset)
-        
-        
         args.attack_method="textfooler"
-        
+
+        """
+
         attack(args,LSTM,"LSTM",dataset)
         
         wrapper = SklearnModelWrapper(MNB,vectorizer)
@@ -308,5 +310,6 @@ if __name__=='__main__':
         attack(args,wrapper,"RNB_BERT_5",dataset)
         
         
+        """
         attack(args,BERT,"BERT",dataset)
         

@@ -150,9 +150,9 @@ def draw_excel(path_to_results):
         worksheet.write(f'{chr(first_collumn+(i*2)+2)}2', 'AuA(%) (ASR(%)↓)',cellformat)
         worksheet.write(f'{chr(first_collumn+(i*2)+3)}2', 'Avg. Query↓',cellformat)
         results = list(clean_acc[lst_attack[i]].keys())
-        results.sort()
+        results = sorted(results, key=lambda item: (int(item.split("_")[-1])+len(item.split("_"))*(100)
+                               if item.split("_")[-1].isdigit() else float(0), item))
         for k in range(len(results)):
-            # Opening JSON file
 
             worksheet.write(f'{chr(first_collumn)}{str(k+3)}', results[k],cellformat)
             percentage  = clean_acc[lst_attack[i]][results[k]]["Attack success rate"]

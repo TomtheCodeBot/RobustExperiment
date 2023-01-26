@@ -211,7 +211,7 @@ if __name__=='__main__':
     
     del training_features
     del test_features
-    for i in range(1,3):
+    for i in range(0,1):
         set_seed(i)
         dataset = gen_dataset(test_data)
         args.load_path=f"/home/ubuntu/RobustExperiment/text_attack_result/IMDB/{i}/"
