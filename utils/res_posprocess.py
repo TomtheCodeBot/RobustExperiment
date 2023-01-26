@@ -17,7 +17,8 @@ def readjust_result(result_path,results_notattacked):
     pass
 
 def process_text_result(path):
-    results = os.listdir(path)
+    results = next(os.walk(path))[1]
+
     res_dict = {}
     list_models = []
     list_attacks = []
@@ -73,4 +74,4 @@ def process_text_result(path):
     pass
 
 if __name__ == '__main__':
-    process_text_result("/home/ubuntu/RobustExperiment/text_attack_result/SST2")
+    process_text_result("/home/ubuntu/RobustExperiment/text_attack_result/IMDB")
