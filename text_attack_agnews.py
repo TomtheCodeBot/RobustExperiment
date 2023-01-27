@@ -136,7 +136,7 @@ if __name__=='__main__':
     parser.add_argument('-al', '--adv_lr', default=0.04)
     parser.add_argument('-amn','--adv_max_norm',default=None)
     parser.add_argument('-ad','--attack_dataset',default='test')#attack dataset & accuracy dataset
-    parser.add_argument('-ae','--attack_examples',default=200)
+    parser.add_argument('-ae','--attack_examples',default=1000)
     parser.add_argument('-mr','--modify_ratio',default=0.15)
     parser.add_argument('-e', '--epoch', default=10)
     parser.add_argument('-se','--save_epoch',type=str2bool,nargs='?',const=False)
@@ -199,21 +199,21 @@ if __name__=='__main__':
     RNB_BERT_5 = RobustNaiveBayesMultiClassifierPercentage(5,num_classes=4)
     RNB_BERT_5.fit(training_features, training_labels)
     
-    tokenizer = AutoTokenizer.from_pretrained("textattack/bert-base-uncased-imdb",use_fast=True)
-    model = AutoModelForSequenceClassification.from_pretrained("textattack/bert-base-uncased-imdb")
+    tokenizer = AutoTokenizer.from_pretrained("textattack/bert-base-uncased-ag-news",use_fast=True)
+    model = AutoModelForSequenceClassification.from_pretrained("textattack/bert-base-uncased-ag-news")
     BERT = HuggingFaceModelWrapper(model,tokenizer)
     
-    model = LSTMForClassification.from_pretrained("lstm-imdb")
+    model = LSTMForClassification.from_pretrained("lstm-ag-news")
     LSTM = PyTorchModelWrapper(
                         model, model.tokenizer
                     )
     
     del training_features
     del test_features
-    for i in range(1,3):
+    for i in range(0,3):
         set_seed(i)
         dataset = gen_dataset(test_data)
-        args.load_path=f"/home/ubuntu/RobustExperiment/text_attack_result/IMDB/{i}/"
+        args.load_path=f"/home/ubuntu/RobustExperiment/text_attack_result/AGNEWS/{i}/"
         args.attack_method="deepwordbug"
         
         attack(args,LSTM,"LSTM",dataset)
@@ -255,7 +255,7 @@ if __name__=='__main__':
         attack(args,wrapper,"RNB_BERT_5",dataset)
         
         attack(args,BERT,"BERT",dataset)
-        """
+        
         args.attack_method="textbugger"
         
         attack(args,LSTM,"LSTM",dataset)
@@ -338,4 +338,4 @@ if __name__=='__main__':
         wrapper = SklearnModelWrapper(RNB_BERT_5,bert_vectorizer)
         attack(args,wrapper,"RNB_BERT_5",dataset)
         
-        attack(args,BERT,"BERT",dataset)"""
+        attack(args,BERT,"BERT",dataset)
