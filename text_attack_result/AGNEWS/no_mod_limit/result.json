@@ -1,0 +1,470 @@
+{
+    "textbugger": {
+        "RNB_BERT_15": {
+            "Number of successful attacks": "744.67",
+            "Number of failed attacks": "144.67",
+            "Number of skipped attacks": "110.67",
+            "Original accuracy": "88.93%",
+            "Accuracy under attack": "14.47%",
+            "Attack success rate": "83.73%",
+            "Average perturbed word %": "34.14%",
+            "Average num. words per input": "38.86",
+            "Avg num queries": "130.99"
+        },
+        "RNB_50": {
+            "Number of successful attacks": "423.67",
+            "Number of failed attacks": "476.00",
+            "Number of skipped attacks": "100.33",
+            "Original accuracy": "89.97%",
+            "Accuracy under attack": "47.60%",
+            "Attack success rate": "47.10%",
+            "Average perturbed word %": "49.53%",
+            "Average num. words per input": "38.86",
+            "Avg num queries": "153.55"
+        },
+        "RNB_25": {
+            "Number of successful attacks": "438.33",
+            "Number of failed attacks": "464.00",
+            "Number of skipped attacks": "97.67",
+            "Original accuracy": "90.23%",
+            "Accuracy under attack": "46.40%",
+            "Attack success rate": "48.58%",
+            "Average perturbed word %": "51.50%",
+            "Average num. words per input": "38.86",
+            "Avg num queries": "157.17"
+        },
+        "RNB_BERT_25": {
+            "Number of successful attacks": "760.33",
+            "Number of failed attacks": "128.33",
+            "Number of skipped attacks": "111.33",
+            "Original accuracy": "88.87%",
+            "Accuracy under attack": "12.83%",
+            "Attack success rate": "85.56%",
+            "Average perturbed word %": "34.61%",
+            "Average num. words per input": "38.86",
+            "Avg num queries": "126.71"
+        },
+        "LR": {
+            "Number of successful attacks": "841.00",
+            "Number of failed attacks": "67.33",
+            "Number of skipped attacks": "91.67",
+            "Original accuracy": "90.83%",
+            "Accuracy under attack": "6.73%",
+            "Attack success rate": "92.59%",
+            "Average perturbed word %": "42.35%",
+            "Average num. words per input": "38.86",
+            "Avg num queries": "93.68"
+        },
+        "LSTM": {
+            "Number of successful attacks": "679.33",
+            "Number of failed attacks": "239.00",
+            "Number of skipped attacks": "81.67",
+            "Original accuracy": "91.83%",
+            "Accuracy under attack": "23.90%",
+            "Attack success rate": "73.98%",
+            "Average perturbed word %": "58.34%",
+            "Average num. words per input": "38.86",
+            "Avg num queries": "115.59"
+        },
+        "RNB_15": {
+            "Number of successful attacks": "440.00",
+            "Number of failed attacks": "464.00",
+            "Number of skipped attacks": "96.00",
+            "Original accuracy": "90.40%",
+            "Accuracy under attack": "46.40%",
+            "Attack success rate": "48.67%",
+            "Average perturbed word %": "52.58%",
+            "Average num. words per input": "38.86",
+            "Avg num queries": "158.78"
+        },
+        "BERT": {
+            "Number of successful attacks": "482.33",
+            "Number of failed attacks": "469.67",
+            "Number of skipped attacks": "48.00",
+            "Original accuracy": "95.20%",
+            "Accuracy under attack": "46.97%",
+            "Attack success rate": "50.66%",
+            "Average perturbed word %": "31.71%",
+            "Average num. words per input": "38.86",
+            "Avg num queries": "168.05"
+        },
+        "RNB_100": {
+            "Number of successful attacks": "448.67",
+            "Number of failed attacks": "447.33",
+            "Number of skipped attacks": "104.00",
+            "Original accuracy": "89.60%",
+            "Accuracy under attack": "44.73%",
+            "Attack success rate": "50.08%",
+            "Average perturbed word %": "49.46%",
+            "Average num. words per input": "38.86",
+            "Avg num queries": "148.24"
+        },
+        "RNB_5": {
+            "Number of successful attacks": "453.00",
+            "Number of failed attacks": "450.67",
+            "Number of skipped attacks": "96.33",
+            "Original accuracy": "90.37%",
+            "Accuracy under attack": "45.07%",
+            "Attack success rate": "50.13%",
+            "Average perturbed word %": "51.69%",
+            "Average num. words per input": "38.86",
+            "Avg num queries": "162.21"
+        },
+        "RNB_BERT_50": {
+            "Number of successful attacks": "775.00",
+            "Number of failed attacks": "106.00",
+            "Number of skipped attacks": "119.00",
+            "Original accuracy": "88.10%",
+            "Accuracy under attack": "10.60%",
+            "Attack success rate": "87.97%",
+            "Average perturbed word %": "33.90%",
+            "Average num. words per input": "38.86",
+            "Avg num queries": "118.80"
+        },
+        "MNB": {
+            "Number of successful attacks": "454.33",
+            "Number of failed attacks": "450.33",
+            "Number of skipped attacks": "95.33",
+            "Original accuracy": "90.47%",
+            "Accuracy under attack": "45.03%",
+            "Attack success rate": "50.23%",
+            "Average perturbed word %": "54.10%",
+            "Average num. words per input": "38.86",
+            "Avg num queries": "181.26"
+        },
+        "RNB_BERT_100": {
+            "Number of successful attacks": "791.00",
+            "Number of failed attacks": "78.00",
+            "Number of skipped attacks": "131.00",
+            "Original accuracy": "86.90%",
+            "Accuracy under attack": "7.80%",
+            "Attack success rate": "91.03%",
+            "Average perturbed word %": "34.14%",
+            "Average num. words per input": "38.86",
+            "Avg num queries": "112.03"
+        },
+        "RNB_BERT_5": {
+            "Number of successful attacks": "725.67",
+            "Number of failed attacks": "164.00",
+            "Number of skipped attacks": "110.33",
+            "Original accuracy": "88.97%",
+            "Accuracy under attack": "16.40%",
+            "Attack success rate": "81.57%",
+            "Average perturbed word %": "34.12%",
+            "Average num. words per input": "38.86",
+            "Avg num queries": "136.00"
+        }
+    },
+    "deepwordbug": {
+        "RNB_BERT_15": {
+            "Number of successful attacks": "826.33",
+            "Number of failed attacks": "63.00",
+            "Number of skipped attacks": "110.67",
+            "Original accuracy": "88.93%",
+            "Accuracy under attack": "6.30%",
+            "Attack success rate": "92.92%",
+            "Average perturbed word %": "18.80%",
+            "Average num. words per input": "38.86",
+            "Avg num queries": "64.98"
+        },
+        "RNB_50": {
+            "Number of successful attacks": "794.67",
+            "Number of failed attacks": "105.00",
+            "Number of skipped attacks": "100.33",
+            "Original accuracy": "89.97%",
+            "Accuracy under attack": "10.50%",
+            "Attack success rate": "88.33%",
+            "Average perturbed word %": "25.89%",
+            "Average num. words per input": "38.86",
+            "Avg num queries": "77.71"
+        },
+        "RNB_25": {
+            "Number of successful attacks": "785.33",
+            "Number of failed attacks": "117.00",
+            "Number of skipped attacks": "97.67",
+            "Original accuracy": "90.23%",
+            "Accuracy under attack": "11.70%",
+            "Attack success rate": "87.03%",
+            "Average perturbed word %": "26.34%",
+            "Average num. words per input": "38.86",
+            "Avg num queries": "79.42"
+        },
+        "RNB_BERT_25": {
+            "Number of successful attacks": "837.67",
+            "Number of failed attacks": "51.00",
+            "Number of skipped attacks": "111.33",
+            "Original accuracy": "88.87%",
+            "Accuracy under attack": "5.10%",
+            "Attack success rate": "94.26%",
+            "Average perturbed word %": "18.59%",
+            "Average num. words per input": "38.86",
+            "Avg num queries": "63.48"
+        },
+        "LR": {
+            "Number of successful attacks": "908.00",
+            "Number of failed attacks": "0.33",
+            "Number of skipped attacks": "91.67",
+            "Original accuracy": "90.83%",
+            "Accuracy under attack": "0.03%",
+            "Attack success rate": "99.96%",
+            "Average perturbed word %": "17.01%",
+            "Average num. words per input": "38.86",
+            "Avg num queries": "54.34"
+        },
+        "LSTM": {
+            "Number of successful attacks": "803.67",
+            "Number of failed attacks": "114.67",
+            "Number of skipped attacks": "81.67",
+            "Original accuracy": "91.83%",
+            "Accuracy under attack": "11.47%",
+            "Attack success rate": "87.51%",
+            "Average perturbed word %": "20.34%",
+            "Average num. words per input": "38.86",
+            "Avg num queries": "76.42"
+        },
+        "RNB_15": {
+            "Number of successful attacks": "776.00",
+            "Number of failed attacks": "128.00",
+            "Number of skipped attacks": "96.00",
+            "Original accuracy": "90.40%",
+            "Accuracy under attack": "12.80%",
+            "Attack success rate": "85.84%",
+            "Average perturbed word %": "26.33%",
+            "Average num. words per input": "38.86",
+            "Avg num queries": "80.22"
+        },
+        "BERT": {
+            "Number of successful attacks": "582.67",
+            "Number of failed attacks": "369.33",
+            "Number of skipped attacks": "48.00",
+            "Original accuracy": "95.20%",
+            "Accuracy under attack": "36.93%",
+            "Attack success rate": "61.20%",
+            "Average perturbed word %": "25.08%",
+            "Average num. words per input": "38.86",
+            "Avg num queries": "102.00"
+        },
+        "RNB_100": {
+            "Number of successful attacks": "811.67",
+            "Number of failed attacks": "84.33",
+            "Number of skipped attacks": "104.00",
+            "Original accuracy": "89.60%",
+            "Accuracy under attack": "8.43%",
+            "Attack success rate": "90.59%",
+            "Average perturbed word %": "25.40%",
+            "Average num. words per input": "38.86",
+            "Avg num queries": "75.30"
+        },
+        "RNB_5": {
+            "Number of successful attacks": "762.00",
+            "Number of failed attacks": "141.67",
+            "Number of skipped attacks": "96.33",
+            "Original accuracy": "90.37%",
+            "Accuracy under attack": "14.17%",
+            "Attack success rate": "84.32%",
+            "Average perturbed word %": "26.35%",
+            "Average num. words per input": "38.86",
+            "Avg num queries": "81.51"
+        },
+        "RNB_BERT_50": {
+            "Number of successful attacks": "852.00",
+            "Number of failed attacks": "29.00",
+            "Number of skipped attacks": "119.00",
+            "Original accuracy": "88.10%",
+            "Accuracy under attack": "2.90%",
+            "Attack success rate": "96.71%",
+            "Average perturbed word %": "18.29%",
+            "Average num. words per input": "38.86",
+            "Avg num queries": "60.96"
+        },
+        "MNB": {
+            "Number of successful attacks": "678.67",
+            "Number of failed attacks": "226.00",
+            "Number of skipped attacks": "95.33",
+            "Original accuracy": "90.47%",
+            "Accuracy under attack": "22.60%",
+            "Attack success rate": "75.02%",
+            "Average perturbed word %": "24.61%",
+            "Average num. words per input": "38.86",
+            "Avg num queries": "86.15"
+        },
+        "RNB_BERT_100": {
+            "Number of successful attacks": "851.00",
+            "Number of failed attacks": "18.00",
+            "Number of skipped attacks": "131.00",
+            "Original accuracy": "86.90%",
+            "Accuracy under attack": "1.80%",
+            "Attack success rate": "97.93%",
+            "Average perturbed word %": "17.21%",
+            "Average num. words per input": "38.86",
+            "Avg num queries": "57.99"
+        },
+        "RNB_BERT_5": {
+            "Number of successful attacks": "812.33",
+            "Number of failed attacks": "77.33",
+            "Number of skipped attacks": "110.33",
+            "Original accuracy": "88.97%",
+            "Accuracy under attack": "7.73%",
+            "Attack success rate": "91.31%",
+            "Average perturbed word %": "19.33%",
+            "Average num. words per input": "38.86",
+            "Avg num queries": "67.21"
+        }
+    },
+    "textfooler": {
+        "RNB_BERT_15": {
+            "Number of successful attacks": "827.33",
+            "Number of failed attacks": "62.00",
+            "Number of skipped attacks": "110.67",
+            "Original accuracy": "88.93%",
+            "Accuracy under attack": "6.20%",
+            "Attack success rate": "93.03%",
+            "Average perturbed word %": "15.71%",
+            "Average num. words per input": "38.86",
+            "Avg num queries": "207.25"
+        },
+        "RNB_50": {
+            "Number of successful attacks": "806.33",
+            "Number of failed attacks": "93.33",
+            "Number of skipped attacks": "100.33",
+            "Original accuracy": "89.97%",
+            "Accuracy under attack": "9.33%",
+            "Attack success rate": "89.63%",
+            "Average perturbed word %": "18.89%",
+            "Average num. words per input": "38.86",
+            "Avg num queries": "240.14"
+        },
+        "RNB_25": {
+            "Number of successful attacks": "790.67",
+            "Number of failed attacks": "111.67",
+            "Number of skipped attacks": "97.67",
+            "Original accuracy": "90.23%",
+            "Accuracy under attack": "11.17%",
+            "Attack success rate": "87.63%",
+            "Average perturbed word %": "18.59%",
+            "Average num. words per input": "38.86",
+            "Avg num queries": "245.47"
+        },
+        "RNB_BERT_25": {
+            "Number of successful attacks": "839.67",
+            "Number of failed attacks": "49.00",
+            "Number of skipped attacks": "111.33",
+            "Original accuracy": "88.87%",
+            "Accuracy under attack": "4.90%",
+            "Attack success rate": "94.49%",
+            "Average perturbed word %": "15.66%",
+            "Average num. words per input": "38.86",
+            "Avg num queries": "200.89"
+        },
+        "LR": {
+            "Number of successful attacks": "907.67",
+            "Number of failed attacks": "0.67",
+            "Number of skipped attacks": "91.67",
+            "Original accuracy": "90.83%",
+            "Accuracy under attack": "0.07%",
+            "Attack success rate": "99.93%",
+            "Average perturbed word %": "10.76%",
+            "Average num. words per input": "38.86",
+            "Avg num queries": "116.00"
+        },
+        "LSTM": {
+            "Number of successful attacks": "871.33",
+            "Number of failed attacks": "47.00",
+            "Number of skipped attacks": "81.67",
+            "Original accuracy": "91.83%",
+            "Accuracy under attack": "4.70%",
+            "Attack success rate": "94.88%",
+            "Average perturbed word %": "17.21%",
+            "Average num. words per input": "38.86",
+            "Avg num queries": "211.46"
+        },
+        "RNB_15": {
+            "Number of successful attacks": "783.67",
+            "Number of failed attacks": "120.33",
+            "Number of skipped attacks": "96.00",
+            "Original accuracy": "90.40%",
+            "Accuracy under attack": "12.03%",
+            "Attack success rate": "86.69%",
+            "Average perturbed word %": "18.49%",
+            "Average num. words per input": "38.86",
+            "Avg num queries": "248.63"
+        },
+        "BERT": {
+            "Number of successful attacks": "774.00",
+            "Number of failed attacks": "178.00",
+            "Number of skipped attacks": "48.00",
+            "Original accuracy": "95.20%",
+            "Accuracy under attack": "17.80%",
+            "Attack success rate": "81.30%",
+            "Average perturbed word %": "23.44%",
+            "Average num. words per input": "38.86",
+            "Avg num queries": "325.24"
+        },
+        "RNB_100": {
+            "Number of successful attacks": "820.33",
+            "Number of failed attacks": "75.67",
+            "Number of skipped attacks": "104.00",
+            "Original accuracy": "89.60%",
+            "Accuracy under attack": "7.57%",
+            "Attack success rate": "91.55%",
+            "Average perturbed word %": "18.84%",
+            "Average num. words per input": "38.86",
+            "Avg num queries": "230.32"
+        },
+        "RNB_5": {
+            "Number of successful attacks": "770.33",
+            "Number of failed attacks": "133.33",
+            "Number of skipped attacks": "96.33",
+            "Original accuracy": "90.37%",
+            "Accuracy under attack": "13.33%",
+            "Attack success rate": "85.24%",
+            "Average perturbed word %": "18.13%",
+            "Average num. words per input": "38.86",
+            "Avg num queries": "252.06"
+        },
+        "RNB_BERT_50": {
+            "Number of successful attacks": "849.67",
+            "Number of failed attacks": "31.33",
+            "Number of skipped attacks": "119.00",
+            "Original accuracy": "88.10%",
+            "Accuracy under attack": "3.13%",
+            "Attack success rate": "96.45%",
+            "Average perturbed word %": "15.46%",
+            "Average num. words per input": "38.86",
+            "Avg num queries": "190.23"
+        },
+        "MNB": {
+            "Number of successful attacks": "697.00",
+            "Number of failed attacks": "207.67",
+            "Number of skipped attacks": "95.33",
+            "Original accuracy": "90.47%",
+            "Accuracy under attack": "20.77%",
+            "Attack success rate": "77.05%",
+            "Average perturbed word %": "16.83%",
+            "Average num. words per input": "38.86",
+            "Avg num queries": "277.65"
+        },
+        "RNB_BERT_100": {
+            "Number of successful attacks": "847.33",
+            "Number of failed attacks": "21.67",
+            "Number of skipped attacks": "131.00",
+            "Original accuracy": "86.90%",
+            "Accuracy under attack": "2.17%",
+            "Attack success rate": "97.51%",
+            "Average perturbed word %": "14.93%",
+            "Average num. words per input": "38.86",
+            "Avg num queries": "179.83"
+        },
+        "RNB_BERT_5": {
+            "Number of successful attacks": "817.00",
+            "Number of failed attacks": "72.67",
+            "Number of skipped attacks": "110.33",
+            "Original accuracy": "88.97%",
+            "Accuracy under attack": "7.27%",
+            "Attack success rate": "91.83%",
+            "Average perturbed word %": "15.79%",
+            "Average num. words per input": "38.86",
+            "Avg num queries": "214.22"
+        }
+    }
+}

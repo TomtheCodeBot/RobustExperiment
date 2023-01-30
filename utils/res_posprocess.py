@@ -74,4 +74,4 @@ def process_text_result(path):
     pass
 
 if __name__ == '__main__':
-    process_text_result("/home/ubuntu/RobustExperiment/text_attack_result/IMDB")
+    process_text_result("/home/ubuntu/RobustExperiment/text_attack_result/AGNEWS/no_mod_limit")
