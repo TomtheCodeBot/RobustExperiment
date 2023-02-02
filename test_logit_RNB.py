@@ -12,14 +12,12 @@ from textattack.constraints.pre_transformation import (
     StopwordModification,
 )
 from utils.dataloader import load_train_test_imdb_data
-
 from transformers import AutoModelForSequenceClassification,AutoTokenizer
 from utils.preprocessing import clean_text_imdb
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
-from model.robustNB import RobustNaiveBayesClassifierPercentage
 from utils.bert_vectorizer import BertVectorizer
 from textattack.constraints.semantics.sentence_encoders import UniversalSentenceEncoder
 from textattack import Attack
@@ -32,39 +30,156 @@ from textattack.datasets import Dataset
 import datasets
 import numpy as np
 import os 
-class CustomModelWrapper(PyTorchModelWrapper):
-    def __init__(self,model,tokenizer):
-        super(CustomModelWrapper,self).__init__(model,tokenizer)
+from sklearn.base import BaseEstimator
+from scipy.special import logit
 
-    def __call__(self,text_input_list):
-        inputs_dict = self.tokenizer(
-            text_input_list,
-            truncation=True,
-            padding=True,
-            return_tensors="pt",
-        )
-        model_device = next(self.model.parameters()).device
-        inputs_dict.to(model_device)
+class RobustNaiveBayesClassifierPercentage(BaseEstimator):
 
-        with torch.no_grad():
-            outputs = self.model(**inputs_dict)
+    def __init__(self, percentage_noise=0.0, debug=False):
 
-        if isinstance(outputs,tuple):
-            return outputs[-1]#model-h,model-bh
+        # assert 0 <= percentage_noise <= 100, "Please enter a valid percentage between 0 and 100 inclusive"
 
-        if isinstance(outputs,torch.Tensor):
-            return outputs#baseline
+        self.percentage_noise = percentage_noise
 
-        if isinstance(outputs[0], str):
-            # HuggingFace sequence-to-sequence models return a list of
-            # string predictions as output. In this case, return the full
-            # list of outputs.
-            return outputs
+        self.kappa = None
+
+        self.pos_prior_probability = None
+        self.neg_prior_probability = None
+        self.theta_pos = None
+        self.theta_neg = None
+        self.f_pos = None
+        self.f_neg = None
+        self.pos_indices = None
+        self.neg_indices = None
+
+        self._has_fit = False
+
+        self.debug = debug
+
+    def _solve_subproblem(self, f, kappa):
+        '''
+        Solves the subproblem:
+        max_{v > 0} F(v) = kappa * log v + \sum f_i log max(f_i, v) - max(f_i, v) 
+
+        where kappa is self.percentage_noise * sum of word counts in text corpus training
+        Returns the optimal value of the dual variable theta*
+        '''
+        if self.debug:
+            print("Internal kappa percentage: " + str(kappa))
+
+        if (len(f.shape) == 2):
+            n = f.shape[1]
         else:
-            # HuggingFace classification models return a tuple as output
-            # where the first item in the tuple corresponds to the list of
-            # scores for each input.
-            return outputs.logits
+            n = f.shape[0]
+
+        f_l1 = np.sum(f)
+
+        f_int = (-np.sort(-f))
+        f_int = np.insert(f_int, 0, 9999999)
+        f_new = np.insert(f_int, n+1, 0.)
+
+        if (len(f_new.shape) < 2):
+            f_new = np.reshape(f_new, (1, f_new.shape[0]))
+
+        rho_curr = kappa + f_l1
+        h_curr = 0
+        v_curr = max(f_new[0, 1], rho_curr/n)
+        F_curr = rho_curr * np.log(v_curr) - n * v_curr
+
+        v_star = v_curr
+        F_star = F_curr
+        k_star = 0
+
+        for k in range(1, n + 1):
+            if k == n:
+                h_curr = h_curr + f_new[0, k] * \
+                    np.log(f_new[0, k]) - f_new[0, k]
+                F_curr = h_curr + kappa * np.log(f_new[0, k])
+                v_curr = f_new[0, k]
+            else:
+                rho_curr = rho_curr - f_new[0, k]
+                h_curr = h_curr + f_new[0, k] * \
+                    np.log(f_new[0, k]) - f_new[0, k]
+                v_curr = min(f_new[0, k], max(
+                    f_new[0, k + 1], rho_curr/(n - k)))
+                F_curr = h_curr + rho_curr * np.log(v_curr) - (n - k) * v_curr
+
+            if F_curr > F_star:
+                F_star = F_curr
+                v_star = v_curr
+                k_star = k
+
+        theta = (1./(kappa + f_l1)) * np.maximum(f, v_star * np.ones(f.shape))
+
+        return theta
+
+    def fit(self, X, y):
+        self.pos_indices = np.where(y == 1)[0]
+        self.neg_indices = np.where(y == 0)[0]
+        self.f_pos = np.sum(X[self.pos_indices], axis=0)
+        self.f_neg = np.sum(X[self.neg_indices], axis=0)
+
+        self.f_pos = 1 + self.f_pos
+        self.f_neg = 1 + self.f_neg
+
+        self.kappa_pos = (self.percentage_noise/100) * np.sum(self.f_pos)
+        self.kappa_neg = (self.percentage_noise/100) * np.sum(self.f_neg)
+
+        self.theta_pos = self._solve_subproblem(self.f_pos, self.kappa_pos)
+        self.theta_neg = self._solve_subproblem(self.f_neg, self.kappa_neg)
+
+        if (len(self.theta_pos.shape) < 2):
+            self.theta_pos = np.reshape(
+                self.theta_pos, (1, self.theta_pos.shape[0]))
+
+        if (len(self.theta_neg.shape) < 2):
+            self.theta_neg = np.reshape(
+                self.theta_neg, (1, self.theta_neg.shape[0]))
+
+        self.pos_prior_probability = len(self.pos_indices)/X.shape[0]
+        self.neg_prior_probability = len(self.neg_indices)/X.shape[0]
+
+        self._has_fit = True
+
+    def predict(self, X):
+        if not self._has_fit:
+            print("Please call fit() before you start predicting")
+            return None
+
+        if self.theta_pos.shape[1] != X.shape[1]:
+            print("Shape mismatch. Please train with proper dimensions")
+            return None
+        pos_prob = np.log(self.pos_prior_probability) + \
+            np.sum(X@np.log(self.theta_pos).T, axis=-1)
+        neg_prob = np.log(self.neg_prior_probability) + \
+            np.sum(X@np.log(self.theta_neg).T, axis=-1)
+
+        predictions = (pos_prob >= neg_prob).astype(int)
+
+        return predictions
+
+    def predict_proba(self, X):
+        if not self._has_fit:
+            print("Please call fit() before you start predicting")
+            return None
+
+        if self.theta_pos.shape[1] != X.shape[1]:
+            print("Shape mismatch. Please train with proper dimensions")
+            return None
+
+        pos_prob = np.log(self.pos_prior_probability) + \
+            np.sum(X@np.log(self.theta_pos).T, axis=-1)
+        neg_prob = np.log(self.neg_prior_probability) + \
+            np.sum(X@np.log(self.theta_neg).T, axis=-1)
+
+        exp_pos = np.expand_dims(pos_prob, axis=-1)
+        exp_neg = np.expand_dims(neg_prob, axis=-1)
+
+        output = np.concatenate((exp_neg, exp_pos), axis=1)
+        if len(output.shape)>2:
+            output = np.squeeze(np.array(output),axis=-1)
+        return output
+
 
 def build_attacker(model,args):
     if (args['attack_method'] == 'textfooler'):
@@ -157,7 +272,6 @@ if __name__=='__main__':
     test_features = vectorizer.transform(test_data["text"])
     test_labels = test_data["label"]
     
-    
     RNB = RobustNaiveBayesClassifierPercentage(100)
     RNB.fit(training_features, training_labels)
     
@@ -200,29 +314,15 @@ if __name__=='__main__':
     RNB_BERT_5 = RobustNaiveBayesClassifierPercentage(5)
     RNB_BERT_5.fit(training_features, training_labels)
     
-    tokenizer = AutoTokenizer.from_pretrained("textattack/bert-base-uncased-imdb",use_fast=True)
-    model = AutoModelForSequenceClassification.from_pretrained("textattack/bert-base-uncased-imdb")
-    BERT = HuggingFaceModelWrapper(model,tokenizer)
     
-    model = LSTMForClassification.from_pretrained("lstm-imdb")
-    LSTM = PyTorchModelWrapper(
-                        model, model.tokenizer
-                    )
-    tokenizer = AutoTokenizer.from_pretrained("/home/ubuntu/RobustExperiment/model/weights/BERT/IMDB/checkpoint-15640-epoch-20",use_fast=True)
-    model = AutoModelForSequenceClassification.from_pretrained("/home/ubuntu/RobustExperiment/model/weights/BERT/IMDB/checkpoint-15640-epoch-20")
-    BERT_SELF_TRAINED = HuggingFaceModelWrapper(model,tokenizer)
     
     del training_features
     del test_features
     for i in range(0,3):
         set_seed(i)
-        dataset = gen_dataset(train_data)
-        args.load_path=f"/home/ubuntu/RobustExperiment/text_attack_result/on_train_dataset/IMDB/{i}/"
+        dataset = gen_dataset(test_data)
+        args.load_path=f"/home/ubuntu/RobustExperiment/text_attack_result/test_RNB_with_logit/IMDB/{i}/"
         args.attack_method="deepwordbug"
-        
-        attack(args,BERT,"BERT",dataset)
-        
-        attack(args,LSTM,"LSTM",dataset)
         
         wrapper = SklearnModelWrapper(MNB,vectorizer)
         attack(args,wrapper,"MNB",dataset)
@@ -232,6 +332,52 @@ if __name__=='__main__':
         
         wrapper = SklearnModelWrapper(RNB,vectorizer)
         attack(args,wrapper,"RNB_100",dataset)
+        
+        wrapper = SklearnModelWrapper(RNB_50,vectorizer)
+        attack(args,wrapper,"RNB_50",dataset)
+        
+        wrapper = SklearnModelWrapper(RNB_25,vectorizer)
+        attack(args,wrapper,"RNB_25",dataset)
+        
+        wrapper = SklearnModelWrapper(RNB_15,vectorizer)
+        attack(args,wrapper,"RNB_15",dataset)
+        
+        wrapper = SklearnModelWrapper(RNB_5,vectorizer)
+        attack(args,wrapper,"RNB_5",dataset)
+        
+        wrapper = SklearnModelWrapper(RNB_BERT,bert_vectorizer)
+        attack(args,wrapper,"RNB_BERT_100",dataset)
+        
+        wrapper = SklearnModelWrapper(RNB_BERT_50,bert_vectorizer)
+        attack(args,wrapper,"RNB_BERT_50",dataset)
+        
+        wrapper = SklearnModelWrapper(RNB_BERT_25,bert_vectorizer)
+        attack(args,wrapper,"RNB_BERT_25",dataset)
+        
+        wrapper = SklearnModelWrapper(RNB_BERT_15,bert_vectorizer)
+        attack(args,wrapper,"RNB_BERT_15",dataset)
+        
+        wrapper = SklearnModelWrapper(RNB_BERT_5,bert_vectorizer)
+        attack(args,wrapper,"RNB_BERT_5",dataset)
+        
+        
+        
+        
+        
+        args.attack_method="textbugger"
+
+        
+        
+        
+        wrapper = SklearnModelWrapper(MNB,vectorizer)
+        attack(args,wrapper,"MNB",dataset)
+        
+        wrapper = SklearnModelWrapper(LR,vectorizer)
+        attack(args,wrapper,"LR",dataset)
+        
+        wrapper = SklearnModelWrapper(RNB,vectorizer)
+        attack(args,wrapper,"RNB_100",dataset)
+        
         
         wrapper = SklearnModelWrapper(RNB_50,vectorizer)
         attack(args,wrapper,"RNB_50",dataset)
@@ -260,56 +406,14 @@ if __name__=='__main__':
         wrapper = SklearnModelWrapper(RNB_BERT_5,bert_vectorizer)
         attack(args,wrapper,"RNB_BERT_5",dataset)
             
-                
-        args.attack_method="textbugger"
-        
-        attack(args,BERT,"BERT",dataset)
-        
-        attack(args,LSTM,"LSTM",dataset)
-        
-        wrapper = SklearnModelWrapper(MNB,vectorizer)
-        attack(args,wrapper,"MNB",dataset)
-        
-        wrapper = SklearnModelWrapper(LR,vectorizer)
-        attack(args,wrapper,"LR",dataset)
-        
-        wrapper = SklearnModelWrapper(RNB,vectorizer)
-        attack(args,wrapper,"RNB_100",dataset)
-        
-        wrapper = SklearnModelWrapper(RNB_50,vectorizer)
-        attack(args,wrapper,"RNB_50",dataset)
-        
-        wrapper = SklearnModelWrapper(RNB_25,vectorizer)
-        attack(args,wrapper,"RNB_25",dataset)
-        
-        wrapper = SklearnModelWrapper(RNB_15,vectorizer)
-        attack(args,wrapper,"RNB_15",dataset)
-        
-        wrapper = SklearnModelWrapper(RNB_5,vectorizer)
-        attack(args,wrapper,"RNB_5",dataset)
-        
-        wrapper = SklearnModelWrapper(RNB_BERT,bert_vectorizer)
-        attack(args,wrapper,"RNB_BERT_100",dataset)
-        
-        wrapper = SklearnModelWrapper(RNB_BERT_50,bert_vectorizer)
-        attack(args,wrapper,"RNB_BERT_50",dataset)
-        
-        wrapper = SklearnModelWrapper(RNB_BERT_25,bert_vectorizer)
-        attack(args,wrapper,"RNB_BERT_25",dataset)
-        
-        wrapper = SklearnModelWrapper(RNB_BERT_15,bert_vectorizer)
-        attack(args,wrapper,"RNB_BERT_15",dataset)
-        
-        wrapper = SklearnModelWrapper(RNB_BERT_5,bert_vectorizer)
-        attack(args,wrapper,"RNB_BERT_5",dataset)
         
         
-                
+        
         args.attack_method="textfooler"
+
         
-        attack(args,BERT,"BERT",dataset)
+
         
-        attack(args,LSTM,"LSTM",dataset)
         
         wrapper = SklearnModelWrapper(MNB,vectorizer)
         attack(args,wrapper,"MNB",dataset)
@@ -346,5 +450,8 @@ if __name__=='__main__':
         
         wrapper = SklearnModelWrapper(RNB_BERT_5,bert_vectorizer)
         attack(args,wrapper,"RNB_BERT_5",dataset)
+        
+        
+        
         
         

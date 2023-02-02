@@ -5,15 +5,14 @@ import sklearn
 from utils.dataloader import load_train_test_imdb_data
 
 #train_data , test_data = load_train_test_imdb_data("/home/ubuntu/RobustExperiment/data/aclImdb")
-sst2_dataset = datasets.load_dataset("sst2")
+sst2_dataset = datasets.load_dataset("ag_news")
 train_data = pd.DataFrame(sst2_dataset["train"])
-test_data = pd.DataFrame(sst2_dataset["validation"])
-print(train_data)
-train_data = train_data.rename({'label': 'labels'}, axis=1).drop(columns=["idx"])
-test_data = test_data.rename({'label': 'labels'}, axis=1).drop(columns=["idx"])
+test_data = pd.DataFrame(sst2_dataset["test"])
+train_data = train_data.rename({'label': 'labels'}, axis=1)
+test_data = test_data.rename({'label': 'labels'}, axis=1)
 # Optional model configuration
 model_args = ClassificationArgs(num_train_epochs=10,
-                                output_dir="/home/ubuntu/RobustExperiment/model/weights/BERT/SST2",
+                                output_dir="/home/ubuntu/RobustExperiment/model/weights/BERT/AGNEWS",
                                 train_batch_size=32)
 
 
@@ -21,6 +20,7 @@ model_args = ClassificationArgs(num_train_epochs=10,
 model = ClassificationModel(
     'bert',
     'bert-base-uncased',
+    num_labels=4,
     use_cuda=True,
     args=model_args
 ) 
