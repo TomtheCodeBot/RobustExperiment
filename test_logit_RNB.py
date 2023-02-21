@@ -204,6 +204,7 @@ def str2bool(strIn):
         raise argparse.ArgumentTypeError('Unsupported value encountered.')
 def set_seed(seed=42):
     if seed is not None:
+        print(seed)
         random.seed(seed)
         os.environ['PYTHONHASHSEED'] = str(seed)
         np.random.seed(seed)
@@ -271,7 +272,7 @@ if __name__=='__main__':
     training_labels = train_data["label"]
     test_features = vectorizer.transform(test_data["text"])
     test_labels = test_data["label"]
-    
+    set_seed(1)
     RNB = RobustNaiveBayesClassifierPercentage(100)
     RNB.fit(training_features, training_labels)
     
@@ -318,7 +319,7 @@ if __name__=='__main__':
     
     del training_features
     del test_features
-    for i in range(0,3):
+    for i in range(1,3):
         set_seed(i)
         dataset = gen_dataset(test_data)
         args.load_path=f"/home/ubuntu/RobustExperiment/text_attack_result/test_RNB_with_logit/IMDB/{i}/"
@@ -345,7 +346,7 @@ if __name__=='__main__':
         wrapper = SklearnModelWrapper(RNB_5,vectorizer)
         attack(args,wrapper,"RNB_5",dataset)
         
-        wrapper = SklearnModelWrapper(RNB_BERT,bert_vectorizer)
+        """wrapper = SklearnModelWrapper(RNB_BERT,bert_vectorizer)
         attack(args,wrapper,"RNB_BERT_100",dataset)
         
         wrapper = SklearnModelWrapper(RNB_BERT_50,bert_vectorizer)
@@ -361,13 +362,7 @@ if __name__=='__main__':
         attack(args,wrapper,"RNB_BERT_5",dataset)
         
         
-        
-        
-        
         args.attack_method="textbugger"
-
-        
-        
         
         wrapper = SklearnModelWrapper(MNB,vectorizer)
         attack(args,wrapper,"MNB",dataset)
@@ -377,7 +372,6 @@ if __name__=='__main__':
         
         wrapper = SklearnModelWrapper(RNB,vectorizer)
         attack(args,wrapper,"RNB_100",dataset)
-        
         
         wrapper = SklearnModelWrapper(RNB_50,vectorizer)
         attack(args,wrapper,"RNB_50",dataset)
@@ -406,15 +400,8 @@ if __name__=='__main__':
         wrapper = SklearnModelWrapper(RNB_BERT_5,bert_vectorizer)
         attack(args,wrapper,"RNB_BERT_5",dataset)
             
-        
-        
-        
         args.attack_method="textfooler"
 
-        
-
-        
-        
         wrapper = SklearnModelWrapper(MNB,vectorizer)
         attack(args,wrapper,"MNB",dataset)
         
@@ -449,9 +436,4 @@ if __name__=='__main__':
         attack(args,wrapper,"RNB_BERT_15",dataset)
         
         wrapper = SklearnModelWrapper(RNB_BERT_5,bert_vectorizer)
-        attack(args,wrapper,"RNB_BERT_5",dataset)
-        
-        
-        
-        
-        
+        attack(args,wrapper,"RNB_BERT_5",dataset)""" 

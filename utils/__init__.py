@@ -30,7 +30,7 @@ def survey_huggingface_dataset(name:str,input_name:str="text"):
 
 def plot_theta_RNB(name:str="ag_news",input_name:str="text",label_name:str="label", error_rate:int=100,num_classes:int=4,index:int=1,bins:int=100):
     if name == "imdb":
-        train_data , _ = load_train_test_imdb_data("/home/ubuntu/Robustness_Gym/data/aclImdb")
+        train_data , _ = load_train_test_imdb_data("/home/ubuntu/RobustExperiment/data/aclImdb")
     if name == "mr":
         train_data , _ = load_mr_data()
     else:
@@ -56,16 +56,18 @@ def plot_theta_RNB(name:str="ag_news",input_name:str="text",label_name:str="labe
     min_y_lim = min(theta) -1
     plt.ylim(bottom=min_y_lim)
     theta = sorted(theta,reverse=True)
+    if bins == -1:
+        bins = len(theta)-1
     bin_combine = len(theta)//bins
     plot_data = []
     for i in range(bins):
         plot_data.append((sum(theta[i*bin_combine:(i+1)*bin_combine])/bin_combine)-min_y_lim)
     max_y_lim = max(plot_data)+min_y_lim+0.5
     plt.ylim(top=max_y_lim)
-    pathlib.Path(f'/home/ubuntu/Robustness_Gym/plot/{name}').mkdir(parents=True, exist_ok=True) 
+    pathlib.Path(f'/home/ubuntu/RobustExperiment/plot/{name}').mkdir(parents=True, exist_ok=True) 
 
     plt.bar(range(0,bins), plot_data,bottom= min_y_lim)
-    plt.savefig(f'/home/ubuntu/Robustness_Gym/plot/{name}/'+"RNB.jpg")
+    plt.savefig(f'/home/ubuntu/RobustExperiment/plot/{name}/RNB_{str(error_rate)}.jpg')
     plt.close()
     
 def plot_theta_MNB(name:str="ag_news",input_name:str="text",label_name:str="label", error_rate:int=100,num_classes:int=4,index:int=1,bins:int=100):
