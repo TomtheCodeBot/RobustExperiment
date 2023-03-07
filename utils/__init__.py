@@ -169,4 +169,4 @@ def draw_excel(path_to_results):
     pass
 
 if __name__ == "__main__":
-    draw_excel("/home/ubuntu/RobustExperiment/text_attack_result/SST2")
+    draw_excel("/home/ubuntu/RobustExperiment/text_attack_result/test_RNB_with_logit/IMDB")
