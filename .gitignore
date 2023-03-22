@@ -4,3 +4,4 @@ cache_dir
 runs
 plot
 weights
+*/__pycache__
