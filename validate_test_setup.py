@@ -1,11 +1,10 @@
+import torch
 from textattack.datasets import HuggingFaceDataset
 from sklearn.metrics import accuracy_score
 from tqdm import tqdm
 from typing import List, Dict
 import random
-from textattack.attack_recipes import TextFoolerJin2019,HotFlipEbrahimi2017,DeepWordBugGao2018,TextBuggerLi2018
-from textattack.transformations import WordSwapEmbedding
-from textattack.constraints.semantics import WordEmbeddingDistance
+from textattack.attack_recipes import TextFoolerJin2019,DeepWordBugGao2018,TextBuggerLi2018
 from textattack.constraints.overlap import MaxWordsPerturbed
 from textattack.goal_functions import UntargetedClassification
 from textattack.constraints.pre_transformation import (
@@ -17,23 +16,17 @@ from utils.dataloader import load_train_test_imdb_data
 from model.BERTNoiseDefend import BertForSequenceClassification
 from transformers import AutoModelForSequenceClassification,AutoTokenizer,AutoConfig
 from utils.preprocessing import clean_text_imdb
-from sklearn.naive_bayes import MultinomialNB
 from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.linear_model import LogisticRegression
-from model.robustNB import RobustNaiveBayesClassifierPercentage
-from utils.bert_vectorizer import BertVectorizer
-from textattack.constraints.semantics.sentence_encoders import UniversalSentenceEncoder
-from textattack import Attack
-from textattack.models.wrappers import ModelWrapper,PyTorchModelWrapper,SklearnModelWrapper,HuggingFaceModelWrapper
-from textattack.models.helpers import LSTMForClassification
-import torch
+from textattack.models.wrappers import PyTorchModelWrapper,HuggingFaceModelWrapper
 import argparse
 from textattack import Attacker,AttackArgs
 from textattack.datasets import Dataset
 import datasets
 import numpy as np
 import os 
+
+import json
+ 
 class CustomModelWrapper(PyTorchModelWrapper):
     def __init__(self,model,tokenizer):
         super(CustomModelWrapper,self).__init__(model,tokenizer)
@@ -190,7 +183,7 @@ if __name__=='__main__':
     # Evaluation
     acc = accuracy_score(test_labels, y_pred_BERT)
     print(f"IMDB BERT (with noise module): {acc*100:.2f}%")
-    """
+    
     
     sst2_dataset = datasets.load_dataset("ag_news")
     train_data = sst2_dataset["train"]
@@ -199,41 +192,42 @@ if __name__=='__main__':
     training_labels = np.array(train_data["label"])
     test_features = vectorizer.transform(test_data["text"])
     test_labels = np.array(test_data["label"])
-    
-    
-    tokenizer = AutoTokenizer.from_pretrained("textattack/bert-base-uncased-ag-news",use_fast=True)
-    model = AutoModelForSequenceClassification.from_pretrained("textattack/bert-base-uncased-ag-news")
-    BERT = HuggingFaceModelWrapper(model,tokenizer)
-    BERT.to("cuda")
+    """
+    tokenizer = AutoTokenizer.from_pretrained("textattack/bert-base-uncased-imdb",use_fast=True)
     batch = 100
     bert_input = list(test_data["text"])
-    
+    num_repetitions = 3
     clean_accuracy={}
+    """
+    model = AutoModelForSequenceClassification.from_pretrained("textattack/bert-base-uncased-imdb")
+    BERT = HuggingFaceModelWrapper(model,tokenizer)
+    BERT.to("cuda")
     
     y_pred_BERT = []
     for i in tqdm(range(0,len(bert_input)//batch)):
         y_pred_BERT.extend(torch.argmax(BERT(bert_input[i*batch:(i+1)*batch]),dim=-1).tolist())
     # Evaluation
     acc = accuracy_score(test_labels, y_pred_BERT)
-    print(f"AGNEWS BERT (no noise module): {acc*100:.2f}%")
+    print(f"IMDB BERT (no noise module): {acc*100:.2f}%")
+    """
     
-    
-    config = AutoConfig.from_pretrained("textattack/bert-base-uncased-ag-news")
+    config = AutoConfig.from_pretrained("textattack/bert-base-uncased-imdb")
     model = BertForSequenceClassification(config)
-    state = AutoModelForSequenceClassification.from_pretrained("textattack/bert-base-uncased-ag-news")
+    state = AutoModelForSequenceClassification.from_pretrained("textattack/bert-base-uncased-imdb")
     model.load_state_dict(state.state_dict())
     model.eval()
     BERT = HuggingFaceModelWrapper(model,tokenizer)
+    print("123")
     BERT.to("cuda")
-    
+    print("123")
     y_pred_BERT = []
     for i in tqdm(range(0,len(bert_input)//batch)):
         y_pred_BERT.extend(torch.argmax(BERT(bert_input[i*batch:(i+1)*batch]),dim=-1).tolist())
     # Evaluation
     acc = accuracy_score(test_labels, y_pred_BERT)
-    print(f"AGNEWS BERT (with noise module): {acc*100:.2f}%")
-    clean_accuracy["AGNEWS_BERT"] = f"{acc*100:.2f}%"
-    noise_position={
+    print(f"IMDB BERT (with noise module): {acc*100:.2f}%")
+    clean_accuracy["IMDB_BERT-WITH-0.1-SCALE"] = f"{acc*100:.2f}%"
+    """noise_position={
         'input_noise':[0.001,0.0025,0.005,0.01,0.025,0.05,0.1,0.25,0.5,1],
         'pre_att_cls':[0.001,0.0025,0.005,0.01,0.025,0.05,0.1,0.25,0.5,1],
         'pre_att_all':[0.001,0.0025,0.005,0.01,0.025,0.05,0.1,0.25,0.5,1],
@@ -242,14 +236,33 @@ if __name__=='__main__':
         'last_cls':[0.001,0.0025,0.005,0.01,0.025,0.05,0.1,0.25,0.5,1], 
         'logits':[0.001,0.0025,0.005,0.01,0.025,0.05,0.1,0.25,0.5,1]
     }
-    positions = [ 'input_noise', 'pre_att_cls', 'pre_att_all',"post_att_cls","post_att_all", 'last_cls', 'logits']
-    for position in positions:
-        for noise in noise_position[position]:
-            model.change_defense(defense_cls="random_noise",def_position=position,noise_sigma=noise,defense=True)
-            y_pred_BERT = []
-            for i in tqdm(range(0,len(bert_input)//batch)):
-                y_pred_BERT.extend(torch.argmax(BERT(bert_input[i*batch:(i+1)*batch]),dim=-1).tolist())
-            # Evaluation
-            acc = accuracy_score(test_labels, y_pred_BERT)
-            print(f"AGNEWS_BERT_{'random_noise'}_{str(noise)}")
-            clean_accuracy[f"AGNEWS_BERT_{'random_noise'}_{str(noise)}"] = f"{acc*100:.2f}%"
+    positions = [ 'input_noise', 'pre_att_cls', 'pre_att_all',"post_att_cls","post_att_all", 'last_cls', 'logits']"""
+    noise_position={
+        'input_noise':[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1],
+        'pre_att_cls':[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1],
+        'pre_att_all':[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1],
+        "post_att_cls":[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1],
+        "post_att_all":[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1], 
+        'last_cls':[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1], 
+        'logits':[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1]
+    }
+    positions = [ 'pre_att_all',"post_att_all", 'last_cls', 'logits']
+    for repetitions in range(1,num_repetitions):
+        for position in positions:
+            for noise in noise_position[position]:
+                model.change_defense(defense_cls="random_noise",def_position=position,noise_sigma=noise,defense=True)
+                y_pred_BERT = []
+                for i in tqdm(range(0,len(bert_input)//batch)):
+                    y_pred_BERT.extend(torch.argmax(BERT(bert_input[i*batch:(i+1)*batch]),dim=-1).tolist())
+                # Evaluation
+                acc = accuracy_score(test_labels, y_pred_BERT)
+                print(f"IMDB_BERT-WITH-0.1-SCALE_{'random_noise'}_{position}_{str(noise)} = {acc*100:.2f}%")
+                clean_accuracy[f"IMDB_BERT-WITH-0.1-SCALE_{'random_noise'}_{position}_{str(noise)}"] = f"{acc*100:.2f}%"
+                print(clean_accuracy)
+        
+        # Serializing json
+        json_object = json.dumps(clean_accuracy, indent=4)
+        
+        # Writing to sample.json
+        with open(f"IMDB_0.1_scale_clean_accuracy_{repetitions}.json", "w") as outfile:
+            outfile.write(json_object)

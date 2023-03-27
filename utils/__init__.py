@@ -167,6 +167,44 @@ def draw_excel(path_to_results):
     worksheet.autofit()
     workbook.close()
     pass
+def p2f(x):
+   return float(x.strip('%'))/100
 
-if __name__ == "__main__":
-    draw_excel("/home/ubuntu/RobustExperiment/text_attack_result/test_RNB_with_logit/IMDB")
+def draw_excel2(path_to_results,name = "IMDB_clean_accuracy",iteration = 3):
+    workbook = xlsxwriter.Workbook(f"{path_to_results}/{name}_results.xlsx")
+    worksheet = workbook.add_worksheet()
+    cellformat = workbook.add_format()
+    cellformat.set_align('center')
+    cellformat.set_align('vcenter')
+    results = {}
+    for i in range(iteration):
+        f = open(f"{path_to_results}/{name}_{i}.json")
+        clean_acc = json.load(f)
+        for k in clean_acc.keys():
+            if k not in results.keys():
+                results[k] = p2f(clean_acc[k])/iteration
+            else:
+                results[k] += p2f(clean_acc[k])/iteration
+    first_collumn = 65
+    worksheet.write(f'{chr(first_collumn)}1', 'noise_type\intensity',cellformat)
+    row = 2
+    position = 1
+    record_noise = {}
+    record_pos = {}
+    for i  in list(results.keys())[1:]:
+        names = i.split("_")
+        noise_level = names[-1]
+        name = "_".join(names[4:-1])
+        if name not in record_pos.keys():
+            record_pos[name]=row
+            worksheet.write(f'{chr(first_collumn)}{str(record_pos[name])}', name,cellformat)
+            row+=1
+        if noise_level not in record_noise.keys():
+            record_noise[noise_level]=position+first_collumn
+            worksheet.write(f'{chr(record_noise[noise_level])}1', noise_level,cellformat)
+            position+=1
+        worksheet.write(f'{chr(record_noise[noise_level])}{str(record_pos[name])}', f"{results[i]*100:.2f}%",cellformat)
+    worksheet.autofit()
+    workbook.close()
+    pass
+

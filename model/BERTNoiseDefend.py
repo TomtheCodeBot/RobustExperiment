@@ -614,11 +614,37 @@ class BertPooler(nn.Module):
         super().__init__()
         self.dense = nn.Linear(config.hidden_size, config.hidden_size)
         self.activation = nn.Tanh()
-
+        self.def_position = None
+        self.defense=False
+    def change_defense(self,def_position=None,defense_cls=None,noise_sigma=None,defense=None):
+        if def_position is not None:
+            self.def_position = def_position
+        if defense is not None:
+            self.defense = defense
+        if defense_cls is not None:
+            self.defense_cls = defense_cls
+        if noise_sigma is not None:
+            self.noise_sigma = noise_sigma
+    def defense_token(self, x):
+        if self.defense_cls == 'gauss_filter':
+            # gauss_x = gauss_filter(x.detach().cpu().numpy(), self.filter_sigma)
+            gauss_x = torch.tensor(gauss_x).cuda()
+            return gauss_x
+        elif self.defense_cls == 'random_noise':
+            noise = torch.randn_like(x) * self.noise_sigma
+            return x + noise 
+        elif self.defense_cls == 'laplace':
+            d = torch.distributions.laplace.Laplace(torch.zeros_like(x), self.noise_sigma * torch.ones_like(x))
+            return x + d.sample()
+        elif self.defense_cls == 'identical':
+            return x
+        raise ValueError
     def forward(self, hidden_states: torch.Tensor) -> torch.Tensor:
         # We "pool" the model by simply taking the hidden state corresponding
         # to the first token.
         first_token_tensor = hidden_states[:, 0]
+        if self.def_position == 'last_cls' and self.defense:
+            first_token_tensor = self.defense_token(first_token_tensor)
         pooled_output = self.dense(first_token_tensor)
         pooled_output = self.activation(pooled_output)
         return pooled_output
@@ -726,6 +752,7 @@ class BertModel(BertPreTrainedModel):
         if noise_sigma is not None:
             self.noise_sigma = noise_sigma
         self.encoder.change_defense(def_position,defense_cls,noise_sigma,defense)
+        self.pooler.change_defense(def_position,defense_cls,noise_sigma,defense)
         pass
     def get_input_embeddings(self):
         return self.embeddings.word_embeddings
@@ -936,10 +963,8 @@ class BertForSequenceClassification(BertPreTrainedModel):
             output_hidden_states=output_hidden_states,
             return_dict=return_dict,
         )
-
         pooled_output = outputs[1]
-        if self.def_position == 'last_cls' and self.defense:
-            pooled_output = self.defense_token(pooled_output)
+        
         pooled_output = self.dropout(pooled_output)
         logits = self.classifier(pooled_output)
         if self.def_position == 'logits' and self.defense:
@@ -1092,7 +1117,7 @@ if __name__ == "__main__":
     print(type(state))
 
     model.load_state_dict(state.state_dict())
-    tokens = tokenizer("This film is terrible. You don't really need to read this review further. If you are planning on watching it, suffice to say - don't (unless you are studying how not to make a good movie).<br /><br />The acting is horrendous... serious amateur hour. Throughout the movie I thought that it was interesting that they found someone who speaks and looks like Michael Madsen, only to find out that it is actually him! A new low even for him!!<br /><br />The plot is terrible. People who claim that it is original or good have probably never seen a decent movie before. Even by the standard of Hollywood action flicks, this is a terrible movie.<br /><br />Don't watch it!!! Go for a jog instead - at least you won't feel like killing yourself.",add_special_tokens=True,
+    tokens = tokenizer(["This film is terrible. You don't really need to read this review further. If you are planning on watching it, suffice to say - don't (unless you are studying how not to make a good movie).<br /><br />The acting is horrendous... serious amateur hour. Throughout the movie I thought that it was interesting that they found someone who speaks and looks like Michael Madsen, only to find out that it is actually him! A new low even for him!!<br /><br />The plot is terrible. People who claim that it is original or good have probably never seen a decent movie before. Even by the standard of Hollywood action flicks, this is a terrible movie.<br /><br />Don't watch it!!! Go for a jog instead - at least you won't feel like killing yourself.","This film is terrible. You don't really need to read this review further. If you are planning on watching it, suffice to say - don't (unless you are studying how not to make a good movie).<br /><br />The acting is horrendous... serious amateur hour. Throughout the movie I thought that it was interesting that they found someone who speaks and looks like Michael Madsen, only to find out that it is actually him! A new low even for him!!<br /><br />The plot is terrible. People who claim that it is original or good have probably never seen a decent movie before. Even by the standard of Hollywood action flicks, this is a terrible movie.<br /><br />Don't watch it!!! Go for a jog instead - at least you won't feel like killing yourself."],add_special_tokens=True,
             padding="max_length",
             max_length=512,
             truncation=True,
@@ -1102,11 +1127,24 @@ if __name__ == "__main__":
     print(state(tokens["input_ids"],tokens["token_type_ids"],tokens["attention_mask"]))
     print(output["logits"][0])
     
-    noise = ['random_noise', 'identical']
+    """noise = ['random_noise', 'identical']
     positions = [ 'input_noise', 'pre_att_cls', 'pre_att_all',"post_att_cls","post_att_all", 'last_cls', 'logits']
     for i in noise:
         for k in positions:
             print(i,k)
             model.change_defense(defense_cls=i,def_position=k,noise_sigma=1e-3,defense=True)
             output = model(tokens["input_ids"],tokens["token_type_ids"],tokens["attention_mask"])
-            print(output)
+            print(output)"""
+            
+    model.change_defense(defense_cls="random_noise",def_position="logits",noise_sigma=1e-3,defense=True)
+    output = model(tokens["input_ids"],tokens["token_type_ids"],tokens["attention_mask"])
+    print(output)
+    model.change_defense(defense_cls="random_noise",def_position="logits",noise_sigma=1e-2,defense=True)
+    output = model(tokens["input_ids"],tokens["token_type_ids"],tokens["attention_mask"])
+    print(output)
+    model.change_defense(defense_cls="random_noise",def_position="logits",noise_sigma=1e-1,defense=True)
+    output = model(tokens["input_ids"],tokens["token_type_ids"],tokens["attention_mask"])
+    print(output)
+    model.change_defense(defense_cls="random_noise",def_position="logits",noise_sigma=1,defense=True)
+    output = model(tokens["input_ids"],tokens["token_type_ids"],tokens["attention_mask"])
+    print(output)
