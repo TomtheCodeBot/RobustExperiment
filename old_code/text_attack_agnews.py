@@ -3,16 +3,13 @@ from typing import List, Dict
 import random
 from textattack.attack_recipes import (
     TextFoolerJin2019,
-    BERTAttackLi2020,
     HotFlipEbrahimi2017,
     DeepWordBugGao2018,
     TextBuggerLi2018,
 )
 from textattack.transformations import WordSwapEmbedding
 from textattack.constraints.semantics import WordEmbeddingDistance
-from textattack.constraints.semantics.sentence_encoders.universal_sentence_encoder import (
-    UniversalSentenceEncoder,
-)
+from textattack.constraints.semantics.sentence_encoders.universal_sentence_encoder import UniversalSentenceEncoder
 from textattack.constraints.overlap import MaxWordsPerturbed
 from textattack.goal_functions import UntargetedClassification
 from textattack.constraints.pre_transformation import (
@@ -90,16 +87,12 @@ def build_attacker(model, args):
         attacker = TextBuggerLi2018.build(model)
     elif args["attack_method"] == "deepwordbug":
         attacker = DeepWordBugGao2018.build(model)
-    elif args["attack_method"] == "bertattack":
-        attacker = BERTAttackLi2020.build(model)
     else:
         attacker = TextFoolerJin2019.build(model)
     if args["modify_ratio"] != 0:
         attacker.constraints.append(MaxWordsPerturbed(max_percent=args["modify_ratio"]))
     if args["consine_sim"] != 0:
-        attacker.constraints.append(
-            UniversalSentenceEncoder(threshold=args["consine_sim"], metric="cosine")
-        )
+        attacker.constraints.append(UniversalSentenceEncoder(threshold=args["consine_sim"],metric="cosine"))
     return attacker
 
 
@@ -188,7 +181,45 @@ if __name__ == "__main__":
     parser.add_argument("-dp", "--dataset_path", default="dataset/sst2")
     parser.add_argument("-sp", "--save_path", default="")
     args = parser.parse_args()
+    
+    vectorizer = CountVectorizer(stop_words="english",
+                            preprocessor=clean_text_imdb, 
+                            min_df=0)
 
-    train_data, test_data = load_train_test_imdb_data(
-        "/home/ubuntu/RobustExperiment/data/aclImdb"
-    )
+    sst2_dataset = datasets.load_dataset("ag_news")
+    train_data = sst2_dataset["train"]
+    test_data = sst2_dataset["test"]
+    training_features = vectorizer.fit_transform(train_data["text"])
+    training_labels = np.array(train_data["label"])
+    test_features = vectorizer.transform(test_data["text"])
+    test_labels = np.array(test_data["label"])
+    
+    tokenizer = AutoTokenizer.from_pretrained("textattack/bert-base-uncased-ag-news",use_fast=True)
+    model = AutoModelForSequenceClassification.from_pretrained("textattack/bert-base-uncased-ag-news")
+    BERT = HuggingFaceModelWrapper(model,tokenizer)
+    
+    model = LSTMForClassification.from_pretrained("lstm-ag-news")
+    LSTM = PyTorchModelWrapper(
+                        model, model.tokenizer
+                    )
+    
+    del training_features
+    del test_features
+    for i in range(0,3):
+        set_seed(i)
+        dataset = gen_dataset(test_data)
+        args.load_path=f"/home/ubuntu/RobustExperiment/text_attack_result/AGNEWS/{i}/"
+        args.attack_method="deepwordbug"
+        
+        attack(args,LSTM,"LSTM",dataset)
+        attack(args,BERT,"BERT",dataset)
+        
+        args.attack_method="textbugger"
+        
+        attack(args,LSTM,"LSTM",dataset)
+        attack(args,BERT,"BERT",dataset)
+        
+        args.attack_method="textfooler"
+        
+        attack(args,LSTM,"LSTM",dataset)
+        attack(args,BERT,"BERT",dataset)

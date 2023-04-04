@@ -143,16 +143,22 @@ if __name__=='__main__':
                             preprocessor=clean_text_imdb, 
                             min_df=0)
 
-    train_data , test_data = load_train_test_imdb_data("/home/ubuntu/RobustExperiment/data/aclImdb")
+    """train_data , test_data = load_train_test_imdb_data("/home/ubuntu/RobustExperiment/data/aclImdb")
     vectorizer = CountVectorizer(stop_words="english",
                                 preprocessor=clean_text_imdb, 
                                 min_df=0)
     training_features = vectorizer.fit_transform(train_data["text"])
     training_labels = train_data["label"]
     test_features = vectorizer.transform(test_data["text"])
-    test_labels = test_data["label"]
+    test_labels = test_data["label"]"""
+    sst2_dataset = datasets.load_dataset("ag_news")
+    train_data = sst2_dataset["train"]
+    test_data = sst2_dataset["test"]
+    training_features = vectorizer.fit_transform(train_data["text"])
+    training_labels = np.array(train_data["label"])
+    test_features = vectorizer.transform(test_data["text"])
+    test_labels = np.array(test_data["label"])
     
-
     """tokenizer = AutoTokenizer.from_pretrained("textattack/bert-base-uncased-imdb",use_fast=True)
     model = AutoModelForSequenceClassification.from_pretrained("textattack/bert-base-uncased-imdb")
     BERT = HuggingFaceModelWrapper(model,tokenizer)
@@ -164,7 +170,7 @@ if __name__=='__main__':
         y_pred_BERT.extend(torch.argmax(BERT(bert_input[i*batch:(i+1)*batch]),dim=-1).tolist())
     # Evaluation
     acc = accuracy_score(test_labels, y_pred_BERT)
-    print(f"IMDB BERT (no noise module): {acc*100:.2f}%")
+    print(f"AGNEWS BERT (no noise module): {acc*100:.2f}%")
     
     
     config = AutoConfig.from_pretrained("textattack/bert-base-uncased-imdb")
@@ -182,7 +188,7 @@ if __name__=='__main__':
         y_pred_BERT.extend(torch.argmax(BERT(bert_input[i*batch:(i+1)*batch]),dim=-1).tolist())
     # Evaluation
     acc = accuracy_score(test_labels, y_pred_BERT)
-    print(f"IMDB BERT (with noise module): {acc*100:.2f}%")
+    print(f"AGNEWS BERT (with noise module): {acc*100:.2f}%")
     
     
     sst2_dataset = datasets.load_dataset("ag_news")
@@ -193,7 +199,7 @@ if __name__=='__main__':
     test_features = vectorizer.transform(test_data["text"])
     test_labels = np.array(test_data["label"])
     """
-    tokenizer = AutoTokenizer.from_pretrained("textattack/bert-base-uncased-imdb",use_fast=True)
+    tokenizer = AutoTokenizer.from_pretrained("textattack/bert-base-uncased-ag-news",use_fast=True)
     batch = 100
     bert_input = list(test_data["text"])
     num_repetitions = 3
@@ -208,25 +214,25 @@ if __name__=='__main__':
         y_pred_BERT.extend(torch.argmax(BERT(bert_input[i*batch:(i+1)*batch]),dim=-1).tolist())
     # Evaluation
     acc = accuracy_score(test_labels, y_pred_BERT)
-    print(f"IMDB BERT (no noise module): {acc*100:.2f}%")
+    print(f"AGNEWS BERT (no noise module): {acc*100:.2f}%")
     """
     
-    config = AutoConfig.from_pretrained("textattack/bert-base-uncased-imdb")
+    config = AutoConfig.from_pretrained("textattack/bert-base-uncased-ag-news")
     model = BertForSequenceClassification(config)
-    state = AutoModelForSequenceClassification.from_pretrained("textattack/bert-base-uncased-imdb")
+    state = AutoModelForSequenceClassification.from_pretrained("textattack/bert-base-uncased-ag-news")
     model.load_state_dict(state.state_dict())
     model.eval()
     BERT = HuggingFaceModelWrapper(model,tokenizer)
     print("123")
-    BERT.to("cuda")
+    BERT.to("cuda:1")
     print("123")
     y_pred_BERT = []
     for i in tqdm(range(0,len(bert_input)//batch)):
         y_pred_BERT.extend(torch.argmax(BERT(bert_input[i*batch:(i+1)*batch]),dim=-1).tolist())
     # Evaluation
     acc = accuracy_score(test_labels, y_pred_BERT)
-    print(f"IMDB BERT (with noise module): {acc*100:.2f}%")
-    clean_accuracy["IMDB_BERT-WITH-0.1-SCALE"] = f"{acc*100:.2f}%"
+    print(f"AGNEWS BERT (with noise module): {acc*100:.2f}%")
+    clean_accuracy["AGNEWS_BERT-WITH-0.1-SCALE"] = f"{acc*100:.2f}%"
     """noise_position={
         'input_noise':[0.001,0.0025,0.005,0.01,0.025,0.05,0.1,0.25,0.5,1],
         'pre_att_cls':[0.001,0.0025,0.005,0.01,0.025,0.05,0.1,0.25,0.5,1],
@@ -247,7 +253,7 @@ if __name__=='__main__':
         'logits':[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1]
     }
     positions = [ 'pre_att_all',"post_att_all", 'last_cls', 'logits']
-    for repetitions in range(1,num_repetitions):
+    for repetitions in range(0,num_repetitions):
         for position in positions:
             for noise in noise_position[position]:
                 model.change_defense(defense_cls="random_noise",def_position=position,noise_sigma=noise,defense=True)
@@ -256,13 +262,13 @@ if __name__=='__main__':
                     y_pred_BERT.extend(torch.argmax(BERT(bert_input[i*batch:(i+1)*batch]),dim=-1).tolist())
                 # Evaluation
                 acc = accuracy_score(test_labels, y_pred_BERT)
-                print(f"IMDB_BERT-WITH-0.1-SCALE_{'random_noise'}_{position}_{str(noise)} = {acc*100:.2f}%")
-                clean_accuracy[f"IMDB_BERT-WITH-0.1-SCALE_{'random_noise'}_{position}_{str(noise)}"] = f"{acc*100:.2f}%"
+                print(f"AGNEWS_BERT-WITH-0.1-SCALE_{'random_noise'}_{position}_{str(noise)} = {acc*100:.2f}%")
+                clean_accuracy[f"AGNEWS_BERT-WITH-0.1-SCALE_{'random_noise'}_{position}_{str(noise)}"] = f"{acc*100:.2f}%"
                 print(clean_accuracy)
         
         # Serializing json
         json_object = json.dumps(clean_accuracy, indent=4)
         
         # Writing to sample.json
-        with open(f"IMDB_0.1_scale_clean_accuracy_{repetitions}.json", "w") as outfile:
+        with open(f"AGNEWS_0.1_scale_clean_accuracy_{repetitions}.json", "w") as outfile:
             outfile.write(json_object)

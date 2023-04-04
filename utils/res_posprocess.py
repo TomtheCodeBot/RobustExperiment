@@ -35,7 +35,7 @@ def process_text_result(path):
                     res_spec = {}
                     for spec in res[-9:]:
                         res_spec[spec.split(":")[0]] = spec.split(":")[1].replace("\n","")
-                model_name = j.split("-")[-1].split(".")[0]
+                model_name = ".".join(j.split("-")[-1].split(".")[:-1])
                 list_models.append(model_name)
                 model_results[model_name] = res_spec
             res_attack[k] = model_results
@@ -74,4 +74,4 @@ def process_text_result(path):
     pass
 
 if __name__ == '__main__':
-    process_text_result("/home/ubuntu/RobustExperiment/text_attack_result/test_RNB_with_logit/IMDB")
+    process_text_result("/home/ubuntu/RobustExperiment/noise_defense_attack_result/models_default_setting/AGNEWS")
