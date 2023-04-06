@@ -438,7 +438,6 @@ class BertLayer(nn.Module):
         # decoder uni-directional self-attention cached key/values tuple is at positions 1,2
         self_attn_past_key_value = past_key_value[:2] if past_key_value is not None else None
         if self.defense:
-            
             if self.def_position == 'pre_att_cls':
                 hidden_states[:, 0] = self.defense_token(hidden_states[:, 0])
             elif self.def_position == 'pre_att_all':
@@ -452,7 +451,6 @@ class BertLayer(nn.Module):
         )
         attention_output = self_attention_outputs[0]
         if self.defense:
-            
             if self.def_position == 'post_att_cls':
                 attention_output[:, 0] = self.defense_token(attention_output[:, 0])
             elif self.def_position == 'post_att_all':

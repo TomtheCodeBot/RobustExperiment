@@ -101,18 +101,16 @@ def build_attacker_from_textdefender(model: HuggingFaceModelWrapper,args) -> Att
     if args["attack_method"] in ['textfooler', 'pwws', 'textbugger', 'pso']:
         attacker.transformation = WordSwapEmbedding(max_candidates=args["k_neighbor"])
         for constraint in attacker.constraints:
-            if isinstance(constraint, WordEmbeddingDistance):
+            if isinstance(constraint, WordEmbeddingDistance) or isinstance(constraint, UniversalSentenceEncoder):
                 attacker.constraints.remove(constraint)
                 
     attacker.constraints.append(MaxWordsPerturbed(max_percent=args["modify_ratio"]))
     use_constraint = UniversalSentenceEncoder(
         threshold=args["similarity"],
-        metric="angular",
-        compare_against_original=False,
-        window_size=15,
-        skip_text_shorter_than_window=True,
+        metric="cosine"
     )
     attacker.constraints.append(use_constraint)
+    print(attacker.constraints)
     attacker.goal_function = UntargetedClassification(model, query_budget=args["k_neighbor"])
     return Attack(attacker.goal_function, attacker.constraints + attacker.pre_transformation_constraints,
                   attacker.transformation, attacker.search_method)
@@ -229,17 +227,17 @@ if __name__ == "__main__":
         model.eval()
         model.to("cuda")
         BERT = HuggingFaceModelWrapper(model, tokenizer)
-        noise_pos = { "pre_att_all": [ 0.1,0.2],"post_att_all": [ 0.1,0.2, 0.3]}
+        noise_pos = { "pre_att_all": [0.2],"post_att_all": [ 0.1,0.2, 0.3]}
         list_attacks = ["textbugger"]
         for i in range(0, 1):
             set_seed(i)
             dataset = gen_dataset(test_data)
             args.load_path = (
-                f"/home/ubuntu/RobustExperiment/noise_defense_attack_result/models_default_setting/IMDB/{i}/"
+                f"/home/ubuntu/RobustExperiment/noise_defense_attack_result/paper_default setting/IMDB/{i}/"
             )
             for attack_method in list_attacks:
                 args.attack_method = attack_method
-                attack(args, BERT, "BERT", dataset)
+                #attack(args, BERT, "BERT", dataset)
                 for key in noise_pos.keys():
                     for noise_intensity in noise_pos[key]:
                         model.change_defense(defense_cls="random_noise",def_position=key,noise_sigma=noise_intensity,defense=True)
