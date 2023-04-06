@@ -628,7 +628,7 @@ class RobertaPooler(nn.Module):
         # to the first token.
         first_token_tensor = hidden_states[:, 0]
         if self.def_position == 'last_cls' and self.defense:
-            print(last_cls)
+            print("last_cls")
             first_token_tensor = self.defense_token(first_token_tensor)
         pooled_output = self.dense(first_token_tensor)
         pooled_output = self.activation(pooled_output)

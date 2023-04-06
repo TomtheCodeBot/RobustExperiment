@@ -227,7 +227,7 @@ if __name__ == "__main__":
         model.eval()
         model.to("cuda")
         BERT = HuggingFaceModelWrapper(model, tokenizer)
-        noise_pos = { "pre_att_all": [ 0.1,0.2],"post_att_all": [ 0.1,0.2, 0.3]}
+        noise_pos = { "pre_att_all": [0.2],"post_att_all": [ 0.1,0.2, 0.3]}
         list_attacks = ["textbugger"]
         for i in range(0, 1):
             set_seed(i)
@@ -237,7 +237,7 @@ if __name__ == "__main__":
             )
             for attack_method in list_attacks:
                 args.attack_method = attack_method
-                attack(args, BERT, "BERT", dataset)
+                #attack(args, BERT, "BERT", dataset)
                 for key in noise_pos.keys():
                     for noise_intensity in noise_pos[key]:
                         model.change_defense(defense_cls="random_noise",def_position=key,noise_sigma=noise_intensity,defense=True)
