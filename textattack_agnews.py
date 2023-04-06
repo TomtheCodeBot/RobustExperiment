@@ -97,16 +97,13 @@ def build_attacker_from_textdefender(model: HuggingFaceModelWrapper,args) -> Att
     if args["attack_method"] in ['textfooler', 'pwws', 'textbugger', 'pso']:
         attacker.transformation = WordSwapEmbedding(max_candidates=args["k_neighbor"])
         for constraint in attacker.constraints:
-            if isinstance(constraint, WordEmbeddingDistance):
+            if isinstance(constraint, WordEmbeddingDistance) or isinstance(constraint, UniversalSentenceEncoder):
                 attacker.constraints.remove(constraint)
                 
     attacker.constraints.append(MaxWordsPerturbed(max_percent=args["modify_ratio"]))
     use_constraint = UniversalSentenceEncoder(
         threshold=args["similarity"],
-        metric="angular",
-        compare_against_original=False,
-        window_size=15,
-        skip_text_shorter_than_window=True,
+        metric="cosine"
     )
     attacker.constraints.append(use_constraint)
     print(attacker.constraints)
@@ -208,18 +205,9 @@ if __name__ == "__main__":
     parser.add_argument("-sm", "--similarity", default=0.84)
     parser.add_argument("-kn", "--k_neighbor", default=50)
     args = parser.parse_args()
-
-    vectorizer = CountVectorizer(
-        stop_words="english", preprocessor=clean_text_imdb, min_df=0
-    )
-
     sst2_dataset = datasets.load_dataset("ag_news")
     train_data = sst2_dataset["train"]
     test_data = sst2_dataset["test"]
-    training_features = vectorizer.fit_transform(train_data["text"])
-    training_labels = np.array(train_data["label"])
-    test_features = vectorizer.transform(test_data["text"])
-    test_labels = np.array(test_data["label"])
 
     tokenizer = AutoTokenizer.from_pretrained(
         "textattack/bert-base-uncased-ag-news", use_fast=True
@@ -238,18 +226,18 @@ if __name__ == "__main__":
         model.eval()
         model.to("cuda")
         BERT = HuggingFaceModelWrapper(model, tokenizer)
-        noise_pos = {"pre_att_all": [0.3]}
-        list_attacks = ["textfooler"]
+        noise_pos = {"pre_att_all": [0.2,0.3],"post_att_all": [0.2,0.3,0.4]}
+        list_attacks = ["bertattack"]
         for i in range(0, 1):
             set_seed(i)
             dataset = gen_dataset(test_data)
             args.load_path = (
-                f"/home/ubuntu/RobustExperiment/noise_defense_attack_result/models_default_setting/AGNEWS/{i}/"
+                f"/home/ubuntu/RobustExperiment/noise_defense_attack_result/paper_default setting/AGNEWS/{i}/"
             )
             print(BERT.model.device)
             for attack_method in list_attacks:
                 args.attack_method = attack_method
-                #attack(args, BERT, "BERT", dataset)
+                attack(args, BERT, "BERT", dataset)
                 for key in noise_pos.keys():
                     for noise_intensity in noise_pos[key]:
                         model.change_defense(defense_cls="random_noise",def_position=key,noise_sigma=noise_intensity,defense=True)
