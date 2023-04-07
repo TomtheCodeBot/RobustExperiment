@@ -437,8 +437,8 @@ class RobertaLayer(nn.Module):
             if self.def_position == 'post_att_cls':
                 print("post_att_cls")
                 attention_output[:, 0] = self.defense_token(attention_output[:, 0])
-                print("post_att_all")
             elif self.def_position == 'post_att_all':
+                print("post_att_all")
                 attention_output = self.defense_token(attention_output)
         # if decoder, the last output is tuple of self-attn cache
         if self.is_decoder:
@@ -757,7 +757,8 @@ class RobertaModel(RobertaPreTrainedModel):
 
         self.embeddings = RobertaEmbeddings(config)
         self.encoder = RobertaEncoder(config,def_position=None,defense_cls='identical',noise_sigma=1e-3,defense=False)
-
+        self.defense = False
+        self.def_position = None
         self.pooler = RobertaPooler(config) if add_pooling_layer else None
 
         # Initialize weights and apply final processing
@@ -772,7 +773,8 @@ class RobertaModel(RobertaPreTrainedModel):
         if noise_sigma is not None:
             self.noise_sigma = noise_sigma
         self.encoder.change_defense(def_position,defense_cls,noise_sigma,defense)
-        self.pooler.change_defense(def_position,defense_cls,noise_sigma,defense)
+        if self.pooler is not None:
+            self.pooler.change_defense(def_position,defense_cls,noise_sigma,defense)
         pass
     def defense_token(self, x):
         if self.defense_cls == 'gauss_filter':
@@ -1274,7 +1276,6 @@ class RobertaForSequenceClassification(RobertaPreTrainedModel):
         sequence_output = outputs[0]
         logits = self.classifier(sequence_output)
         if self.def_position == 'logits' and self.defense:
-            print('logits')
             logits = self.defense_token(logits)
         loss = None
         if labels is not None:
@@ -1318,7 +1319,7 @@ class RobertaForSequenceClassification(RobertaPreTrainedModel):
             self.noise_sigma = noise_sigma
         if defense is not None:
             self.defense = defense
-        self.bert.change_defense(def_position,defense_cls,noise_sigma,defense)
+        self.roberta.change_defense(def_position,defense_cls,noise_sigma,defense)
         pass
     @torch.no_grad()
     def defense_token(self, x):
@@ -1348,8 +1349,9 @@ if __name__ == "__main__":
             truncation=True,
             return_tensors="pt")
     model.eval()
-    output = model(tokens["input_ids"],tokens["token_type_ids"],tokens["attention_mask"])
-    print(state(tokens["input_ids"],tokens["token_type_ids"],tokens["attention_mask"]))
+    print(tokens)
+    output = model(**tokens)
+    print(state(**tokens))
     print(output["logits"][0])
     
     noise = ['random_noise', 'identical']
@@ -1358,18 +1360,18 @@ if __name__ == "__main__":
         for k in positions:
             print(i,k)
             model.change_defense(defense_cls=i,def_position=k,noise_sigma=1e-3,defense=True)
-            output = model(tokens["input_ids"],tokens["token_type_ids"],tokens["attention_mask"])
+            output = model(**tokens)
             print(output)
             
     model.change_defense(defense_cls="random_noise",def_position="logits",noise_sigma=1e-3,defense=True)
-    output = model(tokens["input_ids"],tokens["token_type_ids"],tokens["attention_mask"])
+    output = model(**tokens)
     print(output)
     model.change_defense(defense_cls="random_noise",def_position="logits",noise_sigma=1e-2,defense=True)
-    output = model(tokens["input_ids"],tokens["token_type_ids"],tokens["attention_mask"])
+    output = model(**tokens)
     print(output)
     model.change_defense(defense_cls="random_noise",def_position="logits",noise_sigma=1e-1,defense=True)
-    output = model(tokens["input_ids"],tokens["token_type_ids"],tokens["attention_mask"])
+    output = model(**tokens)
     print(output)
     model.change_defense(defense_cls="random_noise",def_position="logits",noise_sigma=1,defense=True)
-    output = model(tokens["input_ids"],tokens["token_type_ids"],tokens["attention_mask"])
+    output = model(**tokens)
     print(output)

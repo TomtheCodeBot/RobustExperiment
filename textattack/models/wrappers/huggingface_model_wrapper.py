@@ -59,7 +59,7 @@ class HuggingFaceModelWrapper(PyTorchModelWrapper):
 
         with torch.no_grad():
             outputs = self.model(**inputs_dict)
-
+        print(outputs)
         if isinstance(outputs[0], str):
             # HuggingFace sequence-to-sequence models return a list of
             # string predictions as output. In this case, return the full
@@ -69,6 +69,8 @@ class HuggingFaceModelWrapper(PyTorchModelWrapper):
             # HuggingFace classification models return a tuple as output
             # where the first item in the tuple corresponds to the list of
             # scores for each input.
+            if type(outputs)==tuple:
+                return outputs[0]
             return outputs.logits
 
     def get_grad(self, text_input):
