@@ -50,7 +50,6 @@ import datasets
 import numpy as np
 import os
 
-
 class CustomModelWrapper(PyTorchModelWrapper):
     def __init__(self, model, tokenizer):
         super(CustomModelWrapper, self).__init__(model, tokenizer)
@@ -227,8 +226,8 @@ if __name__ == "__main__":
         model.eval()
         model.to("cuda")
         BERT = HuggingFaceModelWrapper(model, tokenizer)
-        noise_pos = { "pre_att_all": [0.2],"post_att_all": [ 0.1,0.2, 0.3]}
-        list_attacks = ["textbugger"]
+        noise_pos = { "post_att_all": [ 0.1,0.2, 0.3]}
+        list_attacks = ["bertattack"]
         for i in range(0, 1):
             set_seed(i)
             dataset = gen_dataset(test_data)
