@@ -5,3 +5,4 @@ runs
 plot
 weights
 */__pycache__
+__pycache__/

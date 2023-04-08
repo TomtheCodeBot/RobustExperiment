@@ -32,7 +32,7 @@ class HuggingFaceModelEnsembleWrapper(PyTorchModelWrapper):
                  batch_size=24,
                  ensemble_num = 100,
                  ensemble_method = "logits"):
-        self.model = model.to(textattack.shared.utils.device)
+        self.model = model
         self.tokenizer = tokenizer
         self.batch_size = batch_size
         if training_type == 'dne':
@@ -81,7 +81,7 @@ class HuggingFaceModelEnsembleWrapper(PyTorchModelWrapper):
         assert isinstance(text_input_list, list)
         text_input_list = self.augment_sentences(text_input_list, self.ensemble_num)
         max_length = (
-            128
+            256
             if self.tokenizer.model_max_length == int(1e30)
             else self.tokenizer.model_max_length
         )
