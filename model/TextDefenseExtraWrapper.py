@@ -15,9 +15,9 @@ from textattack.models.wrappers import (
     SklearnModelWrapper,
     HuggingFaceModelWrapper,
 )
-def wrapping_model(model,tokenizer,training_type=None,model_type="bert"):
+def wrapping_model(model,tokenizer,training_type=None,model_type="bert",batch_size: int = 24):
     if training_type in ['dne', 'safer', 'mask']:
-           model_wrapper = HuggingFaceModelEnsembleWrapper(model,training_type, tokenizer)
+           model_wrapper = HuggingFaceModelEnsembleWrapper(model,training_type, tokenizer,batch_size=batch_size)
     elif model_type != 'lstm':
         model_wrapper = HuggingFaceModelWrapper(model, tokenizer)
     return model_wrapper
@@ -59,7 +59,7 @@ class HuggingFaceModelEnsembleWrapper(PyTorchModelWrapper):
         """
         model_device = next(self.model.parameters()).device
         inputs.to(model_device)
-        
+
         outputs = self.model(**inputs)
 
         if isinstance(outputs[0], str):
@@ -92,7 +92,7 @@ class HuggingFaceModelEnsembleWrapper(PyTorchModelWrapper):
             while i < len(text_input_list):
                 batch = text_input_list[i : i + self.batch_size]
                 ids = self.tokenizer(
-                    text_input_list,
+                    batch,
                     add_special_tokens=True,
                     padding="max_length",
                     max_length=max_length,

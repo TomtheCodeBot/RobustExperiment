@@ -59,7 +59,6 @@ class HuggingFaceModelWrapper(PyTorchModelWrapper):
 
         with torch.no_grad():
             outputs = self.model(**inputs_dict)
-        print(outputs)
         if isinstance(outputs[0], str):
             # HuggingFace sequence-to-sequence models return a list of
             # string predictions as output. In this case, return the full

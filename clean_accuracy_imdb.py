@@ -8,6 +8,8 @@ from textattack.attack_recipes import (
     DeepWordBugGao2018,
     TextBuggerLi2018,
 )
+from sklearn.metrics import accuracy_score
+
 from textattack.transformations import WordSwapEmbedding
 from textattack.constraints.semantics import WordEmbeddingDistance
 from textattack.constraints.semantics.sentence_encoders.universal_sentence_encoder import (
@@ -41,6 +43,7 @@ from textattack.models.wrappers import (
     SklearnModelWrapper,
     HuggingFaceModelWrapper,
 )
+from tqdm import tqdm
 from textattack.models.helpers import LSTMForClassification
 import torch
 import argparse
@@ -49,7 +52,8 @@ from textattack.datasets import Dataset
 import datasets
 import numpy as np
 import os
-
+import model
+from model.TextDefenseExtraWrapper import wrapping_model
 class CustomModelWrapper(PyTorchModelWrapper):
     def __init__(self, model, tokenizer):
         super(CustomModelWrapper, self).__init__(model, tokenizer)
@@ -208,37 +212,36 @@ if __name__ == "__main__":
     parser.add_argument("-kn", "--k_neighbor", default=50)
     args = parser.parse_args()
 
+    batch=50
+    train_data , test_data = load_train_test_imdb_data("/home/ubuntu/RobustExperiment/data/aclImdb")
+    test_labels = np.array(test_data["label"])
+    device = "cuda"
+    tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased",use_fast=True)
+    
+    ascc_model = model.TextDefense_model_builder("bert","bert-base-uncased","ascc",device)
+    load_path = "/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/tmd_ckpts/TextDefender/saved_models/imdb_bert/ascc-len256-epo10-batch32-best.pth"
+    print(ascc_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
+    ascc_model.to("cuda")
+    ascc_model = wrapping_model(ascc_model,tokenizer,"ascc")
+    
+    bert_input = list(test_data["text"])
+    y_pred_BERT = []
+    for i in tqdm(range(0,len(bert_input)//batch)):
+        y_pred_BERT.extend(torch.argmax(torch.tensor(ascc_model(bert_input[i*batch:(i+1)*batch])),dim=-1).tolist())
+    acc = accuracy_score(test_labels, y_pred_BERT)
+    print(f"IMDB BERT DNE: {acc*100:.2f}%")
+    
+    dne_model = model.TextDefense_model_builder("bert","bert-base-uncased","dne",device)
+    load_path = "/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/tmd_ckpts/TextDefender/saved_models/imdb_bert/dne-len256-epo10-batch32-best.pth"
+    print(dne_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
+    dne_model = wrapping_model(dne_model,tokenizer,"dne",batch_size=batch)
+    
+    bert_input = list(test_data["text"])
+    y_pred_BERT = []
+    for i in tqdm(range(0,len(bert_input)//batch)):
+        y_pred_BERT.extend(torch.argmax(torch.tensor(dne_model(bert_input[i*batch:(i+1)*batch])),dim=-1).tolist())
+    acc = accuracy_score(dne_model, y_pred_BERT)
+    print(f"IMDB BERT DNE: {acc*100:.2f}%")
+    
+    
 
-    train_data, test_data = load_train_test_imdb_data(
-        "/home/ubuntu/RobustExperiment/data/aclImdb"
-    )
-
-    tokenizer = AutoTokenizer.from_pretrained(
-        "textattack/bert-base-uncased-imdb", use_fast=True
-    )
-    config = AutoConfig.from_pretrained("textattack/bert-base-uncased-imdb")
-    model = BertForSequenceClassification(config)
-    state = AutoModelForSequenceClassification.from_pretrained(
-        "textattack/bert-base-uncased-imdb"
-    )
-    with torch.no_grad():
-        model.load_state_dict(state.state_dict())
-        model.eval()
-        model.to("cuda")
-        BERT = HuggingFaceModelWrapper(model, tokenizer)
-        noise_pos = { "post_att_all": [ 0.1,0.2, 0.3]}
-        list_attacks = ["bertattack"]
-        for i in range(0, 1):
-            set_seed(i)
-            dataset = gen_dataset(test_data)
-            args.load_path = (
-                f"/home/ubuntu/RobustExperiment/noise_defense_attack_result/paper_default setting/IMDB/{i}/"
-            )
-            for attack_method in list_attacks:
-                args.attack_method = attack_method
-                #attack(args, BERT, "BERT", dataset)
-                for key in noise_pos.keys():
-                    for noise_intensity in noise_pos[key]:
-                        model.change_defense(defense_cls="random_noise",def_position=key,noise_sigma=noise_intensity,defense=True)
-                        attack(args, BERT, f"BERT_{key}_{noise_intensity}", dataset)
-                model.change_defense(defense=False)
