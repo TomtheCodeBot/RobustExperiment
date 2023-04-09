@@ -212,14 +212,16 @@ if __name__ == "__main__":
     parser.add_argument("-kn", "--k_neighbor", default=50)
     args = parser.parse_args()
 
-    batch=50
-    train_data , test_data = load_train_test_imdb_data("/home/ubuntu/RobustExperiment/data/aclImdb")
+    batch=10
+    sst2_dataset = datasets.load_dataset("imdb")
+    train_data = sst2_dataset["train"]
+    test_data = sst2_dataset["test"]    
     test_labels = np.array(test_data["label"])
     device = "cuda"
     tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased",use_fast=True)
     
-    ascc_model = model.TextDefense_model_builder("bert","bert-base-uncased","ascc",device)
-    load_path = "/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/tmd_ckpts/TextDefender/saved_models/imdb_bert/ascc-len256-epo10-batch32-best.pth"
+    """ascc_model = model.TextDefense_model_builder("bert","bert-base-uncased","ascc",device)
+    load_path = "model/weights/tmd_ckpts/TextDefender/saved_models/imdb_bert/ascc-len256-epo10-batch32-best.pth"
     print(ascc_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
     ascc_model.to("cuda")
     ascc_model = wrapping_model(ascc_model,tokenizer,"ascc")
@@ -229,10 +231,10 @@ if __name__ == "__main__":
     for i in tqdm(range(0,len(bert_input)//batch)):
         y_pred_BERT.extend(torch.argmax(torch.tensor(ascc_model(bert_input[i*batch:(i+1)*batch])),dim=-1).tolist())
     acc = accuracy_score(test_labels, y_pred_BERT)
-    print(f"IMDB BERT DNE: {acc*100:.2f}%")
+    print(f"IMDB BERT DNE: {acc*100:.2f}%")"""
     
     dne_model = model.TextDefense_model_builder("bert","bert-base-uncased","dne",device)
-    load_path = "/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/tmd_ckpts/TextDefender/saved_models/imdb_bert/dne-len256-epo10-batch32-best.pth"
+    load_path = "/home/khoa/duyhc/RobustExperiment/model/weights/tmd_ckpts/TextDefender/saved_models/imdb_bert/dne-len256-epo10-batch32-best.pth"
     print(dne_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
     dne_model = wrapping_model(dne_model,tokenizer,"dne",batch_size=batch)
     
@@ -240,7 +242,7 @@ if __name__ == "__main__":
     y_pred_BERT = []
     for i in tqdm(range(0,len(bert_input)//batch)):
         y_pred_BERT.extend(torch.argmax(torch.tensor(dne_model(bert_input[i*batch:(i+1)*batch])),dim=-1).tolist())
-    acc = accuracy_score(dne_model, y_pred_BERT)
+    acc = accuracy_score(test_labels, y_pred_BERT)
     print(f"IMDB BERT DNE: {acc*100:.2f}%")
     
     

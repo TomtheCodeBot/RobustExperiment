@@ -223,9 +223,7 @@ if __name__=='__main__':
     model.load_state_dict(state.state_dict())
     model.eval()
     BERT = HuggingFaceModelWrapper(model,tokenizer)
-    print("123")
-    BERT.to("cuda:1")
-    print("123")
+    BERT.to("cuda")
     y_pred_BERT = []
     for i in tqdm(range(0,len(bert_input)//batch)):
         y_pred_BERT.extend(torch.argmax(BERT(bert_input[i*batch:(i+1)*batch]),dim=-1).tolist())

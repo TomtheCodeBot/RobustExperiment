@@ -4,7 +4,7 @@ import torch
 import string
 import pickle
 from typing import Union, Dict
-
+import json
 
 class WordSubstitude:
     def __init__(self, table: Union[str, Dict]):
@@ -12,9 +12,12 @@ class WordSubstitude:
         table: str or Dict, when type(table) is string, mean path, using pickle to load.
         '''
         if isinstance(table, str):
-            pkl_file = open(table, 'rb')
-            self.table = pickle.load(pkl_file)
-            pkl_file.close()
+            if table.split(".")[-1]=="pkl":
+                pkl_file = open(table, 'rb')
+                self.table = pickle.load(pkl_file)
+                pkl_file.close()
+            else:
+                self.table = json.load(open(table))
         else:
             self.table = table
         self.table_key = set(list(self.table.keys()))
@@ -36,8 +39,11 @@ class WordSubstitude:
 
     def sample_from_table(self, word):
         if word in self.table_key:
-            tem_words = self.table[word]['set']
+            #tem_words = self.table[word]['set']
+            tem_words = self.table[word]
             num_words = len(tem_words)
+            if num_words==0:
+                return word
             index = np.random.randint(0, num_words)
             return tem_words[index]
         else:

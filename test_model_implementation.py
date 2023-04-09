@@ -49,17 +49,18 @@ import model
 from model.TextDefenseExtraWrapper import wrapping_model 
 if __name__ == "__main__":
     tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased",use_fast=True)
-    print(tokenizer("AHSHFASDASDASDASDSDASDAS"))
-    dne_model = model.TextDefense_model_builder("bert","bert-base-uncased","dne")
-    load_path = "/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/tmd_ckpts/TextDefender/saved_models/imdb_bert/dne-len256-epo10-batch32-best.pth"
+    dne_model = model.TextDefense_model_builder("bert","bert-base-uncased","dne",)
+    load_path = "model/weights/tmd_ckpts/TextDefender/saved_models/imdb_bert/dne-len256-epo10-batch32-best.pth"
     print(dne_model.load_state_dict(torch.load(load_path,map_location = 'cpu'), strict=False))
     dne_model = wrapping_model(dne_model,tokenizer,"dne")
     print(dne_model(["helllooooo my god man I hope this work"]))
     dne_model = model.TextDefense_model_builder("bert","bert-base-uncased","ascc")
-    load_path = "/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/tmd_ckpts/TextDefender/saved_models/imdb_bert/ascc-len256-epo10-batch32-best.pth"
+    load_path = "model/weights/tmd_ckpts/TextDefender/saved_models/imdb_bert/ascc-len256-epo10-batch32-best.pth"
     print(dne_model.load_state_dict(torch.load(load_path,map_location = 'cpu'), strict=False))
     dne_model = wrapping_model(dne_model,tokenizer,"ascc")
     print(dne_model(["helllooooo my god man I hope this work"]))
     dne_model = model.TextDefense_model_builder("bert","bert-base-uncased","safer")
-    load_path = "/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/tmd_ckpts/TextDefender/saved_models/imdb_bert/safer-len256-epo10-batch32-best.pth"
+    load_path = "model/weights/tmd_ckpts/TextDefender/saved_models/imdb_bert/safer-len256-epo10-batch32-best.pth"
     print(dne_model.load_state_dict(torch.load(load_path,map_location = 'cpu'), strict=False))
+    dne_model = wrapping_model(dne_model,tokenizer,"safer")
+    print(dne_model(["helllooooo my god man I hope this work"]))

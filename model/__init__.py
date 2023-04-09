@@ -383,10 +383,10 @@ class ASCCModel(BertPreTrainedModel, nn.Module):
         self.num_steps = num_steps
 
     def forward(self, input_ids, attention_mask, token_type_ids):
-        # clean_outputs = self.bert(input_ids, attention_mask, token_type_ids)
-        # pooled_clean_output = self.dropout(clean_outputs[1])
-        # clean_logits = self.classifier(pooled_clean_output)
-        # return clean_logits, clean_logits
+        clean_outputs = self.bert(input_ids, attention_mask, token_type_ids)
+        pooled_clean_output = self.dropout(clean_outputs[1])
+        clean_logits = self.classifier(pooled_clean_output)
+        return clean_logits, clean_logits
 
         # 0 initialize w for neighbor weightings
         batch_size, text_len = input_ids.shape
