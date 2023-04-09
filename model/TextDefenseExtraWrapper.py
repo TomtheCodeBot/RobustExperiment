@@ -32,9 +32,10 @@ class HuggingFaceModelEnsembleWrapper(PyTorchModelWrapper):
                  batch_size=24,
                  ensemble_num = 100,
                  ensemble_method = "logits"):
-        self.model = model.to(textattack.shared.utils.device)
+        self.model = model
         self.tokenizer = tokenizer
         self.batch_size = batch_size
+        self.device = next(self.model.parameters()).device
         if training_type == 'dne':
             self.ensemble_num = 12
         else:
@@ -57,9 +58,9 @@ class HuggingFaceModelEnsembleWrapper(PyTorchModelWrapper):
         """Turn a list of dicts into a dict of lists.
         Then make lists (values of dict) into tensors.
         """
-        model_device = next(self.model.parameters()).device
-        inputs.to(model_device)
 
+        
+        inputs.to(self.device)
         outputs = self.model(**inputs)
 
         if isinstance(outputs[0], str):
@@ -81,11 +82,10 @@ class HuggingFaceModelEnsembleWrapper(PyTorchModelWrapper):
         assert isinstance(text_input_list, list)
         text_input_list = self.augment_sentences(text_input_list, self.ensemble_num)
         max_length = (
-            128
+            256
             if self.tokenizer.model_max_length == int(1e30)
             else self.tokenizer.model_max_length
         )
-        
         with torch.no_grad():
             outputs = []
             i = 0
@@ -99,25 +99,25 @@ class HuggingFaceModelEnsembleWrapper(PyTorchModelWrapper):
                     return_tensors="pt",
                     truncation=True,
                 )
-                
                 batch_preds = self._model_predict(ids)
-
-                # Some seq-to-seq models will return a single string as a prediction
-                # for a single-string list. Wrap these in a list.
-                if isinstance(batch_preds, str):
-                    batch_preds = [batch_preds]
-
-                # Get PyTorch tensors off of other devices.
+                
+                #if isinstance(batch_preds, str):
+                #    batch_preds = [batch_preds]
+                ## Get PyTorch tensors off of other devices.
                 if isinstance(batch_preds, torch.Tensor):
-                    batch_preds = batch_preds.cpu()
-
-                # Cast all predictions iterables to ``np.ndarray`` types.
-                if not isinstance(batch_preds, np.ndarray):
-                    batch_preds = np.array(batch_preds)
+                    batch_preds = batch_preds.cpu().detach()
+                ## Cast all predictions iterables to ``np.ndarray`` types.
+                #if not isinstance(batch_preds, np.ndarray):
+                #    batch_preds = np.array(batch_preds)
+                    
                 outputs.append(batch_preds)
+                
                 i += self.batch_size
+        outputs = torch.cat(outputs)
 
-        outputs = np.concatenate(outputs, axis=0)
+        # Cast all predictions iterables to ``np.ndarray`` types.
+        if not isinstance(outputs, np.ndarray):
+            outputs = np.array(outputs)
         label_nums = outputs.shape[1]
         ensemble_logits_for_each_input = np.split(outputs, indices_or_sections=len(text_input_list) / self.ensemble_num,
                                                   axis=0)
