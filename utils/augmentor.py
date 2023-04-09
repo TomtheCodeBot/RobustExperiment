@@ -32,7 +32,7 @@ TEXTFOOLER_SET = set(
             )
 
 class Augmentor(object):
-    def __init__(self, training_type,safer_aug_set=None):
+    def __init__(self, training_type,safer_aug_set="model/weights/counter_fittted_neighbors.json"):
         self.training_type = training_type
         self.mask_token = '[MASK]'
         self.safer_aug_set = safer_aug_set
