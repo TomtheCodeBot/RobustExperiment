@@ -188,9 +188,9 @@ def attack(args, wrapper, name, dataset):
 def gen_dataset(instances):
     test_instances = instances
     test_dataset = []
-    for instance in range(len(test_instances)):
+    for instance in iter(test_instances):
         test_dataset.append(
-            (test_instances["text"][instance], int(test_instances["label"][instance]))
+            (instance["text"], int(instance["label"]))
         )
     dataset = Dataset(test_dataset, shuffle=True)
     return dataset
@@ -227,6 +227,10 @@ if __name__ == "__main__":
     #model.eval()
     #BERT = HuggingFaceModelWrapper(model, tokenizer)
     
+    tokenizer = AutoTokenizer.from_pretrained(
+        "bert-base-uncased", use_fast=True
+    )
+    
     device = "cuda"
     ascc_model = model_lib.TextDefense_model_builder("bert","bert-base-uncased","ascc",device)
     load_path = "model/weights/tmd_ckpts/TextDefender/saved_models/imdb_bert/ascc-len256-epo10-batch32-best.pth"
@@ -237,8 +241,8 @@ if __name__ == "__main__":
     with torch.no_grad():
         
         noise_pos = { "post_att_all": [ 0.1,0.2, 0.3]}
-        list_attacks = ["textbugger","bertattack"]
-        for i in range(0, 1):
+        list_attacks = ["textfooler","textbugger","bertattack"]
+        for i in range(1, 2):
             set_seed(i)
             dataset = gen_dataset(test_data)
             args.load_path = (

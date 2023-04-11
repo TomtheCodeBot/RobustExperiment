@@ -20,6 +20,7 @@ from textattack.transformations import WordSwapEmbedding, WordSwapWordNet, WordS
 from utils.dataloader import load_train_test_imdb_data
 
 from model.BERTNoiseDefend import BertForSequenceClassification
+from model.RoBERTaNoiseDefend import RobertaForSequenceClassification
 
 from transformers import AutoModelForSequenceClassification, AutoTokenizer, AutoConfig
 from utils.preprocessing import clean_text_imdb
@@ -185,9 +186,9 @@ def attack(args, wrapper, name, dataset):
 def gen_dataset(instances):
     test_instances = instances
     test_dataset = []
-    for instance in range(len(test_instances)):
+    for instance in iter(test_instances):
         test_dataset.append(
-            (test_instances["text"][instance], int(test_instances["label"][instance]))
+            (instance["text"], int(instance["label"]))
         )
     dataset = Dataset(test_dataset, shuffle=True)
     return dataset
@@ -213,6 +214,10 @@ if __name__ == "__main__":
     tokenizer = AutoTokenizer.from_pretrained(
         "textattack/bert-base-uncased-ag-news", use_fast=True
     )
+    
+    tokenizer_roberta = AutoTokenizer.from_pretrained(
+        "textattack/roberta-base-ag-news", use_fast=True
+    )
     device = "cuda"
     
     #config = AutoConfig.from_pretrained("textattack/bert-base-uncased-ag-news")
@@ -231,15 +236,26 @@ if __name__ == "__main__":
     #ascc_model.to("cuda")
     #BERT_ASCC = wrapping_model(ascc_model,tokenizer,"ascc")
 
-    dne_model = model_lib.TextDefense_model_builder("bert","bert-base-uncased","dne",device,dataset_name="agnews")
-    load_path = "/home/khoa/duyhc/RobustExperiment/model/weights/tmd_ckpts/TextDefender/saved_models/agnews_bert/dne-len128-epo10-batch32-best.pth"
-    print(dne_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
-    BERT_DNE = wrapping_model(dne_model,tokenizer,"dne")
+    #dne_model = model_lib.TextDefense_model_builder("bert","bert-base-uncased","dne",device,dataset_name="agnews")
+    #load_path = "/home/khoa/duyhc/RobustExperiment/model/weights/tmd_ckpts/TextDefender/saved_models/agnews_bert/dne-len128-epo10-batch32-best.pth"
+    #print(dne_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
+    #BERT_DNE = wrapping_model(dne_model,tokenizer,"dne")
+    
+    config = AutoConfig.from_pretrained("textattack/roberta-base-ag-news")
+    model = RobertaForSequenceClassification(config)
+    state = AutoModelForSequenceClassification.from_pretrained(
+        "textattack/roberta-base-ag-news"
+    )
+    model.load_state_dict(state.state_dict())
+    model.to("cuda")
+    model.eval()
+    ROBERTA = HuggingFaceModelWrapper(model, tokenizer)
     
     with torch.no_grad():
         
         
         noise_pos = {"pre_att_all": [0.2,0.3],"post_att_all": [0.2,0.3,0.4]}
+        noise_pos_roberta = {"pre_att_all": [0.2],"post_att_all": [0.3,0.4]}
         list_attacks = ["textfooler","textbugger","bertattack"]
         for i in range(0, 1):
             set_seed(i)
@@ -256,4 +272,11 @@ if __name__ == "__main__":
                 #        attack(args, BERT, f"BERT_{key}_{noise_intensity}", dataset)
                 #model.change_defense(defense=False)
                 #attack(args, BERT_ASCC, "BERT_ASCC", dataset)
-                attack(args, BERT_DNE, "BERT_DNE", dataset)
+                #attack(args, BERT_DNE, "BERT_DNE", dataset)
+                
+                attack(args, ROBERTA, "ROBERTA", dataset)
+                for key in noise_pos_roberta.keys():
+                    for noise_intensity in noise_pos_roberta[key]:
+                        model.change_defense(defense_cls="random_noise",def_position=key,noise_sigma=noise_intensity,defense=True)
+                        attack(args, ROBERTA, f"BERT_{key}_{noise_intensity}", dataset)
+                model.change_defense(defense=False)
