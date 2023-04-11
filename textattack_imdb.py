@@ -217,27 +217,27 @@ if __name__ == "__main__":
     tokenizer = AutoTokenizer.from_pretrained(
         "textattack/bert-base-uncased-imdb", use_fast=True
     )
-    #config = AutoConfig.from_pretrained("textattack/bert-base-uncased-imdb")
-    #model = BertForSequenceClassification(config)
-    #state = AutoModelForSequenceClassification.from_pretrained(
-    #    "textattack/bert-base-uncased-imdb"
-    #)
-    #model.load_state_dict(state.state_dict())
-    #model.to("cuda")
-    #model.eval()
-    #BERT = HuggingFaceModelWrapper(model, tokenizer)
+    config = AutoConfig.from_pretrained("textattack/bert-base-uncased-imdb")
+    model = BertForSequenceClassification(config)
+    state = AutoModelForSequenceClassification.from_pretrained(
+        "textattack/bert-base-uncased-imdb"
+    )
+    model.load_state_dict(state.state_dict())
+    model.to("cuda")
+    model.eval()
+    BERT = HuggingFaceModelWrapper(model, tokenizer)
     
-    device = "cuda"
-    ascc_model = model_lib.TextDefense_model_builder("bert","bert-base-uncased","ascc",device)
-    load_path = "model/weights/tmd_ckpts/TextDefender/saved_models/imdb_bert/ascc-len256-epo10-batch32-best.pth"
-    print(ascc_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
-    ascc_model.to("cuda")
-    BERT_ASCC = wrapping_model(ascc_model,tokenizer,"ascc")
+    #device = "cuda"
+    #ascc_model = model_lib.TextDefense_model_builder("bert","bert-base-uncased","ascc",device)
+    #load_path = "model/weights/tmd_ckpts/TextDefender/saved_models/imdb_bert/ascc-len256-epo10-batch32-best.pth"
+    #print(ascc_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
+    #ascc_model.to("cuda")
+    #BERT_ASCC = wrapping_model(ascc_model,tokenizer,"ascc")
     
     with torch.no_grad():
         
-        noise_pos = { "post_att_all": [ 0.1,0.2, 0.3]}
-        list_attacks = ["textbugger","bertattack"]
+        noise_pos = { "post_att_all": [0.2, 0.3]}
+        list_attacks = ["bertattack"]
         for i in range(0, 1):
             set_seed(i)
             dataset = gen_dataset(test_data)
@@ -247,9 +247,9 @@ if __name__ == "__main__":
             for attack_method in list_attacks:
                 args.attack_method = attack_method
                 #attack(args, BERT, "BERT", dataset)
-                #for key in noise_pos.keys():
-                #    for noise_intensity in noise_pos[key]:
-                #        model.change_defense(defense_cls="random_noise",def_position=key,noise_sigma=noise_intensity,defense=True)
-                #        attack(args, BERT, f"BERT_{key}_{noise_intensity}", dataset)
-                #model.change_defense(defense=False)
-                attack(args, BERT_ASCC, "BERT_ASCC", dataset)
+                for key in noise_pos.keys():
+                    for noise_intensity in noise_pos[key]:
+                        model.change_defense(defense_cls="random_noise",def_position=key,noise_sigma=noise_intensity,defense=True)
+                        attack(args, BERT, f"BERT_{key}_{noise_intensity}", dataset)
+                model.change_defense(defense=False)
+                #attack(args, BERT_ASCC, "BERT_ASCC", dataset)
