@@ -215,6 +215,7 @@ if __name__ == "__main__":
     parser.add_argument("-kn", "--k_neighbor", default=50)
     args = parser.parse_args()
 
+
     batch=100
     train_data, test_data = load_train_test_imdb_data(
         "data/aclImdb"
@@ -251,6 +252,7 @@ if __name__ == "__main__":
     
     clean_accuracy={}
     num_repetitions = 3
+
     tokenizer = AutoTokenizer.from_pretrained("textattack/roberta-base-imdb",use_fast=True)
     config = AutoConfig.from_pretrained("textattack/roberta-base-imdb")
     model = RobertaForSequenceClassification(config)
@@ -303,6 +305,7 @@ if __name__ == "__main__":
         json_object = json.dumps(clean_accuracy, indent=4)
         
         # Writing to sample.json
-        with open(f"IMDB_RoBERTa_0.1_scale_clean_accuracy_{repetitions}.json", "w") as outfile:
+        with open(f"IMDB_RoBERTa_clean_accuracy_{repetitions}.json", "w") as outfile:
+
             outfile.write(json_object)
 

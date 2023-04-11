@@ -420,10 +420,8 @@ class RobertaLayer(nn.Module):
         self_attn_past_key_value = past_key_value[:2] if past_key_value is not None else None
         if self.defense:
             if self.def_position == 'pre_att_cls':
-                print("pre_att_cls")
                 hidden_states[:, 0] = self.defense_token(hidden_states[:, 0])
             elif self.def_position == 'pre_att_all':
-                print("pre_att_all")
                 hidden_states = self.defense_token(hidden_states)
         self_attention_outputs = self.attention(
             hidden_states,
@@ -435,10 +433,8 @@ class RobertaLayer(nn.Module):
         attention_output = self_attention_outputs[0]
         if self.defense:
             if self.def_position == 'post_att_cls':
-                print("post_att_cls")
                 attention_output[:, 0] = self.defense_token(attention_output[:, 0])
             elif self.def_position == 'post_att_all':
-                print("post_att_all")
                 attention_output = self.defense_token(attention_output)
         # if decoder, the last output is tuple of self-attn cache
         if self.is_decoder:
@@ -628,7 +624,6 @@ class RobertaPooler(nn.Module):
         # to the first token.
         first_token_tensor = hidden_states[:, 0]
         if self.def_position == 'last_cls' and self.defense:
-            print("last_cls")
             first_token_tensor = self.defense_token(first_token_tensor)
         pooled_output = self.dense(first_token_tensor)
         pooled_output = self.activation(pooled_output)

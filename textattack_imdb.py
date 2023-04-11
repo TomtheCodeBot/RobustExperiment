@@ -188,9 +188,9 @@ def attack(args, wrapper, name, dataset):
 def gen_dataset(instances):
     test_instances = instances
     test_dataset = []
-    for instance in range(len(test_instances)):
+    for instance in iter(test_instances):
         test_dataset.append(
-            (test_instances["text"][instance], int(test_instances["label"][instance]))
+            (instance["text"], int(instance["label"]))
         )
     dataset = Dataset(test_dataset, shuffle=True)
     return dataset
