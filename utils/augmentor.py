@@ -36,8 +36,8 @@ class Augmentor(object):
         self.training_type = training_type
         self.mask_token = '[MASK]'
         self.safer_aug_set = safer_aug_set
-        if self.safer_aug_set is not  None:
-            self.aug = WordSubstitude(self.safer_aug_set)
+        #if self.safer_aug_set is not  None:
+        #    self.aug = WordSubstitude(self.safer_aug_set)
 
     def augment(self, sentence: str, n: int) -> List[str]:
         if self.training_type == 'mask':

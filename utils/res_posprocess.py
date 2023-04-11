@@ -40,7 +40,6 @@ def process_text_result(path):
                 model_results[model_name] = res_spec
             res_attack[k] = model_results
         res_dict[i] = res_attack
-    print(res_dict)
     list_models = list(set(list_models))
     list_attacks = list(set(list_attacks))
     final_res = {}
@@ -53,15 +52,17 @@ def process_text_result(path):
                     all_model_res.append(res_dict[k][i][j])
             num = len(all_model_res)
             mold_res ={}
-            for k in all_model_res[1].keys():
+            print(j)
+            print(all_model_res)
+            for k in all_model_res[0].keys():
                 total_value = 0
                 for l in range(num):
-                    if "%" in all_model_res[l][k]:
+                    if "%" in all_model_res[0][k]:
                         total_value+=float(all_model_res[l][k].split("%")[0])
                     else:
                         total_value+=float(all_model_res[l][k])
                 mold_result = "{:.2f}".format(total_value/num)
-                if "%" in all_model_res[1][k]:
+                if "%" in all_model_res[0][k]:
                     mold_result+="%"
                 mold_res[k] = mold_result
             model_attack_res[j] = mold_res
@@ -74,4 +75,4 @@ def process_text_result(path):
     pass
 
 if __name__ == '__main__':
-    process_text_result("/home/ubuntu/RobustExperiment/noise_defense_attack_result/models_default_setting/AGNEWS")
+    process_text_result("/home/ubuntu/RobustExperiment/noise_defense_attack_result/paper_default setting/AGNEWS")

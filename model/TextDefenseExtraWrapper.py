@@ -43,7 +43,7 @@ class HuggingFaceModelEnsembleWrapper(PyTorchModelWrapper):
 
         self.ensemble_method = ensemble_method
         self.augmenter = Augmentor(training_type)
-        
+        self.max_length = 128
     def _augment_sentence(self, sentence, ensemble_num) -> List[str]:
         return self.augmenter.augment(sentence, n=ensemble_num)
 
@@ -51,18 +51,32 @@ class HuggingFaceModelEnsembleWrapper(PyTorchModelWrapper):
         ret_list = list()
         for sen in sentences:
             ret_list.extend(self._augment_sentence(sen, ensemble_num))
-
         return ret_list
+    def encode(self, inputs):
+        """Helper method that calls ``tokenizer.batch_encode`` if possible, and
+        if not, falls back to calling ``tokenizer.encode`` for each input.
 
+        Args:
+            inputs (list[str]): list of input strings
+
+        Returns:
+            tokens (list[list[int]]): List of list of ids
+        """
+        if hasattr(self.tokenizer, "batch_encode"):
+            return self.tokenizer.batch_encode(inputs)
+        else:
+            return [self.tokenizer(x,add_special_tokens=True,padding="max_length",max_length=self.max_length,truncation=True) for x in inputs]
     def _model_predict(self, inputs):
         """Turn a list of dicts into a dict of lists.
+
         Then make lists (values of dict) into tensors.
         """
-
-        
-        inputs.to(self.device)
-        outputs = self.model(**inputs)
-
+        model_device = next(self.model.parameters()).device
+        input_dict = {k: [_dict[k] for _dict in inputs] for k in inputs[0]}
+        input_dict = {
+            k: torch.tensor(v).to(model_device) for k, v in input_dict.items()
+        }
+        outputs = self.model(**input_dict)
         if isinstance(outputs[0], str):
             # HuggingFace sequence-to-sequence models return a list of
             # string predictions as output. In this case, return the full
@@ -76,48 +90,20 @@ class HuggingFaceModelEnsembleWrapper(PyTorchModelWrapper):
 
     def __call__(self, text_input_list):
         """Passes inputs to HuggingFace models as keyword arguments.
+
         (Regular PyTorch ``nn.Module`` models typically take inputs as
         positional arguments.)
         """
         assert isinstance(text_input_list, list)
         text_input_list = self.augment_sentences(text_input_list, self.ensemble_num)
-        max_length = (
-            256
-            if self.tokenizer.model_max_length == int(1e30)
-            else self.tokenizer.model_max_length
-        )
-        with torch.no_grad():
-            outputs = []
-            i = 0
-            while i < len(text_input_list):
-                batch = text_input_list[i : i + self.batch_size]
-                ids = self.tokenizer(
-                    batch,
-                    add_special_tokens=True,
-                    padding="max_length",
-                    max_length=max_length,
-                    return_tensors="pt",
-                    truncation=True,
-                )
-                batch_preds = self._model_predict(ids)
-                
-                #if isinstance(batch_preds, str):
-                #    batch_preds = [batch_preds]
-                ## Get PyTorch tensors off of other devices.
-                if isinstance(batch_preds, torch.Tensor):
-                    batch_preds = batch_preds.cpu().detach()
-                ## Cast all predictions iterables to ``np.ndarray`` types.
-                #if not isinstance(batch_preds, np.ndarray):
-                #    batch_preds = np.array(batch_preds)
-                    
-                outputs.append(batch_preds)
-                
-                i += self.batch_size
-        outputs = torch.cat(outputs)
 
-        # Cast all predictions iterables to ``np.ndarray`` types.
-        if not isinstance(outputs, np.ndarray):
-            outputs = np.array(outputs)
+        ids = self.encode(text_input_list)
+
+        with torch.no_grad():
+            outputs = textattack.shared.utils.batch_model_predict(
+                self._model_predict, ids, batch_size=self.batch_size
+            )
+
         label_nums = outputs.shape[1]
         ensemble_logits_for_each_input = np.split(outputs, indices_or_sections=len(text_input_list) / self.ensemble_num,
                                                   axis=0)
@@ -137,6 +123,7 @@ class HuggingFaceModelEnsembleWrapper(PyTorchModelWrapper):
 
     def get_grad(self, text_input):
         """Get gradient of loss with respect to input tokens.
+
         Args:
             text_input (str): input string
         Returns:

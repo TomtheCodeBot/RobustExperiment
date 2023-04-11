@@ -185,9 +185,9 @@ def attack(args, wrapper, name, dataset):
 def gen_dataset(instances):
     test_instances = instances
     test_dataset = []
-    for instance in range(len(test_instances)):
+    for instance in iter(test_instances):
         test_dataset.append(
-            (test_instances["text"][instance], int(test_instances["label"][instance]))
+            (instance['text'], int(instance['label']))
         )
     dataset = Dataset(test_dataset, shuffle=True)
     return dataset
@@ -231,16 +231,21 @@ if __name__ == "__main__":
     #ascc_model.to("cuda")
     #BERT_ASCC = wrapping_model(ascc_model,tokenizer,"ascc")
 
-    dne_model = model_lib.TextDefense_model_builder("bert","bert-base-uncased","dne",device,dataset_name="agnews")
-    load_path = "/home/khoa/duyhc/RobustExperiment/model/weights/tmd_ckpts/TextDefender/saved_models/agnews_bert/dne-len128-epo10-batch32-best.pth"
-    print(dne_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
-    BERT_DNE = wrapping_model(dne_model,tokenizer,"dne")
+    #dne_model = model_lib.TextDefense_model_builder("bert","bert-base-uncased","dne",device,dataset_name="agnews")
+    #load_path = "/home/khoa/duyhc/RobustExperiment/model/weights/tmd_ckpts/TextDefender/saved_models/agnews_bert/dne-len128-epo10-batch32-best.pth"
+    #print(dne_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
+    #BERT_DNE = wrapping_model(dne_model,tokenizer,"dne")
+    
+    mask_model = model_lib.TextDefense_model_builder("bert","bert-base-uncased","mask",device,dataset_name="agnews")
+    load_path = "/home/ubuntu/RobustExperiment/model/weights/mask-len128-epo5-batch16-rate0.9-best.pth"
+    print(mask_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
+    BERT_MASK = wrapping_model(mask_model,tokenizer,"mask")
     
     with torch.no_grad():
         
         
         noise_pos = {"pre_att_all": [0.2,0.3],"post_att_all": [0.2,0.3,0.4]}
-        list_attacks = ["textfooler","textbugger","bertattack"]
+        list_attacks = ["textbugger"]
         for i in range(0, 1):
             set_seed(i)
             dataset = gen_dataset(test_data)
@@ -256,4 +261,5 @@ if __name__ == "__main__":
                 #        attack(args, BERT, f"BERT_{key}_{noise_intensity}", dataset)
                 #model.change_defense(defense=False)
                 #attack(args, BERT_ASCC, "BERT_ASCC", dataset)
-                attack(args, BERT_DNE, "BERT_DNE", dataset)
+                #attack(args, BERT_DNE, "BERT_DNE", dataset)
+                attack(args, BERT_MASK, "BERT_MASK", dataset)
