@@ -215,7 +215,8 @@ if __name__ == "__main__":
     parser.add_argument("-kn", "--k_neighbor", default=50)
     args = parser.parse_args()
 
-    batch=10
+
+    batch=100
     train_data, test_data = load_train_test_imdb_data(
         "data/aclImdb"
     )
@@ -251,10 +252,11 @@ if __name__ == "__main__":
     
     clean_accuracy={}
     num_repetitions = 3
-    tokenizer = AutoTokenizer.from_pretrained("textattack/roberta-base-ag-news",use_fast=True)
-    config = AutoConfig.from_pretrained("textattack/roberta-base-ag-news")
+
+    tokenizer = AutoTokenizer.from_pretrained("textattack/roberta-base-imdb",use_fast=True)
+    config = AutoConfig.from_pretrained("textattack/roberta-base-imdb")
     model = RobertaForSequenceClassification(config)
-    state = AutoModelForSequenceClassification.from_pretrained("textattack/roberta-base-ag-news")
+    state = AutoModelForSequenceClassification.from_pretrained("textattack/roberta-base-imdb")
     model.load_state_dict(state.state_dict())
     model.eval()
     RoBERTa = HuggingFaceModelWrapper(model,tokenizer)
@@ -275,7 +277,7 @@ if __name__ == "__main__":
     #    'last_cls':[0.001,0.0025,0.005,0.01,0.025,0.05,0.1,0.25,0.5,1], 
     #    'logits':[0.001,0.0025,0.005,0.01,0.025,0.05,0.1,0.25,0.5,1]
     #}
-    positions = [ 'input_noise', 'pre_att_cls', 'pre_att_all',"post_att_cls","post_att_all", 'last_cls', 'logits']
+    #positions = [ 'input_noise', 'pre_att_cls', 'pre_att_all',"post_att_cls","post_att_all", 'last_cls', 'logits']
     noise_position={
         'input_noise':[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1],
         'pre_att_cls':[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1],
@@ -304,5 +306,6 @@ if __name__ == "__main__":
         
         # Writing to sample.json
         with open(f"IMDB_RoBERTa_clean_accuracy_{repetitions}.json", "w") as outfile:
+
             outfile.write(json_object)
 

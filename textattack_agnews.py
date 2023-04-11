@@ -188,7 +188,7 @@ def gen_dataset(instances):
     test_dataset = []
     for instance in iter(test_instances):
         test_dataset.append(
-            (instance["text"], int(instance["label"]))
+            (instance['text'], int(instance['label']))
         )
     dataset = Dataset(test_dataset, shuffle=True)
     return dataset
@@ -250,6 +250,11 @@ if __name__ == "__main__":
     model.to("cuda")
     model.eval()
     ROBERTA = HuggingFaceModelWrapper(model, tokenizer)
+
+    mask_model = model_lib.TextDefense_model_builder("bert","bert-base-uncased","mask",device,dataset_name="agnews")
+    load_path = "/home/ubuntu/RobustExperiment/model/weights/mask-len128-epo5-batch16-rate0.9-best.pth"
+    print(mask_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
+    BERT_MASK = wrapping_model(mask_model,tokenizer,"mask")
     
     with torch.no_grad():
         
@@ -257,6 +262,7 @@ if __name__ == "__main__":
         noise_pos = {"pre_att_all": [0.2,0.3],"post_att_all": [0.2,0.3,0.4]}
         noise_pos_roberta = {"pre_att_all": [0.2],"post_att_all": [0.3,0.4]}
         list_attacks = ["textfooler","textbugger","bertattack"]
+        list_attacks = ["textbugger"]
         for i in range(0, 1):
             set_seed(i)
             dataset = gen_dataset(test_data)
@@ -273,10 +279,11 @@ if __name__ == "__main__":
                 #model.change_defense(defense=False)
                 #attack(args, BERT_ASCC, "BERT_ASCC", dataset)
                 #attack(args, BERT_DNE, "BERT_DNE", dataset)
-                
+                #attack(args, BERT_MASK, "BERT_MASK", dataset)
                 attack(args, ROBERTA, "ROBERTA", dataset)
                 for key in noise_pos_roberta.keys():
                     for noise_intensity in noise_pos_roberta[key]:
                         model.change_defense(defense_cls="random_noise",def_position=key,noise_sigma=noise_intensity,defense=True)
                         attack(args, ROBERTA, f"BERT_{key}_{noise_intensity}", dataset)
                 model.change_defense(defense=False)
+
