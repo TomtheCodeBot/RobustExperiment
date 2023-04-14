@@ -48,6 +48,7 @@ import numpy as np
 import os
 import model as model_lib
 from model.TextDefenseExtraWrapper import wrapping_model
+import time
 
 class CustomModelWrapper(PyTorchModelWrapper):
     def __init__(self, model, tokenizer):
@@ -241,20 +242,39 @@ if __name__ == "__main__":
     #print(dne_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
     #BERT_DNE = wrapping_model(dne_model,tokenizer,"dne")
     
-    config = AutoConfig.from_pretrained("textattack/roberta-base-ag-news")
-    model = RobertaForSequenceClassification(config)
-    state = AutoModelForSequenceClassification.from_pretrained(
-        "textattack/roberta-base-ag-news"
-    )
-    model.load_state_dict(state.state_dict())
-    model.to("cuda")
-    model.eval()
-    ROBERTA = HuggingFaceModelWrapper(model, tokenizer)
-
     mask_model = model_lib.TextDefense_model_builder("bert","bert-base-uncased","mask",device,dataset_name="agnews")
     load_path = "/home/ubuntu/RobustExperiment/model/weights/mask-len128-epo5-batch16-rate0.9-best.pth"
     print(mask_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
     BERT_MASK = wrapping_model(mask_model,tokenizer,"mask")
+    
+    
+    #freelb_model = model_lib.TextDefense_model_builder("bert","bert-base-uncased","freelb",device,dataset_name="agnews")
+    #load_path = "/home/ubuntu/TextDefender/saved_models/ag_news_bert/freelb-len128-epo5-batch32-advstep5-advlr0.03-norm0.0-best.pth"
+    #tokenizer.model_max_length=128
+    #print(freelb_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
+    #BERT_FREELB = wrapping_model(freelb_model,tokenizer,"freelb")
+    
+    #infobert_model = model_lib.TextDefense_model_builder("bert","bert-base-uncased","infobert",device,dataset_name="agnews")
+    #load_path = "/home/ubuntu/TextDefender/saved_models/ag_news_bert/infobert-len128-epo5-batch32-advstep3-advlr0.04-norm0-best.pth"
+    #tokenizer.model_max_length=128
+    #print(infobert_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
+    #BERT_INFOBERT = wrapping_model(infobert_model,tokenizer,"infobert")
+    
+    #config = AutoConfig.from_pretrained("textattack/roberta-base-ag-news")
+    #model = RobertaForSequenceClassification(config)
+    #state = AutoModelForSequenceClassification.from_pretrained(
+    #    "textattack/roberta-base-ag-news"
+    #)
+    #model.load_state_dict(state.state_dict())
+    #model.to("cuda")
+    #model.eval()
+    #ROBERTA = HuggingFaceModelWrapper(model, tokenizer_roberta)
+
+    load_path = "/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/bert-base-uncased-ag-news"
+    gm_path = "/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/tmd_ckpts/tmd/outputs/infogan_bert_agnews/manifold-defense/42b0465v/checkpoints/epoch=99-step=10599.ckpt"
+    tmd = model_lib.TextDefense_model_builder("bert",load_path,"tmd",gm_path = gm_path,device="cuda",dataset_name="agnews")
+    tokenizer = AutoTokenizer.from_pretrained("/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/bert-base-uncased-ag-news",use_fast=True)
+    BERT_TMD = wrapping_model(tmd,tokenizer,"tmd")
     
     with torch.no_grad():
         
@@ -262,7 +282,6 @@ if __name__ == "__main__":
         noise_pos = {"pre_att_all": [0.2,0.3],"post_att_all": [0.2,0.3,0.4]}
         noise_pos_roberta = {"pre_att_all": [0.2],"post_att_all": [0.3,0.4]}
         list_attacks = ["textfooler","textbugger","bertattack"]
-        list_attacks = ["textbugger"]
         for i in range(0, 1):
             set_seed(i)
             dataset = gen_dataset(test_data)
@@ -280,10 +299,14 @@ if __name__ == "__main__":
                 #attack(args, BERT_ASCC, "BERT_ASCC", dataset)
                 #attack(args, BERT_DNE, "BERT_DNE", dataset)
                 #attack(args, BERT_MASK, "BERT_MASK", dataset)
-                attack(args, ROBERTA, "ROBERTA", dataset)
-                for key in noise_pos_roberta.keys():
-                    for noise_intensity in noise_pos_roberta[key]:
-                        model.change_defense(defense_cls="random_noise",def_position=key,noise_sigma=noise_intensity,defense=True)
-                        attack(args, ROBERTA, f"BERT_{key}_{noise_intensity}", dataset)
-                model.change_defense(defense=False)
+                #attack(args, BERT_FREELB, "BERT_FREELB", dataset)
+                #attack(args, BERT_INFOBERT, "BERT_INFOBERT", dataset)
+                attack(args, BERT_TMD, "BERT_TMD", dataset)
+                
+                #attack(args, ROBERTA, "ROBERTA", dataset)
+                #for key in noise_pos_roberta.keys():
+                #    for noise_intensity in noise_pos_roberta[key]:
+                #        model.change_defense(defense_cls="random_noise",def_position=key,noise_sigma=noise_intensity,defense=True)
+                #        attack(args, ROBERTA, f"ROBERTA_{key}_{noise_intensity}", dataset)
+                #model.change_defense(defense=False)
 

@@ -242,7 +242,6 @@ if __name__ == "__main__":
     print(dne_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
     dne_model = wrapping_model(dne_model,tokenizer,"dne",batch_size=batch)
     
-    
     y_pred_BERT = []
     for i in tqdm(range(0,len(bert_input)//batch)):
         y_pred_BERT.extend(torch.argmax(torch.tensor(dne_model(bert_input[i*batch:(i+1)*batch])),dim=-1).tolist())
@@ -251,23 +250,34 @@ if __name__ == "__main__":
     
     
     clean_accuracy={}
-    num_repetitions = 3
+    num_repetitions = 1
 
-    tokenizer = AutoTokenizer.from_pretrained("textattack/roberta-base-imdb",use_fast=True)
-    config = AutoConfig.from_pretrained("textattack/roberta-base-imdb")
-    model = RobertaForSequenceClassification(config)
-    state = AutoModelForSequenceClassification.from_pretrained("textattack/roberta-base-imdb")
-    model.load_state_dict(state.state_dict())
-    model.eval()
-    RoBERTa = HuggingFaceModelWrapper(model,tokenizer)
-    RoBERTa.to("cuda")
+    #tokenizer = AutoTokenizer.from_pretrained("textattack/roberta-base-imdb",use_fast=True)
+    #config = AutoConfig.from_pretrained("textattack/roberta-base-imdb")
+    #model = RobertaForSequenceClassification(config)
+    #state = AutoModelForSequenceClassification.from_pretrained("textattack/roberta-base-imdb")
+    #model.load_state_dict(state.state_dict())
+    #model.eval()
+    #RoBERTa = HuggingFaceModelWrapper(model,tokenizer)
+    #RoBERTa.to("cuda")
+    
+    tokenizer = AutoTokenizer.from_pretrained("/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/bert-base-uncased-imdb",use_fast=True)
+    tokenizer.model_max_length=256
+    config = AutoConfig.from_pretrained("/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/bert-base-uncased-imdb")
+    BERT_base_model = BertForSequenceClassification(config)
+    state = AutoModelForSequenceClassification.from_pretrained("/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/bert-base-uncased-imdb")
+    print(BERT_base_model.load_state_dict(state.state_dict()))
+    BERT_base_model.eval()
+    BERT = HuggingFaceModelWrapper(BERT_base_model,tokenizer)
+    BERT.to("cuda")
+    
     y_pred_BERT = []
     for i in tqdm(range(0,len(bert_input)//batch)):
-        y_pred_BERT.extend(torch.argmax(RoBERTa(bert_input[i*batch:(i+1)*batch]),dim=-1).tolist())
+        y_pred_BERT.extend(torch.argmax(BERT(bert_input[i*batch:(i+1)*batch]),dim=-1).tolist())
     # Evaluation
     acc = accuracy_score(test_labels, y_pred_BERT)
-    print(f"IMDB RoBERTa (with noise module): {acc*100:.2f}%")
-    clean_accuracy["IMDB_RoBERTa"] = f"{acc*100:.2f}%"
+    print(f"IMDB BERT (with noise module): {acc*100:.2f}%")
+    clean_accuracy["IMDB_BERT"] = f"{acc*100:.2f}%"
     #noise_position={
     #    'input_noise':[0.001,0.0025,0.005,0.01,0.025,0.05,0.1,0.25,0.5,1],
     #    'pre_att_cls':[0.001,0.0025,0.005,0.01,0.025,0.05,0.1,0.25,0.5,1],
@@ -291,21 +301,23 @@ if __name__ == "__main__":
     for repetitions in range(0,num_repetitions):
         for position in positions:
             for noise in noise_position[position]:
-                model.change_defense(defense_cls="random_noise",def_position=position,noise_sigma=noise,defense=True)
+                BERT_base_model.change_defense(defense_cls="random_noise",def_position=position,noise_sigma=noise,defense=True)
+                BERT = HuggingFaceModelWrapper(BERT_base_model,tokenizer)
+                BERT.to("cuda")
                 y_pred_BERT = []
                 for i in tqdm(range(0,len(bert_input)//batch)):
-                    y_pred_BERT.extend(torch.argmax(RoBERTa(bert_input[i*batch:(i+1)*batch]),dim=-1).tolist())
+                    y_pred_BERT.extend(torch.argmax(BERT(bert_input[i*batch:(i+1)*batch]),dim=-1).tolist())
                 # Evaluation
                 acc = accuracy_score(test_labels, y_pred_BERT)
-                print(f"IMDB_RoBERTa_WITH-0.1-SCALE_{'random_noise'}_{position}_{str(noise)} = {acc*100:.2f}%")
-                clean_accuracy[f"IMDB_RoBERTa_WITH-0.1-SCALE_{'random_noise'}_{position}_{str(noise)}"] = f"{acc*100:.2f}%"
+                print(f"IMDB_BERT_WITH-0.1-SCALE_{'random_noise'}_{position}_{str(noise)} = {acc*100:.2f}%")
+                clean_accuracy[f"IMDB_BERT_WITH-0.1-SCALE_{'random_noise'}_{position}_{str(noise)}"] = f"{acc*100:.2f}%"
                 print(clean_accuracy)
         
         # Serializing json
         json_object = json.dumps(clean_accuracy, indent=4)
         
         # Writing to sample.json
-        with open(f"IMDB_RoBERTa_clean_accuracy_{repetitions}.json", "w") as outfile:
+        with open(f"IMDB_0.1_scale_clean_accuracy_{repetitions}.json", "w") as outfile:
 
             outfile.write(json_object)
 
