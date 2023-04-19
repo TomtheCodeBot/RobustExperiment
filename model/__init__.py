@@ -12,7 +12,9 @@ from transformers.models.bert.modeling_bert import BertEmbeddings, BertPooler, B
 from utils.dne_utils import DecayAlphaHull,WeightedEmbedding,get_bert_vocab
 from utils.certified import ibp_utils
 from utils.luna import batch_pad
-
+from .generative_models import *
+from .language_models import *
+import argparse
 MODEL_CLASSES = {
     # Note: there may be some bug in `dcnn` modeling, if you want to pretraining.
     'bert': (BertConfig, BertForSequenceClassification, BertTokenizer),
@@ -58,6 +60,117 @@ from collections import defaultdict
 
 
 
+def string_to_bool(string_val):
+    return True if string_val.lower() == 'true' else False
+
+
+
+class ProgramArgs(argparse.Namespace):
+    def __init__(self):
+        super(ProgramArgs, self).__init__()
+        self.mode = 'attack'  # in ['train', 'attack', 'evaluate', 'augment', 'textattack_augment', 'dev_augment']
+        self.model_type = 'bert'
+        self.dataset_name = 'agnews'
+        self.keep_sentiment_word = 'False'
+        self.model_name_or_path = 'bert-base-uncased'
+        self.evaluation_data_type = 'test'
+        self.training_type = 'freelb'
+
+        # attack parameters
+        self.attack_method = 'bae'
+        self.attack_times = 1
+        self.attack_numbers = 1000
+        # attack constraint args defined by us
+        self.modify_ratio = 0.3
+        self.neighbour_vocab_size = 50
+        self.sentence_similarity = 0.840845057
+        self.query_budget_size = self.neighbour_vocab_size
+
+        # path parameters
+        self.workspace = '/root/TextDefender'
+        self.dataset_path = self.workspace + '/dataset/' + self.dataset_name
+        # self.log_path = self.workspace + '/log/' + self.dataset_name + '_' + self.model_type
+        self.cache_path = self.workspace + '/cache'
+        # self.saved_path = self.workspace + '/saved_models/' + self.dataset_name
+        self.sentiment_path = self.workspace + '/dataset/sentiment_word/sentiment-words.txt'
+        self.log_path = self.workspace + "/log"
+        self.tensorboard = None
+
+        # augment parameters
+        self.use_aug = 'False'
+        self.aug_ratio = 0.5
+        self.aug_attacker = 'pwws'
+
+        self.dev_aug_ratio = 0.5
+        self.dev_aug_attacker = 'textfooler'
+        self.use_dev_aug = 'False'
+
+        # text_attack augment parameters
+        self.split_num = 3
+        self.start_idx = 0
+
+        # model ensemble num in predicting (if needed)
+        self.ensemble = 'False'
+        self.ensemble_num = 100
+        self.ensemble_method = 'logits' # in ['logits', 'votes']
+
+        # base training hyper-parameters, if need other, define in subclass
+        self.epochs = 10  # training epochs
+        if string_to_bool(self.use_aug) and self.aug_ratio == 0.5:
+            self.batch_size = 24
+        else:
+            self.batch_size = 32  # batch size
+        # self.gradient_accumulation_steps = 1  # Number of updates steps to accumulate before performing a backward/update pass.
+        # self.learning_rate = 5e-5  # The initial learning rate for Adam.
+        # self.weight_decay = 1e-6  # weight decay
+        # self.adam_epsilon = 1e-8  # epsilon for Adam optimizer
+        # self.max_grad_norm = 1.0  # max gradient norm
+        # self.learning_rate_decay = 0.1  # Proportion of training to perform linear learning rate warmup for,E.g., 0.1 = 10% of training
+
+        # read dataset parameter
+        if self.dataset_name != 'imdb':
+            self.max_seq_len = 128
+        else:
+            self.max_seq_len = 256
+        self.shuffle = 'True'
+
+        # unchanged args
+        self.type_accept_instance_as_input = ['mask', 'safer']
+        # self.imdb_dir = '/disks/sdb/lzy/adversarialBenchmark/IBP_data/aclImdb'
+        # self.imdb_lm_file = '/disks/sdb/lzy/adversarialBenchmark/IBP_data/lm_scores/imdb_all.txt'
+        # self.counter_fitted_file = '/disks/sdb/lzy/adversarialBenchmark/IBP_data/counter-fitted-vectors.txt'
+        # self.snli_dir = '/disks/sdb/lzy/adversarialBenchmark/IBP_data/snli'
+        # self.snli_lm_file = '/disks/sdb/lzy/adversarialBenchmark/IBP_data/lm_scores/snli_all.txt'
+        # self.neighbor_file = '/disks/sdb/lzy/adversarialBenchmark/IBP_data/counterfitted_neighbors.json'
+        self.nbr_file = '/root/TextDefender/counterfitted_neighbors.json' 
+        # self.glove_dir = '/disks/sdb/lzy/adversarialBenchmark/IBP_data/glove'
+        self.do_lower_case = 'True'
+        # for lstm
+        self.hidden_size = 100
+        self.glove_name = '840B.300d'
+        self.use_lm = 'False'
+
+        # saving args
+        self.saving_step = 1
+        self.saving_last_epoch = 'False'
+        self.compare_key = '+accuracy'
+        self.file_name = None
+        self.seed = 42
+        self.remove_attack_constrainst = 'False'
+
+        # tmd args
+        self.gm = "infogan"
+        self.gm_path = "/root/manifold_defense/outputs/infogan_bert_imdb/manifold-defense/yutbyyz5/checkpoints/epoch=99-step=2199.ckpt"
+        self.tmd_layer = -1
+        self.start_index = 0
+        self.end_index = None
+        self.method = 3
+        self.threshold = 1.0
+        self.step_size = 0.01
+        #self.num_steps = 10
+        self.k = 30
+
+infogan_args = ProgramArgs()
 
 class LSTMModel(nn.Module):
     """LSTM text classification model.
@@ -442,7 +555,7 @@ class ASCCModel(BertPreTrainedModel, nn.Module):
 
         return clean_logits, adv_logits
 
-def TextDefense_model_builder(model_type,model_name_or_path,training_type,device="cpu",dataset_name="imdb",glove_name=None,hidden_size=None):
+def TextDefense_model_builder(model_type,model_name_or_path,training_type,device="cpu",dataset_name="imdb",glove_name=None,hidden_size=None,gm_path = None,):
     
     if training_type == 'mixup':
         config_class, _, _ = MODEL_CLASSES[model_type]
@@ -504,6 +617,17 @@ def TextDefense_model_builder(model_type,model_name_or_path,training_type,device
         ).to(device)
         bert_vocab = get_bert_vocab()
         model.build_nbrs("model/weights/nbr_file.json", bert_vocab, 10.0, 5,device)
+    elif training_type == 'tmd':
+        print(f"Loading LM: {model_name_or_path}")
+        model = AutoLanguageModel.get_class_name(model_type).from_pretrained(model_name_or_path, load_tokenizer=False)
+        model.eval()
+        model.to(device)
+        # Load generative model
+        print(f"Loading GM: {'infogan'}")
+        gm = AutoGenerativeModel.get_class_name("infogan").load_from_checkpoint(gm_path)
+        gm.eval()
+        gm.to(device)
+        model.set_reconstructor(gm, **vars(infogan_args))
     else:
         config_class, model_class, _ = MODEL_CLASSES[model_type]
         config = config_class.from_pretrained(
