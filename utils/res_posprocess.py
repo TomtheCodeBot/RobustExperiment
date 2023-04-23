@@ -30,6 +30,15 @@ def process_text_result(path):
             models_list = os.listdir(f"{path}/{i}/{k}")
             model_results = {}
             for j in models_list:
+                banned_list = ["BERT_MASK","ROBERTA"]
+                skip = False
+                print(j)
+                for banned in banned_list:
+                    if banned in j: 
+                        skip = True
+                        break
+                if skip==True:
+                    continue
                 with open(f"{path}/{i}/{k}/{j}") as f:
                     res = f.readlines()
                     res_spec = {}
