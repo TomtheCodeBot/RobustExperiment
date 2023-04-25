@@ -293,6 +293,19 @@ if __name__ == "__main__":
     #tokenizer = AutoTokenizer.from_pretrained(load_path,use_fast=True)
     #ROBERTA_TMD = wrapping_model(tmd,tokenizer,"tmd")
     
+        #ascc_roberta_model = model_lib.TextDefense_model_builder("roberta","roberta-base","ascc",device,dataset_name="agnews")
+    #load_path = "/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/tmd_ckpts/TextDefender/saved_models/agnews_roberta/ascc-len128-epo10-batch32-best.pth"
+    #print(ascc_roberta_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
+    #ascc_roberta_model.to("cuda")
+    #tokenizer_roberta.model_max_length=128
+    #ROBERTA_ASCC = wrapping_model(ascc_roberta_model,tokenizer_roberta,"ascc")
+
+    #roberta_freelb_model = model_lib.TextDefense_model_builder("roberta","roberta-base","freelb",device,dataset_name="agnews")
+    #load_path = "/home/ubuntu/TextDefender/saved_models/ag_news_roberta/freelb-len128-epo10-batch32-advstep5-advlr0.03-norm0.0-best.pth"
+    #tokenizer_roberta.model_max_length=128
+    #print(roberta_freelb_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
+    #ROBERTA_FREELB = wrapping_model(roberta_freelb_model,tokenizer,"freelb")
+    
     with torch.no_grad():
         
         
@@ -327,4 +340,5 @@ if __name__ == "__main__":
                 #        attack(args, ROBERTA, f"ROBERTA_{key}_{noise_intensity}", dataset)
                 #model_roberta.change_defense(defense=False)
                 #attack(args, ROBERTA_TMD, "ROBERTA_TMD", dataset)
-
+                #attack(args, ROBERTA_ASCC, "ROBERTA_ASCC", dataset)
+                #attack(args, ROBERTA_FREELB, "ROBERTA_FREELB", dataset)

@@ -293,6 +293,16 @@ if __name__ == "__main__":
     #tokenizer = AutoTokenizer.from_pretrained(load_path,use_fast=True)
     #ROBERTA_TMD = wrapping_model(tmd,tokenizer,"tmd")
     
+    tokenizer_roberta = AutoTokenizer.from_pretrained(
+        "roberta-base", use_fast=True
+    )
+    ascc_roberta_model = model_lib.TextDefense_model_builder("roberta","roberta-base","ascc",device)
+    load_path = "/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/tmd_ckpts/TextDefender/saved_models/imdb_roberta/ascc-len256-epo10-batch32-best.pth"
+    print(ascc_roberta_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
+    ascc_roberta_model.to("cuda")
+    tokenizer_roberta.model_max_length=256
+    ROBERTA_ASCC = wrapping_model(ascc_roberta_model,tokenizer_roberta,"ascc")
+    
     with torch.no_grad():
         
         noise_pos = { "pre_att_all": [0.1,0.2], "post_att_all": [0.1,0.2, 0.3]}
@@ -326,3 +336,4 @@ if __name__ == "__main__":
                 #        attack(args, ROBERTA, f"ROBERTA_{key}_{noise_intensity}", dataset)
                 #model_roberta.change_defense(defense=False)
                 #attack(args, ROBERTA_TMD, "ROBERTA_TMD", dataset)
+                #attack(args, ROBERTA_ASCC, "ROBERTA_ASCC", dataset)
