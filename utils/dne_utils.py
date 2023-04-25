@@ -351,11 +351,15 @@ def get_bert_vocab():
     tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased",use_fast=True)
     vocab = MockBERTAllenVocab(tokenizer)
     return vocab
+def get_roberta_vocab():
+    tokenizer = AutoTokenizer.from_pretrained("roberta-base",use_fast=True)
+    vocab = MockBERTAllenVocab(tokenizer)
+    return vocab
 class MockBERTAllenVocab():
     def __init__(self,tokenizer):
         self.tokenizer = tokenizer
         self.i2t = {v: k for k, v in self.tokenizer.vocab.items()}
-        assert len(self.tokenizer.vocab) == 30522
+        assert len(self.tokenizer.vocab) == 30522 or len(self.tokenizer.vocab) == 50265
     def get_vocab_size(self,_):
         return len(self.tokenizer.vocab)
     def get_token_to_index_vocabulary(self,_):

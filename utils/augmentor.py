@@ -41,7 +41,7 @@ class Augmentor(object):
 
     def augment(self, sentence: str, n: int) -> List[str]:
         if self.training_type == 'mask':
-            return mask_sentence(sentence, 0.7, self.mask_token, n)
+            return mask_sentence(sentence, 0.9, self.mask_token, n)
         elif self.training_type == 'dne':
             return [sentence] * n
         elif self.training_type == 'safer':
