@@ -9,7 +9,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from transformers.models.bert.modeling_bert import BertEmbeddings, BertPooler, BertLayer, BertPreTrainedModel, BertModel
-from utils.dne_utils import DecayAlphaHull,WeightedEmbedding,get_bert_vocab
+from transformers.models.roberta.modeling_roberta import RobertaClassificationHead, RobertaPreTrainedModel, RobertaModel
+from utils.dne_utils import DecayAlphaHull,WeightedEmbedding,get_bert_vocab,get_roberta_vocab
 from utils.certified import ibp_utils
 from utils.luna import batch_pad
 from .generative_models import *
@@ -54,6 +55,7 @@ GLOVE_CONFIGS = {
     '6B.50d': {'size': 50, 'lines': 400000},
     '840B.300d': {'size': 300, 'lines': 2196017}
 }
+
 
 import json
 from collections import defaultdict
@@ -449,7 +451,106 @@ class MixText(BertPreTrainedModel, nn.Module):
         # logits = self.classifier(sequence_output)
 
         return logits, outputs
+    
+class ASCCRobertaModel(RobertaPreTrainedModel, nn.Module):
+    def __init__(self, config):
+        super().__init__(config)
+        self.num_labels = config.num_labels
 
+        self.roberta = RobertaModel(config, add_pooling_layer=False)
+        self.classifier = RobertaClassificationHead(config)
+
+        self.init_weights()
+
+    def build_nbrs(self, nbr_file, vocab, alpha, num_steps,device):
+        t2i = vocab.get_token_to_index_vocabulary("tokens")
+        loaded = json.load(open(nbr_file))
+        filtered = defaultdict(lambda: [], {})
+        for k in loaded:
+            if k in t2i:
+                for v in loaded[k]:
+                    if v in t2i:
+                        filtered[k].append(v)
+        nbrs = dict(filtered)
+
+        nbr_matrix = []
+        vocab_size = vocab.get_vocab_size("tokens")
+        for idx in range(vocab_size):
+            token = vocab.get_token_from_index(idx)
+            nbr = [idx]
+            if token in nbrs.keys():
+                words = nbrs[token]
+                for w in words:
+                    assert w in t2i
+                    nbr.append(t2i[w])
+            nbr_matrix.append(nbr)
+        nbr_matrix = batch_pad(nbr_matrix)
+        self.nbrs = torch.tensor(nbr_matrix).to(device)
+        self.max_nbr_num = self.nbrs.size()[-1]
+        # self.weighting_param = nn.Parameter(torch.empty([self.num_embeddings, self.max_nbr_num], dtype=torch.float32),
+        #                                     requires_grad=True).cuda()
+        self.weighting_mask = self.nbrs != 0
+        self.criterion_kl = nn.KLDivLoss(reduction="sum")
+        self.alpha = alpha
+        self.num_steps = num_steps
+
+    def forward(self, input_ids, attention_mask):
+        clean_outputs = self.roberta(input_ids, attention_mask)
+        clean_sequence_output = clean_outputs[0]
+        clean_logits = self.classifier(clean_sequence_output)
+        return clean_logits, clean_logits
+
+        # 0 initialize w for neighbor weightings
+        batch_size, text_len = input_ids.shape
+        w = torch.empty(batch_size, text_len, self.max_nbr_num, 1).to(self.device).to(torch.float)
+        nn.init.kaiming_normal_(w)
+        w.requires_grad_()
+        optimizer_w = torch.optim.Adam([w], lr=1, weight_decay=2e-5)
+
+        # 1 forward and backward to calculate adv_examples
+        input_nbr_embed = self.get_input_embeddings()(self.nbrs[input_ids])
+        weighting_mask = self.weighting_mask[input_ids]
+        # here we need to calculate clean logits with no grad, to find adv examples
+        with torch.no_grad():
+            clean_outputs = self.roberta(input_ids, attention_mask)
+            clean_sequence_output = clean_outputs[0]
+            clean_logits = self.classifier(clean_sequence_output)
+
+        for _ in range(self.num_steps):
+            optimizer_w.zero_grad()
+            with torch.enable_grad():
+                w_after_mask = weighting_mask.unsqueeze(-1) * w + ~weighting_mask.unsqueeze(-1) * -999
+                embed_adv = torch.sum(input_nbr_embed * F.softmax(w_after_mask, -2) * weighting_mask.unsqueeze(-1), dim=2)
+
+                adv_outputs = self.roberta(attention_mask=attention_mask, inputs_embeds=embed_adv)
+                adv_sequence_output = adv_outputs[0]
+                adv_logits = self.classifier(adv_sequence_output)
+
+                adv_loss = - self.criterion_kl(F.log_softmax(adv_logits, dim=1), F.softmax(clean_logits.detach(), dim=1))
+                loss_sparse = (-F.softmax(w_after_mask, -2) * weighting_mask.unsqueeze(-1) * F.log_softmax(w_after_mask, -2)).sum(-2).mean()
+                loss = adv_loss + self.alpha * loss_sparse
+
+            loss.backward(retain_graph=True)
+            optimizer_w.step()
+
+        optimizer_w.zero_grad()
+        self.zero_grad()
+
+        # 2 calculate clean data logits
+        clean_outputs = self.roberta(input_ids, attention_mask)
+        clean_sequence_output = clean_outputs[0]
+        clean_logits = self.classifier(clean_sequence_output)
+
+        # 3 calculate convex hull of each embedding
+        w_after_mask = weighting_mask.unsqueeze(-1) * w + ~weighting_mask.unsqueeze(-1) * -999
+        embed_adv = torch.sum(input_nbr_embed * F.softmax(w_after_mask, -2) * weighting_mask.unsqueeze(-1), dim=2)
+
+        # 4 calculate adv logits
+        adv_outputs = self.roberta(attention_mask=attention_mask, inputs_embeds=embed_adv)
+        adv_sequence_output = adv_outputs[0]
+        adv_logits = self.classifier(adv_sequence_output)
+
+        return clean_logits, adv_logits
 
 class ASCCModel(BertPreTrainedModel, nn.Module):
     def __init__(self, config):
@@ -554,7 +655,15 @@ class ASCCModel(BertPreTrainedModel, nn.Module):
 
 
         return clean_logits, adv_logits
+ASCC_MODEL = {
+    "bert":ASCCModel,
+    "roberta":ASCCRobertaModel,
+}
+VOCAB = {
+    "bert": get_bert_vocab,
+    "roberta": get_roberta_vocab,
 
+}
 def TextDefense_model_builder(model_type,model_name_or_path,training_type,device="cpu",dataset_name="imdb",glove_name=None,hidden_size=None,gm_path = None,):
     
     if training_type == 'mixup':
@@ -584,7 +693,7 @@ def TextDefense_model_builder(model_type,model_name_or_path,training_type,device
             from_tf=bool('ckpt' in model_name_or_path),
             config=config
         ).to(device)
-        bert_vocab = get_bert_vocab()
+        bert_vocab = VOCAB[model_type]()
         hull = DecayAlphaHull.build(
             alpha=model_args["dir_alpha"],
             decay=model_args["dir_decay"],
@@ -610,12 +719,13 @@ def TextDefense_model_builder(model_type,model_name_or_path,training_type,device
             finetuning_task=dataset_name,
             output_hidden_states=True,
         )
-        model = ASCCModel.from_pretrained(
+        ascc_model = ASCC_MODEL[model_type]
+        model = ascc_model.from_pretrained(
             model_name_or_path,
             from_tf=bool('ckpt' in model_name_or_path),
             config=config
         ).to(device)
-        bert_vocab = get_bert_vocab()
+        bert_vocab = VOCAB[model_type]()
         model.build_nbrs("model/weights/nbr_file.json", bert_vocab, 10.0, 5,device)
     elif training_type == 'tmd':
         print(f"Loading LM: {model_name_or_path}")
