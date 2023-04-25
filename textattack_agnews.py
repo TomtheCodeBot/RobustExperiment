@@ -209,18 +209,22 @@ if __name__ == "__main__":
     parser.add_argument("-sm", "--similarity", default=0.84)
     parser.add_argument("-kn", "--k_neighbor", default=50)
     parser.add_argument("-nd", "--num_workers_per_device", default=2)
-    parser.add_argument("-pr", "--parallel", default=False)
+    parser.add_argument('-pr', '--parallel',action='store_true')
+    parser.add_argument("-en", "--ensemble_num", default=100)
+    parser.add_argument("-eb", "--ensemble_batch_size", default=32)
+    parser.add_argument("-rms", "--random_mask_rate", default=0.9)
+    
     args = parser.parse_args()
     sst2_dataset = datasets.load_dataset("ag_news")
     train_data = sst2_dataset["train"]
     test_data = sst2_dataset["test"]
 
     tokenizer = AutoTokenizer.from_pretrained(
-        "textattack/bert-base-uncased-ag-news", use_fast=True
+        "bert_base_uncased", use_fast=True
     )
     
     tokenizer_roberta = AutoTokenizer.from_pretrained(
-        "textattack/roberta-base-ag-news", use_fast=True
+        "roberta_base", use_fast=True
     )
     device = "cuda"
     
@@ -249,7 +253,7 @@ if __name__ == "__main__":
     load_path = "/home/duy/TextDefender/saved_models/ag_news_bert/mask-len128-epo10-batch32-rate0.9-best.pth"
     tokenizer.model_max_length=128
     print(mask_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
-    BERT_MASK = wrapping_model(mask_model,tokenizer,"mask")
+    BERT_MASK = wrapping_model(mask_model,tokenizer,"mask",ensemble_num=args.ensemble_num,batch_size=args.ensemble_batch_size,ran_mask=args.random_mask_rate)
     
     
     #freelb_model = model_lib.TextDefense_model_builder("bert","bert-base-uncased","freelb",device,dataset_name="agnews")

@@ -181,8 +181,8 @@ def attack(args, wrapper, name, dataset):
         num_examples=attack_args_dict["attack_examples"],
         log_to_txt=attack_args_dict["log_path"],
         csv_coloring_style="file",
-        num_workers_per_device=2,
-        parallel=True
+        num_workers_per_device=args.num_workers_per_device,
+        parallel=args.parallel
     )
     attacker = Attacker(attack, dataset, attack_args)
     attacker.attack_dataset()
@@ -210,6 +210,12 @@ if __name__ == "__main__":
     parser.add_argument("-mr", "--modify_ratio", default=0.1)
     parser.add_argument("-sm", "--similarity", default=0.84)
     parser.add_argument("-kn", "--k_neighbor", default=50)
+    parser.add_argument("-nd", "--num_workers_per_device", default=2)
+    parser.add_argument('-pr', '--parallel',action='store_true')
+    parser.add_argument("-en", "--ensemble_num", default=16)
+    parser.add_argument("-eb", "--ensemble_batch_size", default=32)
+    parser.add_argument("-rms", "--random_mask_rate", default=0.3)
+    
     args = parser.parse_args()
 
     device = "cuda"
@@ -246,7 +252,7 @@ if __name__ == "__main__":
     load_path = "/home/duy/TextDefender/saved_models/imdb_bert/mask-len256-epo10-batch32-rate0.3-best.pth"
     tokenizer.model_max_length=256
     print(mask_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
-    BERT_MASK = wrapping_model(mask_model,tokenizer,"mask",ensemble_num=16)
+    BERT_MASK = wrapping_model(mask_model,tokenizer,"mask",ensemble_num=args.ensemble_num,batch_size=args.ensemble_batch_size,ran_mask=args.random_mask_rate)
     
     #freelb_model = model_lib.TextDefense_model_builder("bert","bert-base-uncased","freelb",device)
     #load_path = "/home/ubuntu/TextDefender/saved_models/imdb_bert/freelb-len256-epo10-batch32-advstep5-advlr0.03-norm0.0-best.pth"
