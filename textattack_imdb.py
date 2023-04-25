@@ -181,6 +181,8 @@ def attack(args, wrapper, name, dataset):
         num_examples=attack_args_dict["attack_examples"],
         log_to_txt=attack_args_dict["log_path"],
         csv_coloring_style="file",
+        num_workers_per_device=args.num_workers_per_device,
+        parallel=args.parallel
     )
     attacker = Attacker(attack, dataset, attack_args)
     attacker.attack_dataset()
@@ -208,6 +210,12 @@ if __name__ == "__main__":
     parser.add_argument("-mr", "--modify_ratio", default=0.1)
     parser.add_argument("-sm", "--similarity", default=0.84)
     parser.add_argument("-kn", "--k_neighbor", default=50)
+    parser.add_argument("-nd", "--num_workers_per_device", default=2)
+    parser.add_argument('-pr', '--parallel',action='store_true')
+    parser.add_argument("-en", "--ensemble_num", default=16)
+    parser.add_argument("-eb", "--ensemble_batch_size", default=32)
+    parser.add_argument("-rms", "--random_mask_rate", default=0.3)
+    
     args = parser.parse_args()
 
     device = "cuda"
@@ -236,6 +244,15 @@ if __name__ == "__main__":
     #print(ascc_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
     #ascc_model.to("cuda")
     #BERT_ASCC = wrapping_model(ascc_model,tokenizer,"ascc")
+    
+    tokenizer = AutoTokenizer.from_pretrained(
+        "bert-base-uncased", use_fast=True
+    )
+    mask_model = model_lib.TextDefense_model_builder("bert","bert-base-uncased","mask",device)
+    load_path = "/home/duy/TextDefender/saved_models/imdb_bert/mask-len256-epo10-batch32-rate0.3-best.pth"
+    tokenizer.model_max_length=256
+    print(mask_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
+    BERT_MASK = wrapping_model(mask_model,tokenizer,"mask",ensemble_num=args.ensemble_num,batch_size=args.ensemble_batch_size,ran_mask=args.random_mask_rate)
     
     #freelb_model = model_lib.TextDefense_model_builder("bert","bert-base-uncased","freelb",device)
     #load_path = "/home/ubuntu/TextDefender/saved_models/imdb_bert/freelb-len256-epo10-batch32-advstep5-advlr0.03-norm0.0-best.pth"
@@ -276,21 +293,11 @@ if __name__ == "__main__":
     #tokenizer = AutoTokenizer.from_pretrained(load_path,use_fast=True)
     #ROBERTA_TMD = wrapping_model(tmd,tokenizer,"tmd")
     
-    tokenizer_roberta = AutoTokenizer.from_pretrained(
-        "roberta-base", use_fast=True
-    )
-    ascc_roberta_model = model_lib.TextDefense_model_builder("roberta","roberta-base","ascc",device)
-    load_path = "/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/tmd_ckpts/TextDefender/saved_models/imdb_roberta/ascc-len256-epo10-batch32-best.pth"
-    print(ascc_roberta_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
-    ascc_roberta_model.to("cuda")
-    tokenizer_roberta.model_max_length=256
-    ROBERTA_ASCC = wrapping_model(ascc_roberta_model,tokenizer_roberta,"ascc")
-    
     with torch.no_grad():
         
         noise_pos = { "pre_att_all": [0.1,0.2], "post_att_all": [0.1,0.2, 0.3]}
         noise_pos_roberta = { "pre_att_all": [0.1,0.2], "post_att_all": [0.2, 0.3]}
-        list_attacks = ["textbugger"]
+        list_attacks = ["bertattack"]
         for i in range(0, 1):
             set_seed(i)
             dataset = gen_dataset(test_data)
@@ -310,6 +317,7 @@ if __name__ == "__main__":
                 #attack(args, BERT_FREELB, "BERT_FREELB", dataset)
                 #attack(args, BERT_INFOBERT, "BERT_INFOBERT", dataset)
                 #attack(args, BERT_TMD, "BERT_TMD", dataset)
+                attack(args, BERT_MASK, "BERT_MASK", dataset)
                 
                 #attack(args, ROBERTA, "ROBERTA", dataset)
                 #for key in noise_pos_roberta.keys():
@@ -318,4 +326,3 @@ if __name__ == "__main__":
                 #        attack(args, ROBERTA, f"ROBERTA_{key}_{noise_intensity}", dataset)
                 #model_roberta.change_defense(defense=False)
                 #attack(args, ROBERTA_TMD, "ROBERTA_TMD", dataset)
-                attack(args, ROBERTA_ASCC, "ROBERTA_ASCC", dataset)

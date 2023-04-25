@@ -534,7 +534,7 @@ def set_env_variables(gpu_id):
     # Only use one GPU, if we have one.
     # For Tensorflow
     # TODO: Using USE with `--parallel` raises similar issue as https://github.com/tensorflow/tensorflow/issues/38518#
-    os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu_id)
+    #os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu_id)
     # For PyTorch
     torch.cuda.set_device(gpu_id)
 

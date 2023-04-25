@@ -32,16 +32,17 @@ TEXTFOOLER_SET = set(
             )
 
 class Augmentor(object):
-    def __init__(self, training_type,safer_aug_set="model/weights/counter_fittted_neighbors.json"):
+    def __init__(self, training_type,safer_aug_set="cache/embed/perturbation_constraint_pca0.8_100.pkl",mask_ratio=0.7):
         self.training_type = training_type
         self.mask_token = '[MASK]'
         self.safer_aug_set = safer_aug_set
+        self.mask_ratio = mask_ratio
         #if self.safer_aug_set is not  None:
         #    self.aug = WordSubstitude(self.safer_aug_set)
 
     def augment(self, sentence: str, n: int) -> List[str]:
         if self.training_type == 'mask':
-            return mask_sentence(sentence, 0.9, self.mask_token, n)
+            return mask_sentence(sentence, self.mask_ratio, self.mask_token, n)
         elif self.training_type == 'dne':
             return [sentence] * n
         elif self.training_type == 'safer':
