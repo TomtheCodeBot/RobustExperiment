@@ -270,17 +270,27 @@ if __name__ == "__main__":
     #model_roberta.eval()
     #ROBERTA = HuggingFaceModelWrapper(model_roberta, tokenizer_tmd_roberta)
     
-    load_path = "/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/tmd_ckpts/manifold_defense/models/roberta-base-imdb"
-    gm_path = "/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/tmd_ckpts/manifold_defense/outputs/infogan_roberta_imdb/bvi8ln2v/checkpoints/epoch=99-step=2199.ckpt"
-    tmd = model_lib.TextDefense_model_builder("roberta",load_path,"tmd",gm_path = gm_path,device="cuda",dataset_name="imdb")
-    tokenizer = AutoTokenizer.from_pretrained(load_path,use_fast=True)
-    ROBERTA_TMD = wrapping_model(tmd,tokenizer,"tmd")
+    #load_path = "/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/tmd_ckpts/manifold_defense/models/roberta-base-imdb"
+    #gm_path = "/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/tmd_ckpts/manifold_defense/outputs/infogan_roberta_imdb/bvi8ln2v/checkpoints/epoch=99-step=2199.ckpt"
+    #tmd = model_lib.TextDefense_model_builder("roberta",load_path,"tmd",gm_path = gm_path,device="cuda",dataset_name="imdb")
+    #tokenizer = AutoTokenizer.from_pretrained(load_path,use_fast=True)
+    #ROBERTA_TMD = wrapping_model(tmd,tokenizer,"tmd")
+    
+    tokenizer_roberta = AutoTokenizer.from_pretrained(
+        "roberta-base", use_fast=True
+    )
+    ascc_roberta_model = model_lib.TextDefense_model_builder("roberta","roberta-base","ascc",device)
+    load_path = "/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/tmd_ckpts/TextDefender/saved_models/imdb_roberta/ascc-len256-epo10-batch32-best.pth"
+    print(ascc_roberta_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
+    ascc_roberta_model.to("cuda")
+    tokenizer_roberta.model_max_length=256
+    ROBERTA_ASCC = wrapping_model(ascc_roberta_model,tokenizer_roberta,"ascc")
     
     with torch.no_grad():
         
         noise_pos = { "pre_att_all": [0.1,0.2], "post_att_all": [0.1,0.2, 0.3]}
         noise_pos_roberta = { "pre_att_all": [0.1,0.2], "post_att_all": [0.2, 0.3]}
-        list_attacks = ["bertattack"]
+        list_attacks = ["textbugger"]
         for i in range(0, 1):
             set_seed(i)
             dataset = gen_dataset(test_data)
@@ -307,4 +317,5 @@ if __name__ == "__main__":
                 #        model_roberta.change_defense(defense_cls="random_noise",def_position=key,noise_sigma=noise_intensity,defense=True)
                 #        attack(args, ROBERTA, f"ROBERTA_{key}_{noise_intensity}", dataset)
                 #model_roberta.change_defense(defense=False)
-                attack(args, ROBERTA_TMD, "ROBERTA_TMD", dataset)
+                #attack(args, ROBERTA_TMD, "ROBERTA_TMD", dataset)
+                attack(args, ROBERTA_ASCC, "ROBERTA_ASCC", dataset)

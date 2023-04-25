@@ -1,261 +1,48 @@
 {
-    "bertattack": {
-        "BERT_pre_att_all_0.1": {
-            "Number of successful attacks": "781.00",
-            "Number of failed attacks": "138.00",
-            "Number of skipped attacks": "81.00",
-            "Original accuracy": "91.90%",
-            "Accuracy under attack": "13.80%",
-            "Attack success rate": "84.98%",
-            "Average perturbed word %": "3.24%",
-            "Average num. words per input": "232.28",
-            "Avg num queries": "1444.61"
-        },
-        "BERT_post_att_all_0.2": {
-            "Number of successful attacks": "732.00",
-            "Number of failed attacks": "184.00",
-            "Number of skipped attacks": "84.00",
-            "Original accuracy": "91.60%",
-            "Accuracy under attack": "18.40%",
-            "Attack success rate": "79.91%",
-            "Average perturbed word %": "3.04%",
-            "Average num. words per input": "232.28",
-            "Avg num queries": "1775.39"
-        },
-        "BERT_TMD": {
-            "Number of successful attacks": "565.00",
-            "Number of failed attacks": "362.00",
-            "Number of skipped attacks": "73.00",
-            "Original accuracy": "92.70%",
-            "Accuracy under attack": "36.20%",
-            "Attack success rate": "60.95%",
-            "Average perturbed word %": "3.48%",
-            "Average num. words per input": "226.64",
-            "Avg num queries": "2464.83"
-        },
-        "BERT_INFOBERT": {
-            "Number of successful attacks": "710.00",
-            "Number of failed attacks": "209.00",
-            "Number of skipped attacks": "81.00",
-            "Original accuracy": "91.90%",
-            "Accuracy under attack": "20.90%",
-            "Attack success rate": "77.26%",
-            "Average perturbed word %": "2.91%",
-            "Average num. words per input": "234.11",
-            "Avg num queries": "510.46"
-        },
-        "BERT_post_att_all_0.3": {
-            "Number of successful attacks": "675.00",
-            "Number of failed attacks": "230.00",
-            "Number of skipped attacks": "95.00",
-            "Original accuracy": "90.50%",
-            "Accuracy under attack": "23.00%",
-            "Attack success rate": "74.59%",
-            "Average perturbed word %": "2.58%",
-            "Average num. words per input": "232.28",
-            "Avg num queries": "1893.96"
-        },
-        "BERT_FREELB": {
-            "Number of successful attacks": "695.00",
-            "Number of failed attacks": "218.00",
-            "Number of skipped attacks": "87.00",
-            "Original accuracy": "91.30%",
-            "Accuracy under attack": "21.80%",
-            "Attack success rate": "76.12%",
-            "Average perturbed word %": "3.02%",
-            "Average num. words per input": "228.67",
-            "Avg num queries": "549.85"
-        },
-        "BERT_pre_att_all_0.2": {
-            "Number of successful attacks": "720.00",
-            "Number of failed attacks": "187.00",
-            "Number of skipped attacks": "93.00",
-            "Original accuracy": "90.70%",
-            "Accuracy under attack": "18.70%",
-            "Attack success rate": "79.38%",
-            "Average perturbed word %": "2.59%",
-            "Average num. words per input": "232.28",
-            "Avg num queries": "1707.90"
-        },
-        "BERT": {
-            "Number of successful attacks": "838.00",
-            "Number of failed attacks": "89.00",
-            "Number of skipped attacks": "73.00",
-            "Original accuracy": "92.70%",
-            "Accuracy under attack": "8.90%",
-            "Attack success rate": "90.40%",
-            "Average perturbed word %": "2.53%",
-            "Average num. words per input": "228.28",
-            "Avg num queries": "366.52"
-        },
-        "BERT_post_att_all_0.1": {
-            "Number of successful attacks": "806.00",
-            "Number of failed attacks": "110.00",
-            "Number of skipped attacks": "84.00",
-            "Original accuracy": "91.60%",
-            "Accuracy under attack": "11.00%",
-            "Attack success rate": "87.99%",
-            "Average perturbed word %": "3.25%",
-            "Average num. words per input": "232.28",
-            "Avg num queries": "1096.85"
-        },
-        "BERT_ASCC": {
-            "Number of successful attacks": "831.00",
-            "Number of failed attacks": "77.00",
-            "Number of skipped attacks": "92.00",
-            "Original accuracy": "90.80%",
-            "Accuracy under attack": "7.70%",
-            "Attack success rate": "91.52%",
-            "Average perturbed word %": "2.80%",
-            "Average num. words per input": "224.26",
-            "Avg num queries": "416.50"
-        }
-    },
-    "textfooler": {
-        "BERT_pre_att_all_0.1": {
-            "Number of successful attacks": "688.00",
-            "Number of failed attacks": "214.00",
-            "Number of skipped attacks": "98.00",
-            "Original accuracy": "90.20%",
-            "Accuracy under attack": "21.40%",
-            "Attack success rate": "76.27%",
-            "Average perturbed word %": "3.28%",
-            "Average num. words per input": "229.99",
-            "Avg num queries": "1572.44"
-        },
-        "BERT_post_att_all_0.2": {
-            "Number of successful attacks": "635.00",
-            "Number of failed attacks": "273.00",
-            "Number of skipped attacks": "92.00",
-            "Original accuracy": "90.80%",
-            "Accuracy under attack": "27.30%",
-            "Attack success rate": "69.93%",
-            "Average perturbed word %": "2.96%",
-            "Average num. words per input": "229.99",
-            "Avg num queries": "1866.28"
-        },
-        "BERT_TMD": {
-            "Number of successful attacks": "476.00",
-            "Number of failed attacks": "451.00",
-            "Number of skipped attacks": "73.00",
-            "Original accuracy": "92.70%",
-            "Accuracy under attack": "45.10%",
-            "Attack success rate": "51.35%",
-            "Average perturbed word %": "3.66%",
-            "Average num. words per input": "226.64",
-            "Avg num queries": "2735.58"
-        },
-        "BERT_INFOBERT": {
-            "Number of successful attacks": "666.00",
-            "Number of failed attacks": "253.00",
-            "Number of skipped attacks": "81.00",
-            "Original accuracy": "91.90%",
-            "Accuracy under attack": "25.30%",
-            "Attack success rate": "72.47%",
-            "Average perturbed word %": "3.30%",
-            "Average num. words per input": "234.11",
-            "Avg num queries": "645.03"
-        },
-        "BERT_post_att_all_0.3": {
-            "Number of successful attacks": "595.00",
-            "Number of failed attacks": "302.00",
-            "Number of skipped attacks": "103.00",
-            "Original accuracy": "89.70%",
-            "Accuracy under attack": "30.20%",
-            "Attack success rate": "66.33%",
-            "Average perturbed word %": "2.53%",
-            "Average num. words per input": "229.99",
-            "Avg num queries": "1967.33"
-        },
-        "BERT_FREELB": {
-            "Number of successful attacks": "624.00",
-            "Number of failed attacks": "289.00",
-            "Number of skipped attacks": "87.00",
-            "Original accuracy": "91.30%",
-            "Accuracy under attack": "28.90%",
-            "Attack success rate": "68.35%",
-            "Average perturbed word %": "3.34%",
-            "Average num. words per input": "228.67",
-            "Avg num queries": "670.20"
-        },
-        "BERT_pre_att_all_0.2": {
-            "Number of successful attacks": "612.00",
-            "Number of failed attacks": "287.00",
-            "Number of skipped attacks": "101.00",
-            "Original accuracy": "89.90%",
-            "Accuracy under attack": "28.70%",
-            "Attack success rate": "68.08%",
-            "Average perturbed word %": "2.44%",
-            "Average num. words per input": "229.99",
-            "Avg num queries": "1886.60"
-        },
-        "BERT": {
-            "Number of successful attacks": "808.00",
-            "Number of failed attacks": "119.00",
-            "Number of skipped attacks": "73.00",
-            "Original accuracy": "92.70%",
-            "Accuracy under attack": "11.90%",
-            "Attack success rate": "87.16%",
-            "Average perturbed word %": "2.89%",
-            "Average num. words per input": "228.28",
-            "Avg num queries": "439.15"
-        },
-        "BERT_post_att_all_0.1": {
-            "Number of successful attacks": "734.00",
-            "Number of failed attacks": "169.00",
-            "Number of skipped attacks": "97.00",
-            "Original accuracy": "90.30%",
-            "Accuracy under attack": "16.90%",
-            "Attack success rate": "81.28%",
-            "Average perturbed word %": "3.52%",
-            "Average num. words per input": "229.99",
-            "Avg num queries": "1275.00"
-        },
-        "BERT_ASCC": {
-            "Number of successful attacks": "730.00",
-            "Number of failed attacks": "169.00",
-            "Number of skipped attacks": "101.00",
-            "Original accuracy": "89.90%",
-            "Accuracy under attack": "16.90%",
-            "Attack success rate": "81.20%",
-            "Average perturbed word %": "3.59%",
-            "Average num. words per input": "230.97",
-            "Avg num queries": "529.55"
-        }
-    },
     "textbugger": {
-        "BERT_pre_att_all_0.1": {
-            "Number of successful attacks": "733.00",
-            "Number of failed attacks": "181.00",
-            "Number of skipped attacks": "86.00",
-            "Original accuracy": "91.40%",
-            "Accuracy under attack": "18.10%",
-            "Attack success rate": "80.20%",
-            "Average perturbed word %": "3.12%",
-            "Average num. words per input": "231.74",
-            "Avg num queries": "1865.94"
+        "BERT_FREELB": {
+            "Number of successful attacks": "655.00",
+            "Number of failed attacks": "258.00",
+            "Number of skipped attacks": "87.00",
+            "Original accuracy": "91.30%",
+            "Accuracy under attack": "25.80%",
+            "Attack success rate": "71.74%",
+            "Average perturbed word %": "3.26%",
+            "Average num. words per input": "228.67",
+            "Avg num queries": "776.31"
         },
-        "BERT_post_att_all_0.2": {
-            "Number of successful attacks": "662.00",
-            "Number of failed attacks": "247.00",
-            "Number of skipped attacks": "91.00",
-            "Original accuracy": "90.90%",
-            "Accuracy under attack": "24.70%",
-            "Attack success rate": "72.83%",
-            "Average perturbed word %": "2.86%",
-            "Average num. words per input": "231.74",
-            "Avg num queries": "2353.94"
+        "ROBERTA_post_att_all_0.2": {
+            "Number of successful attacks": "643.00",
+            "Number of failed attacks": "295.00",
+            "Number of skipped attacks": "62.00",
+            "Original accuracy": "93.80%",
+            "Accuracy under attack": "29.50%",
+            "Attack success rate": "68.55%",
+            "Average perturbed word %": "2.77%",
+            "Average num. words per input": "231.23",
+            "Avg num queries": "2405.76"
         },
-        "BERT_TMD": {
-            "Number of successful attacks": "524.00",
-            "Number of failed attacks": "404.00",
-            "Number of skipped attacks": "72.00",
-            "Original accuracy": "92.80%",
-            "Accuracy under attack": "40.40%",
-            "Attack success rate": "56.47%",
-            "Average perturbed word %": "3.72%",
-            "Average num. words per input": "226.64",
-            "Avg num queries": "3251.52"
+        "BERT_pre_att_all_0.2": {
+            "Number of successful attacks": "660.00",
+            "Number of failed attacks": "248.00",
+            "Number of skipped attacks": "92.00",
+            "Original accuracy": "90.80%",
+            "Accuracy under attack": "24.80%",
+            "Attack success rate": "72.69%",
+            "Average perturbed word %": "2.47%",
+            "Average num. words per input": "231.74",
+            "Avg num queries": "2259.91"
+        },
+        "ROBERTA_pre_att_all_0.2": {
+            "Number of successful attacks": "684.00",
+            "Number of failed attacks": "224.00",
+            "Number of skipped attacks": "92.00",
+            "Original accuracy": "90.80%",
+            "Accuracy under attack": "22.40%",
+            "Attack success rate": "75.33%",
+            "Average perturbed word %": "2.09%",
+            "Average num. words per input": "231.23",
+            "Avg num queries": "1945.43"
         },
         "BERT_INFOBERT": {
             "Number of successful attacks": "694.00",
@@ -268,38 +55,104 @@
             "Average num. words per input": "234.11",
             "Avg num queries": "719.98"
         },
-        "BERT_post_att_all_0.3": {
-            "Number of successful attacks": "588.00",
-            "Number of failed attacks": "315.00",
-            "Number of skipped attacks": "97.00",
-            "Original accuracy": "90.30%",
-            "Accuracy under attack": "31.50%",
-            "Attack success rate": "65.12%",
-            "Average perturbed word %": "2.32%",
-            "Average num. words per input": "231.74",
-            "Avg num queries": "2612.29"
-        },
-        "BERT_FREELB": {
-            "Number of successful attacks": "655.00",
-            "Number of failed attacks": "258.00",
-            "Number of skipped attacks": "87.00",
-            "Original accuracy": "91.30%",
-            "Accuracy under attack": "25.80%",
-            "Attack success rate": "71.74%",
-            "Average perturbed word %": "3.26%",
-            "Average num. words per input": "228.67",
-            "Avg num queries": "776.31"
-        },
-        "BERT_pre_att_all_0.2": {
-            "Number of successful attacks": "660.00",
-            "Number of failed attacks": "248.00",
+        "BERT_ASCC": {
+            "Number of successful attacks": "778.00",
+            "Number of failed attacks": "130.00",
             "Number of skipped attacks": "92.00",
             "Original accuracy": "90.80%",
-            "Accuracy under attack": "24.80%",
-            "Attack success rate": "72.69%",
-            "Average perturbed word %": "2.47%",
+            "Accuracy under attack": "13.00%",
+            "Attack success rate": "85.68%",
+            "Average perturbed word %": "3.50%",
+            "Average num. words per input": "224.26",
+            "Avg num queries": "597.07"
+        },
+        "BERT_post_att_all_0.2": {
+            "Number of successful attacks": "662.00",
+            "Number of failed attacks": "247.00",
+            "Number of skipped attacks": "91.00",
+            "Original accuracy": "90.90%",
+            "Accuracy under attack": "24.70%",
+            "Attack success rate": "72.83%",
+            "Average perturbed word %": "2.86%",
             "Average num. words per input": "231.74",
-            "Avg num queries": "2259.91"
+            "Avg num queries": "2353.94"
+        },
+        "BERT_pre_att_all_0.1": {
+            "Number of successful attacks": "733.00",
+            "Number of failed attacks": "181.00",
+            "Number of skipped attacks": "86.00",
+            "Original accuracy": "91.40%",
+            "Accuracy under attack": "18.10%",
+            "Attack success rate": "80.20%",
+            "Average perturbed word %": "3.12%",
+            "Average num. words per input": "231.74",
+            "Avg num queries": "1865.94"
+        },
+        "ROBERTA_pre_att_all_0.1": {
+            "Number of successful attacks": "688.00",
+            "Number of failed attacks": "236.00",
+            "Number of skipped attacks": "76.00",
+            "Original accuracy": "92.40%",
+            "Accuracy under attack": "23.60%",
+            "Attack success rate": "74.46%",
+            "Average perturbed word %": "2.96%",
+            "Average num. words per input": "231.23",
+            "Avg num queries": "2086.32"
+        },
+        "ROBERTA_post_att_all_0.3": {
+            "Number of successful attacks": "618.00",
+            "Number of failed attacks": "302.00",
+            "Number of skipped attacks": "80.00",
+            "Original accuracy": "92.00%",
+            "Accuracy under attack": "30.20%",
+            "Attack success rate": "67.17%",
+            "Average perturbed word %": "2.08%",
+            "Average num. words per input": "231.23",
+            "Avg num queries": "2408.47"
+        },
+        "ROBERTA": {
+            "Number of successful attacks": "867.00",
+            "Number of failed attacks": "69.00",
+            "Number of skipped attacks": "64.00",
+            "Original accuracy": "93.60%",
+            "Accuracy under attack": "6.90%",
+            "Attack success rate": "92.63%",
+            "Average perturbed word %": "2.95%",
+            "Average num. words per input": "231.23",
+            "Avg num queries": "517.58"
+        },
+        "BERT_TMD": {
+            "Number of successful attacks": "524.00",
+            "Number of failed attacks": "404.00",
+            "Number of skipped attacks": "72.00",
+            "Original accuracy": "92.80%",
+            "Accuracy under attack": "40.40%",
+            "Attack success rate": "56.47%",
+            "Average perturbed word %": "3.72%",
+            "Average num. words per input": "226.64",
+            "Avg num queries": "3251.52"
+        },
+        "ROBERTA_TMD": {
+            "Number of successful attacks": "274.00",
+            "Number of failed attacks": "661.00",
+            "Number of skipped attacks": "65.00",
+            "Original accuracy": "93.50%",
+            "Accuracy under attack": "66.10%",
+            "Attack success rate": "29.30%",
+            "Average perturbed word %": "2.39%",
+            "Average num. words per input": "237.77",
+            "Avg num queries": "4799.56"
+        },
+        "ROBERTA_ASCC": {
+            "Number of successful attacks": "790.00",
+            "Number of failed attacks": "147.00",
+            "Number of skipped attacks": "63.00",
+            "Original accuracy": "93.70%",
+            "Accuracy under attack": "14.70%",
+            "Attack success rate": "84.31%",
+            "Average perturbed word %": "3.71%",
+            "Average num. words per input": "234.17",
+            "Avg num queries": "770.35"
         },
         "BERT": {
             "Number of successful attacks": "835.00",
@@ -323,16 +176,394 @@
             "Average num. words per input": "231.74",
             "Avg num queries": "1539.77"
         },
+        "BERT_post_att_all_0.3": {
+            "Number of successful attacks": "588.00",
+            "Number of failed attacks": "315.00",
+            "Number of skipped attacks": "97.00",
+            "Original accuracy": "90.30%",
+            "Accuracy under attack": "31.50%",
+            "Attack success rate": "65.12%",
+            "Average perturbed word %": "2.32%",
+            "Average num. words per input": "231.74",
+            "Avg num queries": "2612.29"
+        }
+    },
+    "bertattack": {
+        "BERT_FREELB": {
+            "Number of successful attacks": "695.00",
+            "Number of failed attacks": "218.00",
+            "Number of skipped attacks": "87.00",
+            "Original accuracy": "91.30%",
+            "Accuracy under attack": "21.80%",
+            "Attack success rate": "76.12%",
+            "Average perturbed word %": "3.02%",
+            "Average num. words per input": "228.67",
+            "Avg num queries": "549.85"
+        },
+        "ROBERTA_post_att_all_0.2": {
+            "Number of successful attacks": "748.00",
+            "Number of failed attacks": "189.00",
+            "Number of skipped attacks": "63.00",
+            "Original accuracy": "93.70%",
+            "Accuracy under attack": "18.90%",
+            "Attack success rate": "79.83%",
+            "Average perturbed word %": "2.93%",
+            "Average num. words per input": "230.57",
+            "Avg num queries": "1682.50"
+        },
+        "BERT_pre_att_all_0.2": {
+            "Number of successful attacks": "720.00",
+            "Number of failed attacks": "187.00",
+            "Number of skipped attacks": "93.00",
+            "Original accuracy": "90.70%",
+            "Accuracy under attack": "18.70%",
+            "Attack success rate": "79.38%",
+            "Average perturbed word %": "2.59%",
+            "Average num. words per input": "232.28",
+            "Avg num queries": "1707.90"
+        },
+        "ROBERTA_pre_att_all_0.2": {
+            "Number of successful attacks": "760.00",
+            "Number of failed attacks": "165.00",
+            "Number of skipped attacks": "75.00",
+            "Original accuracy": "92.50%",
+            "Accuracy under attack": "16.50%",
+            "Attack success rate": "82.16%",
+            "Average perturbed word %": "2.28%",
+            "Average num. words per input": "230.57",
+            "Avg num queries": "1434.28"
+        },
+        "BERT_INFOBERT": {
+            "Number of successful attacks": "710.00",
+            "Number of failed attacks": "209.00",
+            "Number of skipped attacks": "81.00",
+            "Original accuracy": "91.90%",
+            "Accuracy under attack": "20.90%",
+            "Attack success rate": "77.26%",
+            "Average perturbed word %": "2.91%",
+            "Average num. words per input": "234.11",
+            "Avg num queries": "510.46"
+        },
         "BERT_ASCC": {
-            "Number of successful attacks": "778.00",
-            "Number of failed attacks": "130.00",
+            "Number of successful attacks": "831.00",
+            "Number of failed attacks": "77.00",
             "Number of skipped attacks": "92.00",
             "Original accuracy": "90.80%",
-            "Accuracy under attack": "13.00%",
-            "Attack success rate": "85.68%",
-            "Average perturbed word %": "3.50%",
+            "Accuracy under attack": "7.70%",
+            "Attack success rate": "91.52%",
+            "Average perturbed word %": "2.80%",
             "Average num. words per input": "224.26",
-            "Avg num queries": "597.07"
+            "Avg num queries": "416.50"
+        },
+        "BERT_post_att_all_0.2": {
+            "Number of successful attacks": "732.00",
+            "Number of failed attacks": "184.00",
+            "Number of skipped attacks": "84.00",
+            "Original accuracy": "91.60%",
+            "Accuracy under attack": "18.40%",
+            "Attack success rate": "79.91%",
+            "Average perturbed word %": "3.04%",
+            "Average num. words per input": "232.28",
+            "Avg num queries": "1775.39"
+        },
+        "BERT_pre_att_all_0.1": {
+            "Number of successful attacks": "781.00",
+            "Number of failed attacks": "138.00",
+            "Number of skipped attacks": "81.00",
+            "Original accuracy": "91.90%",
+            "Accuracy under attack": "13.80%",
+            "Attack success rate": "84.98%",
+            "Average perturbed word %": "3.24%",
+            "Average num. words per input": "232.28",
+            "Avg num queries": "1444.61"
+        },
+        "ROBERTA_pre_att_all_0.1": {
+            "Number of successful attacks": "792.00",
+            "Number of failed attacks": "151.00",
+            "Number of skipped attacks": "57.00",
+            "Original accuracy": "94.30%",
+            "Accuracy under attack": "15.10%",
+            "Attack success rate": "83.99%",
+            "Average perturbed word %": "3.04%",
+            "Average num. words per input": "230.57",
+            "Avg num queries": "1426.83"
+        },
+        "ROBERTA_post_att_all_0.3": {
+            "Number of successful attacks": "704.00",
+            "Number of failed attacks": "215.00",
+            "Number of skipped attacks": "81.00",
+            "Original accuracy": "91.90%",
+            "Accuracy under attack": "21.50%",
+            "Attack success rate": "76.61%",
+            "Average perturbed word %": "2.52%",
+            "Average num. words per input": "230.57",
+            "Avg num queries": "1756.51"
+        },
+        "ROBERTA": {
+            "Number of successful attacks": "859.00",
+            "Number of failed attacks": "82.00",
+            "Number of skipped attacks": "59.00",
+            "Original accuracy": "94.10%",
+            "Accuracy under attack": "8.20%",
+            "Attack success rate": "91.29%",
+            "Average perturbed word %": "2.85%",
+            "Average num. words per input": "230.57",
+            "Avg num queries": "439.79"
+        },
+        "BERT_TMD": {
+            "Number of successful attacks": "565.00",
+            "Number of failed attacks": "362.00",
+            "Number of skipped attacks": "73.00",
+            "Original accuracy": "92.70%",
+            "Accuracy under attack": "36.20%",
+            "Attack success rate": "60.95%",
+            "Average perturbed word %": "3.48%",
+            "Average num. words per input": "226.64",
+            "Avg num queries": "2464.83"
+        },
+        "ROBERTA_TMD": {
+            "Number of successful attacks": "379.00",
+            "Number of failed attacks": "560.00",
+            "Number of skipped attacks": "61.00",
+            "Original accuracy": "93.90%",
+            "Accuracy under attack": "56.00%",
+            "Attack success rate": "40.36%",
+            "Average perturbed word %": "2.42%",
+            "Average num. words per input": "228.92",
+            "Avg num queries": "3330.08"
+        },
+        "ROBERTA_ASCC": {
+            "Number of successful attacks": "773.00",
+            "Number of failed attacks": "152.00",
+            "Number of skipped attacks": "75.00",
+            "Original accuracy": "92.50%",
+            "Accuracy under attack": "15.20%",
+            "Attack success rate": "83.57%",
+            "Average perturbed word %": "3.31%",
+            "Average num. words per input": "225.43",
+            "Avg num queries": "548.34"
+        },
+        "BERT": {
+            "Number of successful attacks": "838.00",
+            "Number of failed attacks": "89.00",
+            "Number of skipped attacks": "73.00",
+            "Original accuracy": "92.70%",
+            "Accuracy under attack": "8.90%",
+            "Attack success rate": "90.40%",
+            "Average perturbed word %": "2.53%",
+            "Average num. words per input": "228.28",
+            "Avg num queries": "366.52"
+        },
+        "BERT_post_att_all_0.1": {
+            "Number of successful attacks": "806.00",
+            "Number of failed attacks": "110.00",
+            "Number of skipped attacks": "84.00",
+            "Original accuracy": "91.60%",
+            "Accuracy under attack": "11.00%",
+            "Attack success rate": "87.99%",
+            "Average perturbed word %": "3.25%",
+            "Average num. words per input": "232.28",
+            "Avg num queries": "1096.85"
+        },
+        "BERT_post_att_all_0.3": {
+            "Number of successful attacks": "675.00",
+            "Number of failed attacks": "230.00",
+            "Number of skipped attacks": "95.00",
+            "Original accuracy": "90.50%",
+            "Accuracy under attack": "23.00%",
+            "Attack success rate": "74.59%",
+            "Average perturbed word %": "2.58%",
+            "Average num. words per input": "232.28",
+            "Avg num queries": "1893.96"
+        }
+    },
+    "textfooler": {
+        "BERT_FREELB": {
+            "Number of successful attacks": "624.00",
+            "Number of failed attacks": "289.00",
+            "Number of skipped attacks": "87.00",
+            "Original accuracy": "91.30%",
+            "Accuracy under attack": "28.90%",
+            "Attack success rate": "68.35%",
+            "Average perturbed word %": "3.34%",
+            "Average num. words per input": "228.67",
+            "Avg num queries": "670.20"
+        },
+        "ROBERTA_post_att_all_0.2": {
+            "Number of successful attacks": "573.00",
+            "Number of failed attacks": "357.00",
+            "Number of skipped attacks": "70.00",
+            "Original accuracy": "93.00%",
+            "Accuracy under attack": "35.70%",
+            "Attack success rate": "61.61%",
+            "Average perturbed word %": "3.05%",
+            "Average num. words per input": "222.73",
+            "Avg num queries": "2110.53"
+        },
+        "BERT_pre_att_all_0.2": {
+            "Number of successful attacks": "612.00",
+            "Number of failed attacks": "287.00",
+            "Number of skipped attacks": "101.00",
+            "Original accuracy": "89.90%",
+            "Accuracy under attack": "28.70%",
+            "Attack success rate": "68.08%",
+            "Average perturbed word %": "2.44%",
+            "Average num. words per input": "229.99",
+            "Avg num queries": "1886.60"
+        },
+        "ROBERTA_pre_att_all_0.2": {
+            "Number of successful attacks": "646.00",
+            "Number of failed attacks": "277.00",
+            "Number of skipped attacks": "77.00",
+            "Original accuracy": "92.30%",
+            "Accuracy under attack": "27.70%",
+            "Attack success rate": "69.99%",
+            "Average perturbed word %": "2.16%",
+            "Average num. words per input": "222.73",
+            "Avg num queries": "1673.44"
+        },
+        "BERT_INFOBERT": {
+            "Number of successful attacks": "666.00",
+            "Number of failed attacks": "253.00",
+            "Number of skipped attacks": "81.00",
+            "Original accuracy": "91.90%",
+            "Accuracy under attack": "25.30%",
+            "Attack success rate": "72.47%",
+            "Average perturbed word %": "3.30%",
+            "Average num. words per input": "234.11",
+            "Avg num queries": "645.03"
+        },
+        "BERT_ASCC": {
+            "Number of successful attacks": "730.00",
+            "Number of failed attacks": "169.00",
+            "Number of skipped attacks": "101.00",
+            "Original accuracy": "89.90%",
+            "Accuracy under attack": "16.90%",
+            "Attack success rate": "81.20%",
+            "Average perturbed word %": "3.59%",
+            "Average num. words per input": "230.97",
+            "Avg num queries": "529.55"
+        },
+        "BERT_post_att_all_0.2": {
+            "Number of successful attacks": "635.00",
+            "Number of failed attacks": "273.00",
+            "Number of skipped attacks": "92.00",
+            "Original accuracy": "90.80%",
+            "Accuracy under attack": "27.30%",
+            "Attack success rate": "69.93%",
+            "Average perturbed word %": "2.96%",
+            "Average num. words per input": "229.99",
+            "Avg num queries": "1866.28"
+        },
+        "BERT_pre_att_all_0.1": {
+            "Number of successful attacks": "688.00",
+            "Number of failed attacks": "214.00",
+            "Number of skipped attacks": "98.00",
+            "Original accuracy": "90.20%",
+            "Accuracy under attack": "21.40%",
+            "Attack success rate": "76.27%",
+            "Average perturbed word %": "3.28%",
+            "Average num. words per input": "229.99",
+            "Avg num queries": "1572.44"
+        },
+        "ROBERTA_pre_att_all_0.1": {
+            "Number of successful attacks": "643.00",
+            "Number of failed attacks": "287.00",
+            "Number of skipped attacks": "70.00",
+            "Original accuracy": "93.00%",
+            "Accuracy under attack": "28.70%",
+            "Attack success rate": "69.14%",
+            "Average perturbed word %": "3.20%",
+            "Average num. words per input": "222.73",
+            "Avg num queries": "1747.67"
+        },
+        "ROBERTA_post_att_all_0.3": {
+            "Number of successful attacks": "559.00",
+            "Number of failed attacks": "364.00",
+            "Number of skipped attacks": "77.00",
+            "Original accuracy": "92.30%",
+            "Accuracy under attack": "36.40%",
+            "Attack success rate": "60.56%",
+            "Average perturbed word %": "2.18%",
+            "Average num. words per input": "222.73",
+            "Avg num queries": "2066.70"
+        },
+        "ROBERTA": {
+            "Number of successful attacks": "820.00",
+            "Number of failed attacks": "114.00",
+            "Number of skipped attacks": "66.00",
+            "Original accuracy": "93.40%",
+            "Accuracy under attack": "11.40%",
+            "Attack success rate": "87.79%",
+            "Average perturbed word %": "3.42%",
+            "Average num. words per input": "219.56",
+            "Avg num queries": "456.35"
+        },
+        "BERT_TMD": {
+            "Number of successful attacks": "476.00",
+            "Number of failed attacks": "451.00",
+            "Number of skipped attacks": "73.00",
+            "Original accuracy": "92.70%",
+            "Accuracy under attack": "45.10%",
+            "Attack success rate": "51.35%",
+            "Average perturbed word %": "3.66%",
+            "Average num. words per input": "226.64",
+            "Avg num queries": "2735.58"
+        },
+        "ROBERTA_TMD": {
+            "Number of successful attacks": "269.00",
+            "Number of failed attacks": "664.00",
+            "Number of skipped attacks": "67.00",
+            "Original accuracy": "93.30%",
+            "Accuracy under attack": "66.40%",
+            "Attack success rate": "28.83%",
+            "Average perturbed word %": "2.28%",
+            "Average num. words per input": "227.18",
+            "Avg num queries": "3477.32"
+        },
+        "ROBERTA_ASCC": {
+            "Number of successful attacks": "713.00",
+            "Number of failed attacks": "202.00",
+            "Number of skipped attacks": "85.00",
+            "Original accuracy": "91.50%",
+            "Accuracy under attack": "20.20%",
+            "Attack success rate": "77.92%",
+            "Average perturbed word %": "3.70%",
+            "Average num. words per input": "240.01",
+            "Avg num queries": "606.14"
+        },
+        "BERT": {
+            "Number of successful attacks": "808.00",
+            "Number of failed attacks": "119.00",
+            "Number of skipped attacks": "73.00",
+            "Original accuracy": "92.70%",
+            "Accuracy under attack": "11.90%",
+            "Attack success rate": "87.16%",
+            "Average perturbed word %": "2.89%",
+            "Average num. words per input": "228.28",
+            "Avg num queries": "439.15"
+        },
+        "BERT_post_att_all_0.1": {
+            "Number of successful attacks": "734.00",
+            "Number of failed attacks": "169.00",
+            "Number of skipped attacks": "97.00",
+            "Original accuracy": "90.30%",
+            "Accuracy under attack": "16.90%",
+            "Attack success rate": "81.28%",
+            "Average perturbed word %": "3.52%",
+            "Average num. words per input": "229.99",
+            "Avg num queries": "1275.00"
+        },
+        "BERT_post_att_all_0.3": {
+            "Number of successful attacks": "595.00",
+            "Number of failed attacks": "302.00",
+            "Number of skipped attacks": "103.00",
+            "Original accuracy": "89.70%",
+            "Accuracy under attack": "30.20%",
+            "Attack success rate": "66.33%",
+            "Average perturbed word %": "2.53%",
+            "Average num. words per input": "229.99",
+            "Avg num queries": "1967.33"
         }
     }
 }
