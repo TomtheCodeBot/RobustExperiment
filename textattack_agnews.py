@@ -49,7 +49,6 @@ import os
 import model as model_lib
 from model.TextDefenseExtraWrapper import wrapping_model
 import time
-
 class CustomModelWrapper(PyTorchModelWrapper):
     def __init__(self, model, tokenizer):
         super(CustomModelWrapper, self).__init__(model, tokenizer)
@@ -179,6 +178,8 @@ def attack(args, wrapper, name, dataset):
         num_examples=attack_args_dict["attack_examples"],
         log_to_txt=attack_args_dict["log_path"],
         csv_coloring_style="file",
+        num_workers_per_device=args.num_workers_per_device,
+        parallel=args.parallel
     )
     attacker = Attacker(attack, dataset, attack_args)
     attacker.attack_dataset()
@@ -207,6 +208,8 @@ if __name__ == "__main__":
     parser.add_argument("-mr", "--modify_ratio", default=0.3)
     parser.add_argument("-sm", "--similarity", default=0.84)
     parser.add_argument("-kn", "--k_neighbor", default=50)
+    parser.add_argument("-nd", "--num_workers_per_device", default=2)
+    parser.add_argument("-pr", "--parallel", default=False)
     args = parser.parse_args()
     sst2_dataset = datasets.load_dataset("ag_news")
     train_data = sst2_dataset["train"]
@@ -242,10 +245,11 @@ if __name__ == "__main__":
     #print(dne_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
     #BERT_DNE = wrapping_model(dne_model,tokenizer,"dne")
     
-    #mask_model = model_lib.TextDefense_model_builder("bert","bert-base-uncased","mask",device,dataset_name="agnews")
-    #load_path = "/home/ubuntu/RobustExperiment/model/weights/mask-len128-epo5-batch16-rate0.9-best.pth"
-    #print(mask_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
-    #BERT_MASK = wrapping_model(mask_model,tokenizer,"mask")
+    mask_model = model_lib.TextDefense_model_builder("bert","bert-base-uncased","mask",device,dataset_name="agnews")
+    load_path = "/home/duy/TextDefender/saved_models/ag_news_bert/mask-len128-epo10-batch32-rate0.9-best.pth"
+    tokenizer.model_max_length=128
+    print(mask_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
+    BERT_MASK = wrapping_model(mask_model,tokenizer,"mask")
     
     
     #freelb_model = model_lib.TextDefense_model_builder("bert","bert-base-uncased","freelb",device,dataset_name="agnews")
@@ -279,11 +283,11 @@ if __name__ == "__main__":
     #model_roberta.eval()
     #ROBERTA = HuggingFaceModelWrapper(model_roberta, tokenizer_tmd_roberta)
 
-    load_path = "/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/tmd_ckpts/manifold_defense/models/roberta-base-agnews"
-    gm_path = "/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/tmd_ckpts/manifold_defense/outputs/infogan_roberta_agnews/6us3wbhr/checkpoints/epoch=99-step=10599.ckpt"
-    tmd = model_lib.TextDefense_model_builder("roberta",load_path,"tmd",gm_path = gm_path,device="cuda",dataset_name="agnews")
-    tokenizer = AutoTokenizer.from_pretrained(load_path,use_fast=True)
-    ROBERTA_TMD = wrapping_model(tmd,tokenizer,"tmd")
+    #load_path = "/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/tmd_ckpts/manifold_defense/models/roberta-base-agnews"
+    #gm_path = "/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/tmd_ckpts/manifold_defense/outputs/infogan_roberta_agnews/6us3wbhr/checkpoints/epoch=99-step=10599.ckpt"
+    #tmd = model_lib.TextDefense_model_builder("roberta",load_path,"tmd",gm_path = gm_path,device="cuda",dataset_name="agnews")
+    #tokenizer = AutoTokenizer.from_pretrained(load_path,use_fast=True)
+    #ROBERTA_TMD = wrapping_model(tmd,tokenizer,"tmd")
     
     with torch.no_grad():
         
@@ -307,7 +311,7 @@ if __name__ == "__main__":
                 #model.change_defense(defense=False)
                 #attack(args, BERT_ASCC, "BERT_ASCC", dataset)
                 #attack(args, BERT_DNE, "BERT_DNE", dataset)
-                #attack(args, BERT_MASK, "BERT_MASK", dataset)
+                attack(args, BERT_MASK, "BERT_MASK", dataset)
                 #attack(args, BERT_FREELB, "BERT_FREELB", dataset)
                 #attack(args, BERT_INFOBERT, "BERT_INFOBERT", dataset)
                 #attack(args, BERT_TMD, "BERT_TMD", dataset)
@@ -318,5 +322,5 @@ if __name__ == "__main__":
                 #        model_roberta.change_defense(defense_cls="random_noise",def_position=key,noise_sigma=noise_intensity,defense=True)
                 #        attack(args, ROBERTA, f"ROBERTA_{key}_{noise_intensity}", dataset)
                 #model_roberta.change_defense(defense=False)
-                attack(args, ROBERTA_TMD, "ROBERTA_TMD", dataset)
+                #attack(args, ROBERTA_TMD, "ROBERTA_TMD", dataset)
 
