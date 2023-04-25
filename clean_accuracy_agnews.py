@@ -224,17 +224,18 @@ if __name__ == "__main__":
     bert_input = list(test_data["text"])
     device = "cuda"
     tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased",use_fast=True)
+    tokenizer_roberta = AutoTokenizer.from_pretrained("roberta-base",use_fast=True)
     
-    ascc_model = model.TextDefense_model_builder("bert","bert-base-uncased","ascc",device,dataset_name="agnews")
-    load_path = "model/weights/VinAI_weights/tmd_ckpts/TextDefender/saved_models/agnews_bert/ascc-len128-epo10-batch32-best.pth"
-    print(ascc_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
-    tokenizer.model_max_length=128
-    ascc_model = wrapping_model(ascc_model,tokenizer,"ascc")
-    y_pred_BERT = []
-    for i in tqdm(range(0,len(bert_input)//batch)):
-        y_pred_BERT.extend(torch.argmax(torch.tensor(ascc_model(bert_input[i*batch:(i+1)*batch])),dim=-1).tolist())
-    acc = accuracy_score(test_labels, y_pred_BERT)
-    print(f"AGNEWS BERT ASCC: {acc*100:.2f}%")
+    #ascc_model = model.TextDefense_model_builder("bert","bert-base-uncased","ascc",device,dataset_name="agnews")
+    #load_path = "model/weights/VinAI_weights/tmd_ckpts/TextDefender/saved_models/agnews_bert/ascc-len128-epo10-batch32-best.pth"
+    #print(ascc_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
+    #tokenizer.model_max_length=128
+    #ascc_model = wrapping_model(ascc_model,tokenizer,"ascc")
+    #y_pred_BERT = []
+    #for i in tqdm(range(0,len(bert_input)//batch)):
+    #    y_pred_BERT.extend(torch.argmax(torch.tensor(ascc_model(bert_input[i*batch:(i+1)*batch])),dim=-1).tolist())
+    #acc = accuracy_score(test_labels, y_pred_BERT)
+    #print(f"AGNEWS BERT ASCC: {acc*100:.2f}%")
     
     #dne_model = model.TextDefense_model_builder("bert","bert-base-uncased","dne",device,dataset_name="agnews")
     #load_path = "model/weights/tmd_ckpts/TextDefender/saved_models/agnews_bert/dne-len128-epo10-batch32-best.pth"
@@ -263,41 +264,65 @@ if __name__ == "__main__":
     #print(f"AGNEWS RoBERTa (with noise module): {acc*100:.2f}%")
     #clean_accuracy["AGNEWS_RoBERTa"] = f"{acc*100:.2f}%"
     
-    load_path = "/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/bert-base-uncased-ag-news"
-    gm_path = "/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/tmd_ckpts/tmd/outputs/infogan_bert_agnews/manifold-defense/42b0465v/checkpoints/epoch=99-step=10599.ckpt"
-    dne_model = model_wrap.TextDefense_model_builder("bert",load_path,"tmd",gm_path = gm_path,device="cuda")
-    tokenizer_tmd = AutoTokenizer.from_pretrained("/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/bert-base-uncased-ag-news",use_fast=True)
-    dne_model = wrapping_model(dne_model,tokenizer_tmd,"tmd")
-    y_pred_BERT = []
-    for i in tqdm(range(0,len(bert_input)//batch)):
-        y_pred_BERT.extend(torch.argmax(dne_model(bert_input[i*batch:(i+1)*batch]),dim=-1).tolist())
-    # Evaluation
-    acc = accuracy_score(test_labels, y_pred_BERT)
-    print(f"AGNEWS TMD (with noise module): {acc*100:.2f}%")
+    #load_path = "/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/bert-base-uncased-ag-news"
+    #gm_path = "/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/tmd_ckpts/tmd/outputs/infogan_bert_agnews/manifold-defense/42b0465v/checkpoints/epoch=99-step=10599.ckpt"
+    #dne_model = model_wrap.TextDefense_model_builder("bert",load_path,"tmd",gm_path = gm_path,device="cuda")
+    #tokenizer_tmd = AutoTokenizer.from_pretrained("/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/bert-base-uncased-ag-news",use_fast=True)
+    #dne_model = wrapping_model(dne_model,tokenizer_tmd,"tmd")
+    #y_pred_BERT = []
+    #for i in tqdm(range(0,len(bert_input)//batch)):
+    #    y_pred_BERT.extend(torch.argmax(dne_model(bert_input[i*batch:(i+1)*batch]),dim=-1).tolist())
+    ## Evaluation
+    #acc = accuracy_score(test_labels, y_pred_BERT)
+    #print(f"AGNEWS TMD (with noise module): {acc*100:.2f}%")
     
-    freelb_model = model_wrap.TextDefense_model_builder("bert","bert-base-uncased","freelb",device,dataset_name="agnews")
-    load_path = "/home/ubuntu/TextDefender/saved_models/ag_news_bert/freelb-len128-epo5-batch32-advstep5-advlr0.03-norm0.0-best.pth"
-    tokenizer.model_max_length=128
-    print(freelb_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
-    BERT_FREELB = wrapping_model(freelb_model,tokenizer,"freelb")
-    y_pred_BERT = []
-    for i in tqdm(range(0,len(bert_input)//batch)):
-        y_pred_BERT.extend(torch.argmax(BERT_FREELB(bert_input[i*batch:(i+1)*batch]),dim=-1).tolist())
-    # Evaluation
-    acc = accuracy_score(test_labels, y_pred_BERT)
-    print(f"AGNEWS BERT_FREELB (with noise module): {acc*100:.2f}%")
+    #freelb_model = model_wrap.TextDefense_model_builder("bert","bert-base-uncased","freelb",device,dataset_name="agnews")
+    #load_path = "/home/ubuntu/TextDefender/saved_models/ag_news_bert/freelb-len128-epo5-batch32-advstep5-advlr0.03-norm0.0-best.pth"
+    #tokenizer.model_max_length=128
+    #print(freelb_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
+    #BERT_FREELB = wrapping_model(freelb_model,tokenizer,"freelb")
+    #y_pred_BERT = []
+    #for i in tqdm(range(0,len(bert_input)//batch)):
+    #    y_pred_BERT.extend(torch.argmax(BERT_FREELB(bert_input[i*batch:(i+1)*batch]),dim=-1).tolist())
+    ## Evaluation
+    #acc = accuracy_score(test_labels, y_pred_BERT)
+    #print(f"AGNEWS BERT_FREELB (with noise module): {acc*100:.2f}%")
     
-    infobert_model = model_wrap.TextDefense_model_builder("bert","bert-base-uncased","infobert",device,dataset_name="agnews")
-    load_path = "/home/ubuntu/TextDefender/saved_models/ag_news_bert/infobert-len128-epo5-batch32-advstep3-advlr0.04-norm0-best.pth"
-    tokenizer.model_max_length=128
-    print(infobert_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
-    BERT_INFOBERT = wrapping_model(infobert_model,tokenizer,"infobert")
+    #infobert_model = model_wrap.TextDefense_model_builder("bert","bert-base-uncased","infobert",device,dataset_name="agnews")
+    #load_path = "/home/ubuntu/TextDefender/saved_models/ag_news_bert/infobert-len128-epo5-batch32-advstep3-advlr0.04-norm0-best.pth"
+    #tokenizer.model_max_length=128
+    #print(infobert_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
+    #BERT_INFOBERT = wrapping_model(infobert_model,tokenizer,"infobert")
+    #y_pred_BERT = []
+    #for i in tqdm(range(0,len(bert_input)//batch)):
+    #    y_pred_BERT.extend(torch.argmax(BERT_INFOBERT(bert_input[i*batch:(i+1)*batch]),dim=-1).tolist())
+    ## Evaluation
+    #acc = accuracy_score(test_labels, y_pred_BERT)
+    #print(f"AGNEWS BERT_INFOBERT (with noise module): {acc*100:.2f}%")
+    
+    #ascc_model = model.TextDefense_model_builder("roberta","roberta-base","ascc",device,dataset_name="agnews")
+    #load_path = "/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/tmd_ckpts/TextDefender/saved_models/agnews_roberta/ascc-len128-epo10-batch32-best.pth"
+    #print(ascc_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
+    #tokenizer_roberta.model_max_length=128
+    #ascc_model = wrapping_model(ascc_model,tokenizer_roberta,"ascc")
+    #y_pred_BERT = []
+    #for i in tqdm(range(0,len(bert_input)//batch)):
+    #    y_pred_BERT.extend(torch.argmax(torch.tensor(ascc_model(bert_input[i*batch:(i+1)*batch])),dim=-1).tolist())
+    #acc = accuracy_score(test_labels, y_pred_BERT)
+    #print(f"AGNEWS ROBERTA ASCC: {acc*100:.2f}%")
+    
+    
+    load_path = "/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/tmd_ckpts/manifold_defense/models/roberta-base-agnews"
+    gm_path = "/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/tmd_ckpts/manifold_defense/outputs/infogan_roberta_agnews/6us3wbhr/checkpoints/epoch=99-step=10599.ckpt"
+    tmd = model.TextDefense_model_builder("roberta",load_path,"tmd",gm_path = gm_path,device="cuda",dataset_name="agnews")
+    tokenizer = AutoTokenizer.from_pretrained(load_path,use_fast=True)
+    ROBERTA_TMD = wrapping_model(tmd,tokenizer,"tmd")
     y_pred_BERT = []
     for i in tqdm(range(0,len(bert_input)//batch)):
-        y_pred_BERT.extend(torch.argmax(BERT_INFOBERT(bert_input[i*batch:(i+1)*batch]),dim=-1).tolist())
+        y_pred_BERT.extend(torch.argmax(ROBERTA_TMD(bert_input[i*batch:(i+1)*batch]),dim=-1).tolist())
     # Evaluation
     acc = accuracy_score(test_labels, y_pred_BERT)
-    print(f"AGNEWS BERT_INFOBERT (with noise module): {acc*100:.2f}%")
+    print(f"AGNEWS ROBERTA TMD (with noise module): {acc*100:.2f}%")
     
     #noise_position={
     #    'input_noise':[0.001,0.0025,0.005,0.01,0.025,0.05,0.1,0.25,0.5,1],
