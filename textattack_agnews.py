@@ -112,9 +112,7 @@ def build_attacker_from_textdefender(model: HuggingFaceModelWrapper,args) -> Att
     attacker.goal_function = UntargetedClassification(model, query_budget=args["k_neighbor"])
     return Attack(attacker.goal_function, attacker.constraints + attacker.pre_transformation_constraints,
                   attacker.transformation, attacker.search_method)
-    
 
-    return attacker
 def build_attacker(model, args):
     if args["attack_method"] == "textfooler":
         attacker = TextFoolerJin2019.build(model)
@@ -212,7 +210,8 @@ if __name__ == "__main__":
     parser.add_argument('-pr', '--parallel',action='store_true')
     parser.add_argument("-en", "--ensemble_num", default=100)
     parser.add_argument("-eb", "--ensemble_batch_size", default=32)
-    parser.add_argument("-rms", "--random_mask_rate", default=0.9)
+    parser.add_argument("-rmr", "--random_mask_rate", default=0.9)
+    parser.add_argument("-spf", "--safer_pertubation_file", default="/home/ubuntu/TextDefender/dataset/ag_news/perturbation_constraint_pca0.8_100.pkl")
     
     args = parser.parse_args()
     sst2_dataset = datasets.load_dataset("ag_news")
@@ -255,6 +254,14 @@ if __name__ == "__main__":
     print(mask_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
     BERT_MASK = wrapping_model(mask_model,tokenizer,"mask",ensemble_num=args.ensemble_num,batch_size=args.ensemble_batch_size,ran_mask=args.random_mask_rate)
     
+    tokenizer = AutoTokenizer.from_pretrained(
+        "bert-base-uncased", use_fast=True
+    )
+    safer_model = model_lib.TextDefense_model_builder("bert","bert-base-uncased","safer",device)
+    load_path = "/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/tmd_ckpts/TextDefender/saved_models/agnews_bert/safer-len128-epo10-batch32-best.pth"
+    tokenizer.model_max_length=256
+    print(safer_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
+    BERT_SAFER = wrapping_model(safer_model,tokenizer,"safer",ensemble_num=args.ensemble_num,batch_size=args.ensemble_batch_size,safer_aug_set=args.safer_pertubation_file)
     
     #freelb_model = model_lib.TextDefense_model_builder("bert","bert-base-uncased","freelb",device,dataset_name="agnews")
     #load_path = "/home/ubuntu/TextDefender/saved_models/ag_news_bert/freelb-len128-epo10-batch32-advstep5-advlr0.03-norm0.0-best.pth"
@@ -293,7 +300,7 @@ if __name__ == "__main__":
     #tokenizer = AutoTokenizer.from_pretrained(load_path,use_fast=True)
     #ROBERTA_TMD = wrapping_model(tmd,tokenizer,"tmd")
     
-        #ascc_roberta_model = model_lib.TextDefense_model_builder("roberta","roberta-base","ascc",device,dataset_name="agnews")
+    #ascc_roberta_model = model_lib.TextDefense_model_builder("roberta","roberta-base","ascc",device,dataset_name="agnews")
     #load_path = "/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/tmd_ckpts/TextDefender/saved_models/agnews_roberta/ascc-len128-epo10-batch32-best.pth"
     #print(ascc_roberta_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
     #ascc_roberta_model.to("cuda")
