@@ -217,7 +217,7 @@ if __name__ == "__main__":
     
     clean_accuracy={}
     num_repetitions = 3
-    batch=100
+    batch=1000
     
     train_data, test_data = load_train_test_imdb_data(
         "data/aclImdb"
@@ -227,6 +227,7 @@ if __name__ == "__main__":
     device = "cuda"
     
     tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased",use_fast=True)
+    tokenizer_roberta = AutoTokenizer.from_pretrained("roberta-base",use_fast=True)
     tokenizer.model_max_length=256
     #bert_input = list(test_data["text"])
     #ascc_model = model_lib.TextDefense_model_builder("bert","bert-base-uncased","ascc",device)
@@ -261,16 +262,16 @@ if __name__ == "__main__":
     #acc = accuracy_score(test_labels, y_pred_BERT)
     #print(f"IMDB BERT_FREELB: {acc*100:.2f}%")
     
-    load_path = "/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/bert-base-uncased-imdb"
-    gm_path = "/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/tmd_ckpts/tmd/outputs/infogan_bert_imdb/manifold-defense/yutbyyz5/checkpoints/epoch=99-step=2199.ckpt"
-    tmd = model_lib.TextDefense_model_builder("bert",load_path,"tmd",gm_path = gm_path,device="cuda")
-    tokenizer_tmd = AutoTokenizer.from_pretrained("/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/bert-base-uncased-imdb",use_fast=True)
-    BERT_TMD = wrapping_model(tmd,tokenizer_tmd,"tmd")
-    y_pred_BERT = []
-    for i in tqdm(range(0,len(bert_input)//batch)):
-        y_pred_BERT.extend(torch.argmax(BERT_TMD(bert_input[i*batch:(i+1)*batch]),dim=-1).tolist())
-    acc = accuracy_score(test_labels, y_pred_BERT)
-    print(f"IMDB BERT_TMD: {acc*100:.2f}%")
+    #load_path = "/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/bert-base-uncased-imdb"
+    #gm_path = "/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/tmd_ckpts/tmd/outputs/infogan_bert_imdb/manifold-defense/yutbyyz5/checkpoints/epoch=99-step=2199.ckpt"
+    #tmd = model_lib.TextDefense_model_builder("bert",load_path,"tmd",gm_path = gm_path,device="cuda")
+    #tokenizer_tmd = AutoTokenizer.from_pretrained("/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/bert-base-uncased-imdb",use_fast=True)
+    #BERT_TMD = wrapping_model(tmd,tokenizer_tmd,"tmd")
+    #y_pred_BERT = []
+    #for i in tqdm(range(0,len(bert_input)//batch)):
+    #    y_pred_BERT.extend(torch.argmax(BERT_TMD(bert_input[i*batch:(i+1)*batch]),dim=-1).tolist())
+    #acc = accuracy_score(test_labels, y_pred_BERT)
+    #print(f"IMDB BERT_TMD: {acc*100:.2f}%")
     
     #info_model = model_lib.TextDefense_model_builder("bert","bert-base-uncased","infobert",device)
     #load_path = "/home/ubuntu/TextDefender/saved_models/imdb_bert/infobert-len256-epo10-batch32-advstep3-advlr0.04-norm0-best.pth"
@@ -283,6 +284,17 @@ if __name__ == "__main__":
     #acc = accuracy_score(test_labels, y_pred_BERT)
     #print(f"IMDB BERT_FREELB: {acc*100:.2f}%")
     
+    info_model = model_lib.TextDefense_model_builder("roberta","roberta-base","mask",device)
+    load_path = "/home/duy/TextDefender/saved_models/imdb_roberta/mask-len256-epo10-batch32-rate0.3-best.pth"
+    tokenizer_roberta.model_max_length=256
+    print(info_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
+    ROBERTA_MASK = wrapping_model(info_model,tokenizer_roberta,"mask")
+    y_pred_BERT = []
+    for i in tqdm(range(0,len(bert_input)//batch)):
+        y_pred_BERT.extend(torch.argmax(ROBERTA_MASK(bert_input[i*batch:(i+1)*batch]),dim=-1).tolist())
+    acc = accuracy_score(test_labels, y_pred_BERT)
+    print(f"IMDB ROBERTA_MASK: {acc*100:.2f}%")
+    
     #tokenizer = AutoTokenizer.from_pretrained("/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/bert-base-uncased-imdb",use_fast=True)
     #tokenizer.model_max_length=256
     #config = AutoConfig.from_pretrained("/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/bert-base-uncased-imdb")
@@ -292,6 +304,32 @@ if __name__ == "__main__":
     #BERT_base_model.eval()
     #BERT = HuggingFaceModelWrapper(BERT_base_model,tokenizer)
     #BERT.to("cuda")
+    
+    load_path = "/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/tmd_ckpts/manifold_defense/models/roberta-base-imdb"
+    gm_path = "/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/tmd_ckpts/manifold_defense/outputs/infogan_roberta_imdb/bvi8ln2v/checkpoints/epoch=99-step=2199.ckpt"
+    tmd = model_lib.TextDefense_model_builder("roberta",load_path,"tmd",gm_path = gm_path,device="cuda",dataset_name="imdb")
+    tokenizer = AutoTokenizer.from_pretrained(load_path,use_fast=True)
+    ROBERTA_TMD = wrapping_model(tmd,tokenizer,"tmd")
+    y_pred_BERT = []
+    for i in tqdm(range(0,len(bert_input)//batch)):
+        y_pred_BERT.extend(torch.argmax(ROBERTA_TMD(bert_input[i*batch:(i+1)*batch]),dim=-1).tolist())
+    acc = accuracy_score(test_labels, y_pred_BERT)
+    print(f"IMDB ROBERTA_TMD: {acc*100:.2f}%")
+    
+    tokenizer_roberta = AutoTokenizer.from_pretrained(
+        "roberta-base", use_fast=True
+    )
+    ascc_roberta_model = model_lib.TextDefense_model_builder("roberta","roberta-base","ascc",device)
+    load_path = "/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/tmd_ckpts/TextDefender/saved_models/imdb_roberta/ascc-len256-epo10-batch32-best.pth"
+    print(ascc_roberta_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
+    ascc_roberta_model.to("cuda")
+    tokenizer_roberta.model_max_length=256
+    ROBERTA_ASCC = wrapping_model(ascc_roberta_model,tokenizer_roberta,"ascc")
+    y_pred_BERT = []
+    for i in tqdm(range(0,len(bert_input)//batch)):
+        y_pred_BERT.extend(torch.argmax(ROBERTA_ASCC(bert_input[i*batch:(i+1)*batch]),dim=-1).tolist())
+    acc = accuracy_score(test_labels, y_pred_BERT)
+    print(f"IMDB ROBERTA_ASCC: {acc*100:.2f}%")
     
     #y_pred_BERT = []
     #for i in tqdm(range(0,len(bert_input)//batch)):

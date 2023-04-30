@@ -15,9 +15,9 @@ from textattack.models.wrappers import (
     SklearnModelWrapper,
     HuggingFaceModelWrapper,
 )
-def wrapping_model(model,tokenizer,training_type=None,model_type="bert",batch_size: int = 24):
+def wrapping_model(model,tokenizer,training_type=None,model_type="bert",batch_size: int = 32,ensemble_num=100,ran_mask=0.7):
     if training_type in ['dne', 'safer', 'mask']:
-           model_wrapper = HuggingFaceModelEnsembleWrapper(model,training_type, tokenizer,batch_size=batch_size)
+           model_wrapper = HuggingFaceModelEnsembleWrapper(model,training_type, tokenizer,batch_size=batch_size,ensemble_num=ensemble_num,mask_ratio=ran_mask)
     elif model_type != 'lstm':
         model_wrapper = HuggingFaceModelWrapper(model, tokenizer)
     return model_wrapper
@@ -31,7 +31,8 @@ class HuggingFaceModelEnsembleWrapper(PyTorchModelWrapper):
                  tokenizer: PreTrainedTokenizer,
                  batch_size=24,
                  ensemble_num = 100,
-                 ensemble_method = "logits"):
+                 ensemble_method = "logits",
+                 mask_ratio = 0.7):
         self.model = model
         self.tokenizer = tokenizer
         self.batch_size = batch_size
@@ -42,8 +43,13 @@ class HuggingFaceModelEnsembleWrapper(PyTorchModelWrapper):
             self.ensemble_num = ensemble_num
 
         self.ensemble_method = ensemble_method
-        self.augmenter = Augmentor(training_type)
-        self.max_length = 128
+        self.augmenter = Augmentor(training_type,mask_ratio=mask_ratio)
+        self.max_length = (
+            512
+            if self.tokenizer.model_max_length == int(1e30)
+            else self.tokenizer.model_max_length
+        )
+        print(self.max_length)
     def _augment_sentence(self, sentence, ensemble_num) -> List[str]:
         return self.augmenter.augment(sentence, n=ensemble_num)
 
