@@ -220,11 +220,11 @@ if __name__ == "__main__":
     test_data = sst2_dataset["test"]
 
     tokenizer = AutoTokenizer.from_pretrained(
-        "bert_base_uncased", use_fast=True
+        "bert-base-uncased", use_fast=True
     )
     
     tokenizer_roberta = AutoTokenizer.from_pretrained(
-        "roberta_base", use_fast=True
+        "roberta-base", use_fast=True
     )
     device = "cuda"
     
@@ -249,11 +249,11 @@ if __name__ == "__main__":
     #print(dne_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
     #BERT_DNE = wrapping_model(dne_model,tokenizer,"dne")
     
-    mask_model = model_lib.TextDefense_model_builder("bert","bert-base-uncased","mask",device,dataset_name="agnews")
-    load_path = "/home/duy/TextDefender/saved_models/ag_news_bert/mask-len128-epo10-batch32-rate0.9-best.pth"
-    tokenizer.model_max_length=128
-    print(mask_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
-    BERT_MASK = wrapping_model(mask_model,tokenizer,"mask",ensemble_num=args.ensemble_num,batch_size=args.ensemble_batch_size,ran_mask=args.random_mask_rate)
+    #mask_model = model_lib.TextDefense_model_builder("bert","bert-base-uncased","mask",device,dataset_name="agnews")
+    #load_path = "/home/duy/TextDefender/saved_models/ag_news_bert/mask-len128-epo10-batch32-rate0.9-best.pth"
+    #tokenizer.model_max_length=128
+    #print(mask_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
+    #BERT_MASK = wrapping_model(mask_model,tokenizer,"mask",ensemble_num=args.ensemble_num,batch_size=args.ensemble_batch_size,ran_mask=args.random_mask_rate)
     
     
     #freelb_model = model_lib.TextDefense_model_builder("bert","bert-base-uncased","freelb",device,dataset_name="agnews")
@@ -301,13 +301,18 @@ if __name__ == "__main__":
     #ROBERTA_ASCC = wrapping_model(ascc_roberta_model,tokenizer_roberta,"ascc")
 
     #roberta_freelb_model = model_lib.TextDefense_model_builder("roberta","roberta-base","freelb",device,dataset_name="agnews")
-    #load_path = "/home/ubuntu/TextDefender/saved_models/ag_news_roberta/freelb-len128-epo10-batch32-advstep5-advlr0.03-norm0.0-best.pth"
+    #load_path = "/home/khoa/duyhc/TextDefender/saved_models/ag_news_roberta/freelb-len128-epo10-batch32-advstep5-advlr0.03-norm0.0-best.pth"
     #tokenizer_roberta.model_max_length=128
     #print(roberta_freelb_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
-    #ROBERTA_FREELB = wrapping_model(roberta_freelb_model,tokenizer,"freelb")
+    #ROBERTA_FREELB = wrapping_model(roberta_freelb_model,tokenizer_roberta,"freelb")
+    
+    roberta_infobert_model = model_lib.TextDefense_model_builder("roberta","roberta-base","infobert",device,dataset_name="agnews")
+    load_path = "/home/khoa/duyhc/TextDefender/saved_models/ag_news_roberta/infobert-len128-epo10-batch32-advstep3-advlr0.04-norm0-best.pth"
+    tokenizer_roberta.model_max_length=128
+    print(roberta_infobert_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
+    ROBERTA_INFOBERT = wrapping_model(roberta_infobert_model,tokenizer_roberta,"infobert")
     
     with torch.no_grad():
-        
         
         noise_pos = {"pre_att_all": [0.2,0.3],"post_att_all": [0.2,0.3,0.4]}
         noise_pos_roberta = {"post_att_all": [0.2,0.3]}
@@ -328,7 +333,7 @@ if __name__ == "__main__":
                 #model.change_defense(defense=False)
                 #attack(args, BERT_ASCC, "BERT_ASCC", dataset)
                 #attack(args, BERT_DNE, "BERT_DNE", dataset)
-                attack(args, BERT_MASK, "BERT_MASK", dataset)
+                #attack(args, BERT_MASK, "BERT_MASK", dataset)
                 #attack(args, BERT_FREELB, "BERT_FREELB", dataset)
                 #attack(args, BERT_INFOBERT, "BERT_INFOBERT", dataset)
                 #attack(args, BERT_TMD, "BERT_TMD", dataset)
@@ -342,3 +347,4 @@ if __name__ == "__main__":
                 #attack(args, ROBERTA_TMD, "ROBERTA_TMD", dataset)
                 #attack(args, ROBERTA_ASCC, "ROBERTA_ASCC", dataset)
                 #attack(args, ROBERTA_FREELB, "ROBERTA_FREELB", dataset)
+                attack(args, ROBERTA_INFOBERT, "ROBERTA_INFOBERT", dataset)
