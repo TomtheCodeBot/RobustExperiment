@@ -215,6 +215,7 @@ if __name__ == "__main__":
     parser.add_argument("-en", "--ensemble_num", default=16)
     parser.add_argument("-eb", "--ensemble_batch_size", default=32)
     parser.add_argument("-rms", "--random_mask_rate", default=0.3)
+    parser.add_argument("-spf", "--safer_pertubation_file", default="/home/ubuntu/TextDefender/dataset/imdb/perturbation_constraint_pca0.8_100.pkl")
     
     args = parser.parse_args()
 
@@ -253,6 +254,15 @@ if __name__ == "__main__":
     tokenizer.model_max_length=256
     print(mask_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
     BERT_MASK = wrapping_model(mask_model,tokenizer,"mask",ensemble_num=args.ensemble_num,batch_size=args.ensemble_batch_size,ran_mask=args.random_mask_rate)
+    
+    tokenizer = AutoTokenizer.from_pretrained(
+        "bert-base-uncased", use_fast=True
+    )
+    safer_model = model_lib.TextDefense_model_builder("bert","bert-base-uncased","safer",device)
+    load_path = "/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/tmd_ckpts/TextDefender/saved_models/imdb_bert/safer-len256-epo10-batch32-best.pth"
+    tokenizer.model_max_length=256
+    print(safer_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
+    BERT_SAFER = wrapping_model(safer_model,tokenizer,"safer",ensemble_num=args.ensemble_num,batch_size=args.ensemble_batch_size,safer_aug_set=args.safer_pertubation_file)
     
     #freelb_model = model_lib.TextDefense_model_builder("bert","bert-base-uncased","freelb",device)
     #load_path = "/home/ubuntu/TextDefender/saved_models/imdb_bert/freelb-len256-epo10-batch32-advstep5-advlr0.03-norm0.0-best.pth"
