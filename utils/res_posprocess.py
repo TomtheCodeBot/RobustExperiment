@@ -84,4 +84,4 @@ def process_text_result(path):
     pass
 
 if __name__ == '__main__':
-    process_text_result("/home/ubuntu/RobustExperiment/noise_defense_attack_result/paper_default setting/IMDB")
+    process_text_result("/home/ubuntu/RobustExperiment/noise_defense_attack_result/paper_default setting/AGNEWS")
