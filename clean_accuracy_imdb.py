@@ -1,4 +1,6 @@
 from textattack.datasets import HuggingFaceDataset
+import os
+os.environ['CURL_CA_BUNDLE'] = ''
 from typing import List, Dict
 import random
 from textattack.attack_recipes import (
@@ -229,6 +231,7 @@ if __name__ == "__main__":
     tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased",use_fast=True)
     tokenizer_roberta = AutoTokenizer.from_pretrained("roberta-base",use_fast=True)
     tokenizer.model_max_length=256
+    
     #bert_input = list(test_data["text"])
     #ascc_model = model_lib.TextDefense_model_builder("bert","bert-base-uncased","ascc",device)
     #load_path = "/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/tmd_ckpts/TextDefender/saved_models/imdb_bert/ascc-len256-epo10-batch32-best.pth"
@@ -284,60 +287,61 @@ if __name__ == "__main__":
     #acc = accuracy_score(test_labels, y_pred_BERT)
     #print(f"IMDB BERT_FREELB: {acc*100:.2f}%")
     
-    info_model = model_lib.TextDefense_model_builder("roberta","roberta-base","mask",device)
-    load_path = "/home/duy/TextDefender/saved_models/imdb_roberta/mask-len256-epo10-batch32-rate0.3-best.pth"
-    tokenizer_roberta.model_max_length=256
-    print(info_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
-    ROBERTA_MASK = wrapping_model(info_model,tokenizer_roberta,"mask")
-    y_pred_BERT = []
-    for i in tqdm(range(0,len(bert_input)//batch)):
-        y_pred_BERT.extend(torch.argmax(ROBERTA_MASK(bert_input[i*batch:(i+1)*batch]),dim=-1).tolist())
-    acc = accuracy_score(test_labels, y_pred_BERT)
-    print(f"IMDB ROBERTA_MASK: {acc*100:.2f}%")
+    #info_model = model_lib.TextDefense_model_builder("roberta","roberta-base","mask",device)
+    #load_path = "/home/duy/TextDefender/saved_models/imdb_roberta/mask-len256-epo10-batch32-rate0.3-best.pth"
+    #tokenizer_roberta.model_max_length=256
+    #print(info_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
+    #ROBERTA_MASK = wrapping_model(info_model,tokenizer_roberta,"mask")
+    #y_pred_BERT = []
+    #for i in tqdm(range(0,len(bert_input)//batch)):
+    #    y_pred_BERT.extend(torch.argmax(ROBERTA_MASK(bert_input[i*batch:(i+1)*batch]),dim=-1).tolist())
+    #acc = accuracy_score(test_labels, y_pred_BERT)
+    #print(f"IMDB ROBERTA_MASK: {acc*100:.2f}%")
     
-    #tokenizer = AutoTokenizer.from_pretrained("/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/bert-base-uncased-imdb",use_fast=True)
-    #tokenizer.model_max_length=256
-    #config = AutoConfig.from_pretrained("/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/bert-base-uncased-imdb")
-    #BERT_base_model = BertForSequenceClassification(config)
-    #state = AutoModelForSequenceClassification.from_pretrained("/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/bert-base-uncased-imdb")
-    #print(BERT_base_model.load_state_dict(state.state_dict()))
-    #BERT_base_model.eval()
-    #BERT = HuggingFaceModelWrapper(BERT_base_model,tokenizer)
-    #BERT.to("cuda")
+    tokenizer = AutoTokenizer.from_pretrained("/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/bert-base-uncased-imdb",use_fast=True)
+    tokenizer.model_max_length=256
+    config = AutoConfig.from_pretrained("/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/bert-base-uncased-imdb")
+    BERT_base_model = BertForSequenceClassification(config)
+    state = AutoModelForSequenceClassification.from_pretrained("/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/bert-base-uncased-imdb")
+    print(BERT_base_model.load_state_dict(state.state_dict()))
+    BERT_base_model.eval()
+    BERT = HuggingFaceModelWrapper(BERT_base_model,tokenizer)
+    BERT.to("cuda")
     
-    load_path = "/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/tmd_ckpts/manifold_defense/models/roberta-base-imdb"
-    gm_path = "/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/tmd_ckpts/manifold_defense/outputs/infogan_roberta_imdb/bvi8ln2v/checkpoints/epoch=99-step=2199.ckpt"
-    tmd = model_lib.TextDefense_model_builder("roberta",load_path,"tmd",gm_path = gm_path,device="cuda",dataset_name="imdb")
-    tokenizer = AutoTokenizer.from_pretrained(load_path,use_fast=True)
-    ROBERTA_TMD = wrapping_model(tmd,tokenizer,"tmd")
-    y_pred_BERT = []
-    for i in tqdm(range(0,len(bert_input)//batch)):
-        y_pred_BERT.extend(torch.argmax(ROBERTA_TMD(bert_input[i*batch:(i+1)*batch]),dim=-1).tolist())
-    acc = accuracy_score(test_labels, y_pred_BERT)
-    print(f"IMDB ROBERTA_TMD: {acc*100:.2f}%")
+    #load_path = "/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/tmd_ckpts/manifold_defense/models/roberta-base-imdb"
+    #gm_path = "/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/tmd_ckpts/manifold_defense/outputs/infogan_roberta_imdb/bvi8ln2v/checkpoints/epoch=99-step=2199.ckpt"
+    #tmd = model_lib.TextDefense_model_builder("roberta",load_path,"tmd",gm_path = gm_path,device="cuda",dataset_name="imdb")
+    #tokenizer = AutoTokenizer.from_pretrained(load_path,use_fast=True)
+    #ROBERTA_TMD = wrapping_model(tmd,tokenizer,"tmd")
+    #y_pred_BERT = []
+    #for i in tqdm(range(0,len(bert_input)//batch)):
+    #    y_pred_BERT.extend(torch.argmax(ROBERTA_TMD(bert_input[i*batch:(i+1)*batch]),dim=-1).tolist())
+    #acc = accuracy_score(test_labels, y_pred_BERT)
+    #print(f"IMDB ROBERTA_TMD: {acc*100:.2f}%")
+    #
+    #tokenizer_roberta = AutoTokenizer.from_pretrained(
+    #    "roberta-base", use_fast=True
+    #)
     
-    tokenizer_roberta = AutoTokenizer.from_pretrained(
-        "roberta-base", use_fast=True
-    )
-    ascc_roberta_model = model_lib.TextDefense_model_builder("roberta","roberta-base","ascc",device)
-    load_path = "/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/tmd_ckpts/TextDefender/saved_models/imdb_roberta/ascc-len256-epo10-batch32-best.pth"
-    print(ascc_roberta_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
-    ascc_roberta_model.to("cuda")
-    tokenizer_roberta.model_max_length=256
-    ROBERTA_ASCC = wrapping_model(ascc_roberta_model,tokenizer_roberta,"ascc")
-    y_pred_BERT = []
-    for i in tqdm(range(0,len(bert_input)//batch)):
-        y_pred_BERT.extend(torch.argmax(ROBERTA_ASCC(bert_input[i*batch:(i+1)*batch]),dim=-1).tolist())
-    acc = accuracy_score(test_labels, y_pred_BERT)
-    print(f"IMDB ROBERTA_ASCC: {acc*100:.2f}%")
+    #ascc_roberta_model = model_lib.TextDefense_model_builder("roberta","roberta-base","ascc",device)
+    #load_path = "/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/tmd_ckpts/TextDefender/saved_models/imdb_roberta/ascc-len256-epo10-batch32-best.pth"
+    #print(ascc_roberta_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
+    #ascc_roberta_model.to("cuda")
+    #tokenizer_roberta.model_max_length=256
+    #ROBERTA_ASCC = wrapping_model(ascc_roberta_model,tokenizer_roberta,"ascc")
+    #y_pred_BERT = []
+    #for i in tqdm(range(0,len(bert_input)//batch)):
+    #    y_pred_BERT.extend(torch.argmax(ROBERTA_ASCC(bert_input[i*batch:(i+1)*batch]),dim=-1).tolist())
+    #acc = accuracy_score(test_labels, y_pred_BERT)
+    #print(f"IMDB ROBERTA_ASCC: {acc*100:.2f}%")
     
     #y_pred_BERT = []
     #for i in tqdm(range(0,len(bert_input)//batch)):
-    #    y_pred_BERT.extend(torch.argmax(RoBERTa(bert_input[i*batch:(i+1)*batch]),dim=-1).tolist())
+    #    y_pred_BERT.extend(torch.argmax(BERT(bert_input[i*batch:(i+1)*batch]),dim=-1).tolist())
     ## Evaluation
     #acc = accuracy_score(test_labels, y_pred_BERT)
-    #print(f"IMDB RoBERTa (with noise module): {acc*100:.2f}%")
-    #clean_accuracy["IMDB_RoBERTa"] = f"{acc*100:.2f}%"
+    #print(f"IMDB BERT (with noise module): {acc*100:.2f}%")
+    #clean_accuracy["IMDB_BERT"] = f"{acc*100:.2f}%"
     #noise_position={
     #    'input_noise':[0.001,0.0025,0.005,0.01,0.025,0.05,0.1,0.25,0.5,1],
     #    'pre_att_cls':[0.001,0.0025,0.005,0.01,0.025,0.05,0.1,0.25,0.5,1],
@@ -348,35 +352,35 @@ if __name__ == "__main__":
     #    'logits':[0.001,0.0025,0.005,0.01,0.025,0.05,0.1,0.25,0.5,1]
     #}
     #positions = [ 'input_noise', 'pre_att_cls', 'pre_att_all',"post_att_cls","post_att_all", 'last_cls', 'logits']
-    #noise_position={
-    #    'input_noise':[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1],
-    #    'pre_att_cls':[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1],
-    #    'pre_att_all':[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1],
-    #    "post_att_cls":[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1],
-    #    "post_att_all":[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1], 
-    #    'last_cls':[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1], 
-    #    'logits':[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1]
-    #}
-    #positions = [ 'pre_att_all',"post_att_all", 'last_cls', 'logits']
-    #for repetitions in range(0,num_repetitions):
-    #    for position in positions:
-    #        for noise in noise_position[position]:
-    #            model.change_defense(defense_cls="random_noise",def_position=position,noise_sigma=noise,defense=True)
-    #            RoBERTa = HuggingFaceModelWrapper(model,tokenizer)
-    #            RoBERTa.to("cuda")
-    #            y_pred_BERT = []
-    #            for i in tqdm(range(0,len(bert_input)//batch)):
-    #                y_pred_BERT.extend(torch.argmax(RoBERTa(bert_input[i*batch:(i+1)*batch]),dim=-1).tolist())
-    #            # Evaluation
-    #            acc = accuracy_score(test_labels, y_pred_BERT)
-    #            print(f"IMDB_RoBERTa_{'random_noise'}_{position}_{str(noise)} = {acc*100:.2f}%")
-    #            clean_accuracy[f"IMDB_RoBERTa_{'random_noise'}_{position}_{str(noise)}"] = f"{acc*100:.2f}%"
-    #            print(clean_accuracy)
-    #    
-    #    # Serializing json
-    #    json_object = json.dumps(clean_accuracy, indent=4)
-    #    
-    #    # Writing to sample.json
-    #    with open(f"IMDB_RoBERTa_clean_accuracy_{repetitions}.json", "w") as outfile:
-    #        outfile.write(json_object)
+    noise_position={
+        'input_noise':[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1],
+        'pre_att_cls':[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1],
+        'pre_att_all':[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1],
+        "post_att_cls":[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1],
+        "post_att_all":[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1], 
+        'last_cls':[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1], 
+        'logits':[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1]
+    }
+    positions = [ 'pre_att_all',"post_att_all", 'last_cls', 'logits']
+    for repetitions in range(0,num_repetitions):
+        for position in positions:
+            for noise in noise_position[position]:
+                BERT_base_model.change_defense(defense_cls="random_noise",def_position=position,noise_sigma=noise,defense=True)
+                BERT = HuggingFaceModelWrapper(BERT_base_model,tokenizer)
+                BERT.to("cuda")
+                y_pred_BERT = []
+                for i in tqdm(range(0,len(bert_input)//batch)):
+                    y_pred_BERT.extend(torch.argmax(BERT(bert_input[i*batch:(i+1)*batch]),dim=-1).tolist())
+                # Evaluation
+                acc = accuracy_score(test_labels, y_pred_BERT)
+                print(f"IMDB_BERT_{'random_noise'}_{position}_{str(noise)} = {acc*100:.2f}%")
+                clean_accuracy[f"IMDB_BERT-WITH-0.1-SCALE_{'random_noise'}_{position}_{str(noise)}"] = f"{acc*100:.2f}%"
+                print(clean_accuracy)
+        
+        # Serializing json
+        json_object = json.dumps(clean_accuracy, indent=4)
+        
+        # Writing to sample.json
+        with open(f"IMDB_0.1_scale_clean_accuracy_{repetitions}.json", "w") as outfile:
+            outfile.write(json_object)
 

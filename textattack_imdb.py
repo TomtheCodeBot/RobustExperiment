@@ -1,3 +1,6 @@
+import os
+
+os.environ['CURL_CA_BUNDLE'] = ''
 from textattack.datasets import HuggingFaceDataset
 from typing import List, Dict
 import random
@@ -215,6 +218,7 @@ if __name__ == "__main__":
     parser.add_argument("-en", "--ensemble_num", default=16)
     parser.add_argument("-eb", "--ensemble_batch_size", default=32)
     parser.add_argument("-rms", "--random_mask_rate", default=0.3)
+    parser.add_argument("-spf", "--safer_pertubation_file", default="/home/ubuntu/TextDefender/dataset/imdb/perturbation_constraint_pca0.8_100.pkl")
     
     args = parser.parse_args()
 
@@ -245,14 +249,23 @@ if __name__ == "__main__":
     #ascc_model.to("cuda")
     #BERT_ASCC = wrapping_model(ascc_model,tokenizer,"ascc")
     
-    tokenizer = AutoTokenizer.from_pretrained(
-        "bert-base-uncased", use_fast=True
-    )
-    mask_model = model_lib.TextDefense_model_builder("bert","bert-base-uncased","mask",device)
-    load_path = "/home/duy/TextDefender/saved_models/imdb_bert/mask-len256-epo10-batch32-rate0.3-best.pth"
-    tokenizer.model_max_length=256
-    print(mask_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
-    BERT_MASK = wrapping_model(mask_model,tokenizer,"mask",ensemble_num=args.ensemble_num,batch_size=args.ensemble_batch_size,ran_mask=args.random_mask_rate)
+    #tokenizer = AutoTokenizer.from_pretrained(
+    #    "bert-base-uncased", use_fast=True
+    #)
+    #mask_model = model_lib.TextDefense_model_builder("bert","bert-base-uncased","mask",device)
+    #load_path = "/home/duy/TextDefender/saved_models/imdb_bert/mask-len256-epo10-batch32-rate0.3-best.pth"
+    #tokenizer.model_max_length=256
+    #print(mask_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
+    #BERT_MASK = wrapping_model(mask_model,tokenizer,"mask",ensemble_num=args.ensemble_num,batch_size=args.ensemble_batch_size,ran_mask=args.random_mask_rate)
+    
+    #tokenizer = AutoTokenizer.from_pretrained(
+    #    "bert-base-uncased", use_fast=True
+    #)
+    #safer_model = model_lib.TextDefense_model_builder("bert","bert-base-uncased","safer",device)
+    #load_path = "/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/tmd_ckpts/TextDefender/saved_models/imdb_bert/safer-len256-epo10-batch32-best.pth"
+    #tokenizer.model_max_length=256
+    #print(safer_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
+    #BERT_SAFER = wrapping_model(safer_model,tokenizer,"safer",ensemble_num=args.ensemble_num,batch_size=args.ensemble_batch_size,safer_aug_set=args.safer_pertubation_file)
     
     #freelb_model = model_lib.TextDefense_model_builder("bert","bert-base-uncased","freelb",device)
     #load_path = "/home/ubuntu/TextDefender/saved_models/imdb_bert/freelb-len256-epo10-batch32-advstep5-advlr0.03-norm0.0-best.pth"
@@ -293,21 +306,42 @@ if __name__ == "__main__":
     #tokenizer = AutoTokenizer.from_pretrained(load_path,use_fast=True)
     #ROBERTA_TMD = wrapping_model(tmd,tokenizer,"tmd")
     
+    #tokenizer_roberta = AutoTokenizer.from_pretrained(
+    #    "roberta-base", use_fast=True
+    #)
+    #ascc_roberta_model = model_lib.TextDefense_model_builder("roberta","roberta-base","ascc",device)
+    #load_path = "/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/tmd_ckpts/TextDefender/saved_models/imdb_roberta/ascc-len256-epo10-batch32-best.pth"
+    #print(ascc_roberta_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
+    #ascc_roberta_model.to("cuda")
+    #tokenizer_roberta.model_max_length=256
+    #ROBERTA_ASCC = wrapping_model(ascc_roberta_model,tokenizer_roberta,"ascc")
+    
+    
     tokenizer_roberta = AutoTokenizer.from_pretrained(
         "roberta-base", use_fast=True
     )
-    ascc_roberta_model = model_lib.TextDefense_model_builder("roberta","roberta-base","ascc",device)
-    load_path = "/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/tmd_ckpts/TextDefender/saved_models/imdb_roberta/ascc-len256-epo10-batch32-best.pth"
-    print(ascc_roberta_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
-    ascc_roberta_model.to("cuda")
+    infobert_roberta_model = model_lib.TextDefense_model_builder("roberta","roberta-base","infobert",device)
+    load_path = "/home/ubuntu/TextDefender/saved_models/imdb_roberta/infobert-len256-epo10-batch32-advstep3-advlr0.04-norm0-best.pth"
+    print(infobert_roberta_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
+    infobert_roberta_model.to("cuda")
     tokenizer_roberta.model_max_length=256
-    ROBERTA_ASCC = wrapping_model(ascc_roberta_model,tokenizer_roberta,"ascc")
+    ROBERTA_INFOBERT = wrapping_model(infobert_roberta_model,tokenizer_roberta,"infobert")
+    
+    #tokenizer_roberta = AutoTokenizer.from_pretrained(
+    #    "roberta-base", use_fast=True
+    #)
+    #freelb_roberta_model = model_lib.TextDefense_model_builder("roberta","roberta-base","freelb",device)
+    #load_path = "/home/ubuntu/TextDefender/saved_models/imdb_roberta/freelb-len256-epo10-batch32-advstep5-advlr0.03-norm0.0-best.pth"
+    #print(freelb_roberta_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
+    #freelb_roberta_model.to("cuda")
+    #tokenizer_roberta.model_max_length=256
+    #ROBERTA_FREELB = wrapping_model(freelb_roberta_model,tokenizer_roberta,"freelb")
     
     with torch.no_grad():
         
         noise_pos = { "pre_att_all": [0.1,0.2], "post_att_all": [0.1,0.2, 0.3]}
         noise_pos_roberta = { "pre_att_all": [0.1,0.2], "post_att_all": [0.2, 0.3]}
-        list_attacks = ["bertattack"]
+        list_attacks = ["textbugger"]
         for i in range(0, 1):
             set_seed(i)
             dataset = gen_dataset(test_data)
@@ -327,7 +361,7 @@ if __name__ == "__main__":
                 #attack(args, BERT_FREELB, "BERT_FREELB", dataset)
                 #attack(args, BERT_INFOBERT, "BERT_INFOBERT", dataset)
                 #attack(args, BERT_TMD, "BERT_TMD", dataset)
-                attack(args, BERT_MASK, "BERT_MASK", dataset)
+                #attack(args, BERT_MASK, "BERT_MASK", dataset)
                 
                 #attack(args, ROBERTA, "ROBERTA", dataset)
                 #for key in noise_pos_roberta.keys():
@@ -337,3 +371,5 @@ if __name__ == "__main__":
                 #model_roberta.change_defense(defense=False)
                 #attack(args, ROBERTA_TMD, "ROBERTA_TMD", dataset)
                 #attack(args, ROBERTA_ASCC, "ROBERTA_ASCC", dataset)
+                attack(args, ROBERTA_INFOBERT, "ROBERTA_INFOBERT", dataset)
+                #attack(args, ROBERTA_FREELB, "ROBERTA_FREELB", dataset)

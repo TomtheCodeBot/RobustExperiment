@@ -1,4 +1,4 @@
-name: pytorch
+name: test_env
 channels:
   - pytorch
   - nvidia
