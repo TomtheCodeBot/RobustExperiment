@@ -204,6 +204,8 @@ def draw_excel2(path_to_results,name = "IMDB_clean_accuracy",iteration = 3):
             worksheet.write(f'{chr(record_noise[noise_level])}1', noise_level,cellformat)
             position+=1
         worksheet.write(f'{chr(record_noise[noise_level])}{str(record_pos[name])}', f"{results[i]*100:.2f}%",cellformat)
+    print(record_pos)
+    print(record_noise)
     worksheet.autofit()
     workbook.close()
     pass
