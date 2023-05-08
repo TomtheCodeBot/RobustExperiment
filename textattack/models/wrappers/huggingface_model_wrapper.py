@@ -42,7 +42,7 @@ class HuggingFaceModelWrapper(PyTorchModelWrapper):
         """
         # Default max length is set to be int(1e30), so we force 512 to enable batching.
         max_length = (
-            512
+            128
             if self.tokenizer.model_max_length == int(1e30)
             else self.tokenizer.model_max_length
         )
