@@ -219,7 +219,7 @@ if __name__ == "__main__":
     
     clean_accuracy={}
     num_repetitions = 3
-    batch=1000
+    batch=500
     
     train_data, test_data = load_train_test_imdb_data(
         "data/aclImdb"
@@ -298,11 +298,11 @@ if __name__ == "__main__":
     #acc = accuracy_score(test_labels, y_pred_BERT)
     #print(f"IMDB ROBERTA_MASK: {acc*100:.2f}%")
     
-    tokenizer = AutoTokenizer.from_pretrained("/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/bert-base-uncased-imdb",use_fast=True)
+    tokenizer = AutoTokenizer.from_pretrained("/home/khoa/duyhc/RobustExperiment/model/weights/bert-base-uncased-imdb",use_fast=True)
     tokenizer.model_max_length=256
-    config = AutoConfig.from_pretrained("/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/bert-base-uncased-imdb")
+    config = AutoConfig.from_pretrained("/home/khoa/duyhc/RobustExperiment/model/weights/bert-base-uncased-imdb")
     BERT_base_model = BertForSequenceClassification(config)
-    state = AutoModelForSequenceClassification.from_pretrained("/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/bert-base-uncased-imdb")
+    state = AutoModelForSequenceClassification.from_pretrained("/home/khoa/duyhc/RobustExperiment/model/weights/bert-base-uncased-imdb")
     print(BERT_base_model.load_state_dict(state.state_dict()))
     BERT_base_model.eval()
     BERT = HuggingFaceModelWrapper(BERT_base_model,tokenizer)
@@ -361,7 +361,7 @@ if __name__ == "__main__":
         'last_cls':[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1], 
         'logits':[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1]
     }
-    positions = [ 'pre_att_all',"post_att_all", 'last_cls', 'logits']
+    positions = [ 'pre_att_all',"pre_att_cls","post_att_all","post_att_cls", 'last_cls', 'logits']
     for repetitions in range(0,num_repetitions):
         for position in positions:
             for noise in noise_position[position]:
