@@ -227,15 +227,15 @@ if __name__ == "__main__":
     )
     device = "cuda"
     
-    #config = AutoConfig.from_pretrained("textattack/bert-base-uncased-ag-news")
-    #model = BertForSequenceClassification(config)
-    #state = AutoModelForSequenceClassification.from_pretrained(
-    #    "textattack/bert-base-uncased-ag-news"
-    #)
-    #model.load_state_dict(state.state_dict())
-    #model.to("cuda")
-    #model.eval()
-    #BERT = HuggingFaceModelWrapper(model, tokenizer)
+    config = AutoConfig.from_pretrained("textattack/bert-base-uncased-ag-news")
+    model = BertForSequenceClassification(config)
+    state = AutoModelForSequenceClassification.from_pretrained(
+        "textattack/bert-base-uncased-ag-news"
+    )
+    model.load_state_dict(state.state_dict())
+    model.to("cuda")
+    model.eval()
+    BERT = HuggingFaceModelWrapper(model, tokenizer)
     
     #ascc_model = model_lib.TextDefense_model_builder("bert","bert-base-uncased","ascc",device,dataset_name="agnews")
     #load_path = "model/weights/tmd_ckpts/TextDefender/saved_models/agnews_bert/ascc-len128-epo10-batch32-best.pth"
@@ -248,11 +248,11 @@ if __name__ == "__main__":
     #print(dne_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
     #BERT_DNE = wrapping_model(dne_model,tokenizer,"dne")
     
-    mask_model = model_lib.TextDefense_model_builder("bert","bert-base-uncased","mask",device,dataset_name="agnews")
-    load_path = "/home/duy/TextDefender/saved_models/ag_news_bert/mask-len128-epo10-batch32-rate0.9-best.pth"
-    tokenizer.model_max_length=128
-    print(mask_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
-    BERT_MASK = wrapping_model(mask_model,tokenizer,"mask",ensemble_num=args.ensemble_num,batch_size=args.ensemble_batch_size,ran_mask=args.random_mask_rate)
+    #mask_model = model_lib.TextDefense_model_builder("bert","bert-base-uncased","mask",device,dataset_name="agnews")
+    #load_path = "/home/duy/TextDefender/saved_models/ag_news_bert/mask-len128-epo10-batch32-rate0.9-best.pth"
+    #tokenizer.model_max_length=128
+    #print(mask_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
+    #BERT_MASK = wrapping_model(mask_model,tokenizer,"mask",ensemble_num=args.ensemble_num,batch_size=args.ensemble_batch_size,ran_mask=args.random_mask_rate)
     
     #tokenizer = AutoTokenizer.from_pretrained(
     #    "bert-base-uncased", use_fast=True
@@ -320,10 +320,12 @@ if __name__ == "__main__":
     #ROBERTA_INFOBERT = wrapping_model(roberta_infobert_model,tokenizer_roberta,"infobert")
     
     with torch.no_grad():
+        #noise_pos = {"pre_att_all": [0.2,0.3],"post_att_all": [0.2,0.3,0.4]}
+        #noise_pos_roberta = {"post_att_all": [0.2,0.3]}
         
-        noise_pos = {"pre_att_all": [0.2,0.3],"post_att_all": [0.2,0.3,0.4]}
-        noise_pos_roberta = {"post_att_all": [0.2,0.3]}
-        list_attacks = ["textfooler","textbugger","bertattack"]
+        noise_pos = {"pre_att_cls": [0.6,0.7],"post_att_cls": [0.8,0.9,1]}
+        
+        list_attacks = ["bertattack"]
         for i in range(0, 1):
             set_seed(i)
             dataset = gen_dataset(test_data)
@@ -333,14 +335,14 @@ if __name__ == "__main__":
             for attack_method in list_attacks:
                 args.attack_method = attack_method
                 #attack(args, BERT, "BERT", dataset)
-                #for key in noise_pos.keys():
-                #    for noise_intensity in noise_pos[key]:
-                #        model.change_defense(defense_cls="random_noise",def_position=key,noise_sigma=noise_intensity,defense=True)
-                #        attack(args, BERT, f"BERT_{key}_{noise_intensity}", dataset)
-                #model.change_defense(defense=False)
+                for key in noise_pos.keys():
+                    for noise_intensity in noise_pos[key]:
+                        model.change_defense(defense_cls="random_noise",def_position=key,noise_sigma=noise_intensity,defense=True)
+                        attack(args, BERT, f"BERT_{key}_{noise_intensity}", dataset)
+                model.change_defense(defense=False)
                 #attack(args, BERT_ASCC, "BERT_ASCC", dataset)
                 #attack(args, BERT_DNE, "BERT_DNE", dataset)
-                attack(args, BERT_MASK, "BERT_MASK", dataset)
+                #attack(args, BERT_MASK, "BERT_MASK", dataset)
                 #attack(args, BERT_FREELB, "BERT_FREELB", dataset)
                 #attack(args, BERT_INFOBERT, "BERT_INFOBERT", dataset)
                 #attack(args, BERT_TMD, "BERT_TMD", dataset)
