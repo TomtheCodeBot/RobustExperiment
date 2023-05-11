@@ -355,18 +355,27 @@ if __name__ == "__main__":
     #}
     #positions = [ 'input_noise', 'pre_att_cls', 'pre_att_all',"post_att_cls","post_att_all", 'last_cls', 'logits']
     
+    #noise_position={
+    #    'input_noise':[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1],
+    #    'pre_att_cls':[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1],
+    #    'pre_att_all':[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1],
+    #    "post_att_cls":[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1],
+    #    "post_att_all":[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1], 
+    #    'last_cls':[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1], 
+    #    'logits':[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1]
+    #}
+    #positions = [ 'pre_att_all','pre_att_cls','post_att_cls',"post_att_all", 'last_cls', 'logits']
     noise_position={
-        'input_noise':[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1],
-        'pre_att_cls':[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1],
-        'pre_att_all':[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1],
-        "post_att_cls":[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1],
-        "post_att_all":[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1], 
-        'last_cls':[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1], 
-        'logits':[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1]
+        'input_noise':[1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2],
+        'pre_att_cls':[1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2],
+        'pre_att_all':[1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2],
+        "post_att_cls":[1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2],
+        "post_att_all":[1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2], 
+        'last_cls':[1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2], 
+        'logits':[1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2]
     }
-    batch_iter = len(bert_input)//batch + (1 if len(bert_input)%batch!=0 else 0 )
-    positions = [ 'pre_att_all','pre_att_cls','post_att_cls',"post_att_all", 'last_cls', 'logits']
-    for repetitions in range(1,num_repetitions):
+    positions = [ 'pre_att_cls','post_att_cls', 'last_cls', 'logits']
+    for repetitions in range(0,num_repetitions):
         for position in positions:
             for noise in noise_position[position]:
                 model.change_defense(defense_cls="random_noise",def_position=position,noise_sigma=noise,defense=True)
@@ -382,5 +391,5 @@ if __name__ == "__main__":
         # Serializing json
         json_object = json.dumps(clean_accuracy, indent=4)
         # Writing to sample.json
-        with open(f"AGNEWS_0.1_scale_clean_accuracy_{repetitions}.json", "w") as outfile:
+        with open(f"AGNEWS_0.1_scale_max_2_clean_accuracy_{repetitions}.json", "w") as outfile:
             outfile.write(json_object)
