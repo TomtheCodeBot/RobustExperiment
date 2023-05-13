@@ -342,7 +342,7 @@ if __name__ == "__main__":
         #noise_pos = { "pre_att_all": [0.1,0.2], "post_att_all": [0.1,0.2, 0.3]}
         #noise_pos_roberta = { "pre_att_all": [0.1,0.2], "post_att_all": [0.2, 0.3]}
         
-        noise_pos = { "pre_att_cls": [0.5], "post_att_cls": [0.6,0.7]}
+        noise_pos = { "pre_att_cls": [0.5]}
         
         list_attacks = ["bertattack"]
         for i in range(0, 1):
