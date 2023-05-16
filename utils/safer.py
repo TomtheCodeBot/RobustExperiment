@@ -36,11 +36,11 @@ class WordSubstitude:
                     tmp_sentence.append(self.sample_from_table(token))
             out_batch.append(' '.join(tmp_sentence))
         return out_batch
-
+    
     def sample_from_table(self, word):
         if word in self.table_key:
-            #tem_words = self.table[word]['set']
-            tem_words = self.table[word]
+            tem_words = self.table[word]['set']
+            #tem_words = self.table[word]
             num_words = len(tem_words)
             if num_words==0:
                 return word
