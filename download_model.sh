@@ -8,6 +8,8 @@ mkdir weights
 cd weights
 wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=1MGHfrFdwdzPiTib20NnOBkEGi0EdXMxs' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1MGHfrFdwdzPiTib20NnOBkEGi0EdXMxs" -O tmd_ckpts.zip && rm -rf /tmp/cookies.txt
 unzip tmd_ckpts.zip
+wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=1oRKihueWcrh0okSB3fPWuLZKEyq1hwCL' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1oRKihueWcrh0okSB3fPWuLZKEyq1hwCL" -O tmd_ckpts_roberta.zip && rm -rf /tmp/cookies.txt
+unzip tmd_ckpts_roberta.zip
 mkdir agnews
 cd agnews
 wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=1iyulolV8Z4jrePwJHB6L0UwXmH_vjdMy' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1iyulolV8Z4jrePwJHB6L0UwXmH_vjdMy" -O mask-len128-epo10-batch32-rate0.9-best.pth && rm -rf /tmp/cookies.txt
