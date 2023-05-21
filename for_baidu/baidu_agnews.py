@@ -25,13 +25,6 @@ from model.BERTNoiseDefend import BertForSequenceClassification
 from model.RoBERTaNoiseDefend import RobertaForSequenceClassification
 
 from transformers import AutoModelForSequenceClassification, AutoTokenizer, AutoConfig
-from utils.preprocessing import clean_text_imdb
-from sklearn.naive_bayes import MultinomialNB
-from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.linear_model import LogisticRegression
-from model.robustNB import RobustNaiveBayesClassifierPercentage
-from utils.bert_vectorizer import BertVectorizer
 from textattack.constraints.semantics.sentence_encoders import UniversalSentenceEncoder
 from textattack import Attack
 from textattack.models.wrappers import (
@@ -244,7 +237,7 @@ if __name__ == "__main__":
         if args.defense == "mask":
             print("mask")
             mask_model = model_lib.TextDefense_model_builder("bert","bert-base-uncased","mask",device,dataset_name="agnews")
-            load_path = "model/weights/agnews/mask-len128-epo10-batch32-rate0.9-best.pth"
+            load_path = "model/weights/tmd_ckpts/agnews/mask-len128-epo10-batch32-rate0.9-best.pth"
             tokenizer.model_max_length=128
             print(mask_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
             BERT_MASK = wrapping_model(mask_model,tokenizer,"mask",ensemble_num=args.ensemble_num,batch_size=args.ensemble_batch_size,ran_mask=args.random_mask_rate,safer_aug_set=None)
@@ -260,7 +253,7 @@ if __name__ == "__main__":
         if args.defense == "mask":
             print("mask")
             mask_model = model_lib.TextDefense_model_builder("roberta","roberta-base","mask",device,dataset_name="agnews")
-            load_path = "model/weights/agnews/roberta_mask-len128-epo10-batch32-rate0.9-best.pth"
+            load_path = "model/weights/tmd_ckpts/agnews/roberta_mask-len128-epo10-batch32-rate0.9-best.pth"
             tokenizer_roberta.model_max_length=128
             print(mask_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
             ROBERTA_MASK = wrapping_model(mask_model,tokenizer,"mask",ensemble_num=args.ensemble_num,batch_size=args.ensemble_batch_size,ran_mask=args.random_mask_rate,safer_aug_set=None)
