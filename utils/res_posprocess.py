@@ -30,7 +30,7 @@ def process_text_result(path):
             models_list = os.listdir(f"{path}/{i}/{k}")
             model_results = {}
             for j in models_list:
-                banned_list = ["BERT_MASK","ROBERTA"]
+                banned_list = ["MASK","SAFER"]
                 skip = False
                 print(j)
                 for banned in banned_list:
@@ -84,4 +84,4 @@ def process_text_result(path):
     pass
 
 if __name__ == '__main__':
-    process_text_result("/home/ubuntu/RobustExperiment/noise_defense_attack_result/paper_default setting/IMDB")
+    process_text_result("/home/ubuntu/RobustExperiment/noise_defense_attack_result/paper_default setting/AGNEWS")

@@ -31,13 +31,7 @@ from model.BERTNoiseDefend import BertForSequenceClassification
 from model.RoBERTaNoiseDefend import RobertaForSequenceClassification
 
 from transformers import AutoModelForSequenceClassification, AutoTokenizer, AutoConfig
-from utils.preprocessing import clean_text_imdb
-from sklearn.naive_bayes import MultinomialNB
-from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.linear_model import LogisticRegression
-from model.robustNB import RobustNaiveBayesClassifierPercentage
-from utils.bert_vectorizer import BertVectorizer
+
 from textattack.constraints.semantics.sentence_encoders import UniversalSentenceEncoder
 from textattack import Attack
 from textattack.models.wrappers import (
@@ -185,7 +179,7 @@ def attack(args, wrapper, name, dataset):
         num_examples=attack_args_dict["attack_examples"],
         log_to_txt=attack_args_dict["log_path"],
         csv_coloring_style="file",
-        num_workers_per_device=args.num_workers_per_device,
+        num_workers_per_device=int(args.num_workers_per_device),
         parallel=args.parallel
     )
     attacker = Attacker(attack, dataset, attack_args)
@@ -239,7 +233,7 @@ if __name__ == "__main__":
     if args.model == "bert":
         if args.defense == "mask":
             mask_model = model_lib.TextDefense_model_builder("bert","bert-base-uncased","mask",device)
-            load_path = "model/weights/imdb/mask-len256-epo10-batch32-rate0.3-best.pth"
+            load_path = "model/weights/tmd_ckpts/imdb/mask-len256-epo10-batch32-rate0.3-best.pth"
             tokenizer.model_max_length=256
             print(mask_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
             BERT_MASK = wrapping_model(mask_model,tokenizer,"mask",ensemble_num=args.ensemble_num,batch_size=args.ensemble_batch_size,ran_mask=args.random_mask_rate,safer_aug_set=None)
@@ -253,7 +247,7 @@ if __name__ == "__main__":
     if args.model == "roberta":
         if args.defense == "mask":
             mask_model = model_lib.TextDefense_model_builder("roberta","roberta-base","mask",device)
-            load_path = "model/weights/imdb/roberta_mask-len256-epo10-batch32-rate0.3-best.pth"
+            load_path = "model/weights/tmd_ckpts/imdb/roberta_mask-len256-epo10-batch32-rate0.3-best.pth"
             tokenizer_roberta.model_max_length=256
             print(mask_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
             ROBERTA_MASK = wrapping_model(mask_model,tokenizer,"mask",ensemble_num=args.ensemble_num,batch_size=args.ensemble_batch_size,ran_mask=args.random_mask_rate,safer_aug_set=None)
@@ -283,7 +277,7 @@ if __name__ == "__main__":
         
         noise_pos = {"pre_att_cls": [0.6,0.7],"post_att_cls": [0.8,0.9,1]}
         
-        list_attacks = ["textfooler","textbugger","bertattack"]
+        list_attacks = ["textbugger","bertattack"]
         for i in range(0, 1):
             set_seed(i)
             dataset = gen_dataset(test_data)
