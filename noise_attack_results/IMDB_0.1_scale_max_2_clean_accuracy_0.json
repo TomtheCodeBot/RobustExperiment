@@ -1,4 +1,5 @@
 {
+    "IMDB_BERT": "92.14%",
     "IMDB_BERT-WITH-0.1-SCALE_random_noise_pre_att_cls_1.1": "78.88%",
     "IMDB_BERT-WITH-0.1-SCALE_random_noise_pre_att_cls_1.2": "75.40%",
     "IMDB_BERT-WITH-0.1-SCALE_random_noise_pre_att_cls_1.3": "72.21%",

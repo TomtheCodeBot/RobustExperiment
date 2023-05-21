@@ -30,7 +30,7 @@ def process_text_result(path):
             models_list = os.listdir(f"{path}/{i}/{k}")
             model_results = {}
             for j in models_list:
-                banned_list = ["BERT_MASK"]
+                banned_list = ["MASK","SAFER"]
                 skip = False
                 print(j)
                 for banned in banned_list:
