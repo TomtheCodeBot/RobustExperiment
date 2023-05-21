@@ -1,4 +1,4 @@
 import utils
 
 if __name__ == "__main__":
-    utils.draw_excel("/home/ubuntu/RobustExperiment/noise_defense_attack_result/paper_default setting/IMDB")
+    utils.draw_excel2("/home/ubuntu/RobustExperiment/",name="IMDB_RoBERTa_0.1_scale_max_2_clean_accuracy")

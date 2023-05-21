@@ -400,6 +400,8 @@ class BertLayer(nn.Module):
         self.defense = defense
         self.defense_cls = defense_cls
         self.noise_sigma = noise_sigma
+        self.attention_output = None
+        self.save_output = True
     @torch.no_grad()
     def defense_token(self, x):
         if self.defense_cls == 'gauss_filter':
@@ -455,7 +457,8 @@ class BertLayer(nn.Module):
                 attention_output[:, 0] = self.defense_token(attention_output[:, 0])
             elif self.def_position == 'post_att_all':
                 attention_output = self.defense_token(attention_output)
-            
+        if self.save_output:
+            self.attention_output = attention_output
         # if decoder, the last output is tuple of self-attn cache
         if self.is_decoder:
             outputs = self_attention_outputs[1:-1]

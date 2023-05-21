@@ -36,7 +36,6 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from model.robustNB import RobustNaiveBayesClassifierPercentage
-from utils.bert_vectorizer import BertVectorizer
 from textattack.constraints.semantics.sentence_encoders import UniversalSentenceEncoder
 from textattack import Attack
 from textattack.models.wrappers import (
@@ -184,7 +183,7 @@ def attack(args, wrapper, name, dataset):
         num_examples=attack_args_dict["attack_examples"],
         log_to_txt=attack_args_dict["log_path"],
         csv_coloring_style="file",
-        num_workers_per_device=args.num_workers_per_device,
+        num_workers_per_device=int(args.num_workers_per_device),
         parallel=args.parallel
     )
     attacker = Attacker(attack, dataset, attack_args)
@@ -287,13 +286,13 @@ if __name__ == "__main__":
     #tokenizer = AutoTokenizer.from_pretrained("/home/khoa/duyhc/RobustExperimen/model/weights/VinAI_weights/bert-base-uncased-imdb",use_fast=True)
     #BERT_TMD = wrapping_model(tmd,tokenizer,"tmd")
     
-    config = AutoConfig.from_pretrained("/home/khoa/duyhc/RobustExperiment/model/weights/tmd_ckpts/manifold_defense/models/roberta-base-imdb")
+    config = AutoConfig.from_pretrained("/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/tmd_ckpts/manifold_defense/models/roberta-base-imdb")
     model_roberta = RobertaForSequenceClassification(config)
     tokenizer_tmd_roberta = AutoTokenizer.from_pretrained(
-       "/home/khoa/duyhc/RobustExperiment/model/weights/tmd_ckpts/manifold_defense/models/roberta-base-imdb", use_fast=True
+       "/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/tmd_ckpts/manifold_defense/models/roberta-base-imdb", use_fast=True
     )
     state = AutoModelForSequenceClassification.from_pretrained(
-        "/home/khoa/duyhc/RobustExperiment/model/weights/tmd_ckpts/manifold_defense/models/roberta-base-imdb"
+        "/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/tmd_ckpts/manifold_defense/models/roberta-base-imdb"
     )
     model_roberta.load_state_dict(state.state_dict())
     model_roberta.to("cuda")
@@ -343,9 +342,10 @@ if __name__ == "__main__":
         #noise_pos_roberta = { "pre_att_all": [0.1,0.2], "post_att_all": [0.2, 0.3]}
         
         #noise_pos = { "pre_att_cls": [0.5]}
-        noise_pos_roberta = {"post_att_cls": [0.9, 1], "pre_att_cls": [0.3,0.4]}
+        #noise_pos_roberta = {"post_att_cls": [0.9, 1], "pre_att_cls": [0.3,0.4]}
+        noise_pos_roberta = {"post_att_cls": [1.2]}
         
-        list_attacks = ["textbugger"]
+        list_attacks = ["bertattack"]
         for i in range(0, 1):
             set_seed(i)
             dataset = gen_dataset(test_data)
