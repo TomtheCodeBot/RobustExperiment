@@ -32,4 +32,4 @@ For AGNEWS, we used the dataset that comes from huggingface. For IMDB, please:
    - you can also limit the GPUs by passing CUDA_VISIBLE_DEVICES=(GPU IDs) before the commands.
 
 # Package the results
-
+Once the experiment is finish, we can package the results by zipping the `noise_defense_attack_result/paper_default setting` folder.
