@@ -27,5 +27,9 @@ For AGNEWS, we used the dataset that comes from huggingface. For IMDB, please:
    - `chmod +x run_experiment_baidu.sh | ./run_experiment_baidu.sh`
 
  2. Run using python commands:
-   - `python for_baidu
+   - `python for_baidu/baidu_agnews.py --model ["bert"|"roberta] --defense ["mask"|"safer"] --parallel (to run multiple process) -nd (number of process/GPUs, default:2)`
+   - you can adjust the number of workers for each GPU by adding `-nd` for the commands in the bash script.
+   - you can also limit the GPUs by passing CUDA_VISIBLE_DEVICES=(GPU IDs) before the commands.
+
+# Package the results
 
