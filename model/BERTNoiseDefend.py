@@ -401,7 +401,7 @@ class BertLayer(nn.Module):
         self.defense_cls = defense_cls
         self.noise_sigma = noise_sigma
         self.attention_output = None
-        self.save_output = True
+        self.save_output = False
     @torch.no_grad()
     def defense_token(self, x):
         if self.defense_cls == 'gauss_filter':
