@@ -18,7 +18,7 @@ After downloading the weights, place the model.zip file in the github repo's dir
 For AGNEWS, we used the dataset that comes from huggingface. For IMDB, please:
  - download the dataset in this website:
    - https://ai.stanford.edu/~amaas/data/sentiment/aclImdb_v1.tar.gz
- - create a data folder and put the downloaded file in that path.
+ - create a "data" folder and put the downloaded file in that path.
  - untar the files using this command:
    - `tar -zxvf aclImdb_v1.tar.gz`
 # Running the experiments.
