@@ -225,6 +225,7 @@ if __name__ == "__main__":
     train_data, test_data = load_train_test_imdb_data(
         "data/aclImdb"
     )
+
     config = AutoConfig.from_pretrained("model/weights/VinAI_weights/bert-base-uncased-imdb")
     tokenizer_tmd = AutoTokenizer.from_pretrained(
         "model/weights/VinAI_weights/bert-base-uncased-imdb", use_fast=True
