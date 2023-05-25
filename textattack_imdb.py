@@ -226,18 +226,18 @@ if __name__ == "__main__":
         "data/aclImdb"
     )
 
-    config = AutoConfig.from_pretrained("model/weights/VinAI_weights/bert-base-uncased-imdb")
-    tokenizer_tmd = AutoTokenizer.from_pretrained(
-        "model/weights/VinAI_weights/bert-base-uncased-imdb", use_fast=True
-    )
-    model = BertForSequenceClassification(config)
-    state = AutoModelForSequenceClassification.from_pretrained(
-        "model/weights/VinAI_weights/bert-base-uncased-imdb"
-    )
-    model.load_state_dict(state.state_dict())
-    model.to("cuda")
-    model.eval()
-    BERT = HuggingFaceModelWrapper(model, tokenizer_tmd)
+    #config = AutoConfig.from_pretrained("model/weights/VinAI_weights/bert-base-uncased-imdb")
+    #tokenizer_tmd = AutoTokenizer.from_pretrained(
+    #    "model/weights/VinAI_weights/bert-base-uncased-imdb", use_fast=True
+    #)
+    #model = BertForSequenceClassification(config)
+    #state = AutoModelForSequenceClassification.from_pretrained(
+    #    "model/weights/VinAI_weights/bert-base-uncased-imdb"
+    #)
+    #model.load_state_dict(state.state_dict())
+    #model.to("cuda")
+    #model.eval()
+    #BERT = HuggingFaceModelWrapper(model, tokenizer_tmd)
     
     #ascc_model = model_lib.TextDefense_model_builder("bert","bert-base-uncased","ascc",device)
     #load_path = "model/weights/tmd_ckpts/TextDefender/saved_models/imdb_bert/ascc-len256-epo10-batch32-best.pth"
@@ -245,14 +245,14 @@ if __name__ == "__main__":
     #ascc_model.to("cuda")
     #BERT_ASCC = wrapping_model(ascc_model,tokenizer,"ascc")
     
-    #tokenizer = AutoTokenizer.from_pretrained(
-    #    "bert-base-uncased", use_fast=True
-    #)
-    #mask_model = model_lib.TextDefense_model_builder("bert","bert-base-uncased","mask",device)
-    #load_path = "/home/duy/TextDefender/saved_models/imdb_bert/mask-len256-epo10-batch32-rate0.3-best.pth"
-    #tokenizer.model_max_length=256
-    #print(mask_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
-    #BERT_MASK = wrapping_model(mask_model,tokenizer,"mask",ensemble_num=args.ensemble_num,batch_size=args.ensemble_batch_size,ran_mask=args.random_mask_rate)
+    tokenizer = AutoTokenizer.from_pretrained(
+        "bert-base-uncased", use_fast=True
+    )
+    mask_model = model_lib.TextDefense_model_builder("bert","bert-base-uncased","mask",device)
+    load_path = "/home/ubuntu/RobustExperiment/model/weights/tmd_ckpts/imdb/mask-len256-epo10-batch32-rate0.3-best.pth"
+    tokenizer.model_max_length=256
+    print(mask_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
+    BERT_MASK = wrapping_model(mask_model,tokenizer,"mask",ensemble_num=args.ensemble_num,batch_size=args.ensemble_batch_size,ran_mask=args.random_mask_rate)
     
     #tokenizer = AutoTokenizer.from_pretrained(
     #    "bert-base-uncased", use_fast=True
@@ -342,7 +342,7 @@ if __name__ == "__main__":
         #noise_pos_roberta = {"post_att_cls": [0.9, 1], "pre_att_cls": [0.3,0.4]}
         #noise_pos_roberta = {"post_att_cls": [1.2]}
         
-        list_attacks = ["textfooler","textbugger","bertattack"]
+        list_attacks = ["bertattack"]
         for i in range(0, 1):
             set_seed(i)
             dataset = gen_dataset(test_data)
@@ -352,17 +352,17 @@ if __name__ == "__main__":
             for attack_method in list_attacks:
                 args.attack_method = attack_method
                 #attack(args, BERT, "BERT", dataset)
-                for key in noise_pos.keys():
-                    for noise_intensity in noise_pos[key]:
-                        model.change_defense(defense_cls="random_noise",def_position=key,noise_sigma=noise_intensity,defense=True)
-                        BERT = HuggingFaceModelWrapper(model, tokenizer_tmd)
-                        attack(args, BERT, f"BERT_{key}_{noise_intensity}", dataset)
-                model.change_defense(defense=False)
+                #for key in noise_pos.keys():
+                #    for noise_intensity in noise_pos[key]:
+                #        model.change_defense(defense_cls="random_noise",def_position=key,noise_sigma=noise_intensity,defense=True)
+                #        BERT = HuggingFaceModelWrapper(model, tokenizer_tmd)
+                #        attack(args, BERT, f"BERT_{key}_{noise_intensity}", dataset)
+                #model.change_defense(defense=False)
                 #attack(args, BERT_ASCC, "BERT_ASCC", dataset)
                 #attack(args, BERT_FREELB, "BERT_FREELB", dataset)
                 #attack(args, BERT_INFOBERT, "BERT_INFOBERT", dataset)
                 #attack(args, BERT_TMD, "BERT_TMD", dataset)
-                #attack(args, BERT_MASK, "BERT_MASK", dataset)
+                attack(args, BERT_MASK, "BERT_MASK", dataset)
                 
                 #attack(args, ROBERTA, "ROBERTA", dataset)
                 #for key in noise_pos_roberta.keys():
