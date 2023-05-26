@@ -1,11 +1,11 @@
 python for_baidu/baidu_agnews.py --parallel --model bert --defense mask -am bertattack
 python for_baidu/baidu_imdb.py --parallel --model bert --defense safer -am bertattack
-python for_baidu/baidu_agnews.py --parallel --model roberta --defense mask -am textfooler
-python for_baidu/baidu_agnews.py --parallel --model roberta --defense mask -am textbugger
-python for_baidu/baidu_agnews.py --parallel --model roberta --defense mask -am bertattack
-python for_baidu/baidu_imdb.py --parallel --model roberta --defense mask -am textfooler
-python for_baidu/baidu_imdb.py --parallel --model roberta --defense mask -am textbugger
-python for_baidu/baidu_imdb.py --parallel --model roberta --defense mask -am bertattack
+#python for_baidu/baidu_agnews.py --parallel --model roberta --defense mask -am textfooler
+#python for_baidu/baidu_agnews.py --parallel --model roberta --defense mask -am textbugger
+#python for_baidu/baidu_agnews.py --parallel --model roberta --defense mask -am bertattack
+#python for_baidu/baidu_imdb.py --parallel --model roberta --defense mask -am textfooler
+#python for_baidu/baidu_imdb.py --parallel --model roberta --defense mask -am textbugger
+#python for_baidu/baidu_imdb.py --parallel --model roberta --defense mask -am bertattack
 python for_baidu/baidu_agnews.py --parallel --model bert --defense safer -am textfooler
 python for_baidu/baidu_agnews.py --parallel --model bert --defense safer -am textbugger
 python for_baidu/baidu_agnews.py --parallel --model bert --defense safer -am bertattack
