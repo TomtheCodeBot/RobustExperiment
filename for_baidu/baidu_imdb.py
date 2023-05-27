@@ -243,11 +243,11 @@ if __name__ == "__main__":
             load_path = "model/weights/tmd_ckpts/TextDefender/saved_models/imdb_bert/safer-len256-epo10-batch32-best.pth"
             tokenizer.model_max_length=256
             print(safer_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
-            BERT_SAFER = wrapping_model(safer_model,tokenizer,"safer",ensemble_num=args.ensemble_num,batch_size=args.ensemble_batch_size,safer_aug_set="model/weights/tmd_ckpts/imdb/perturbation_constraint_pca0.8_100.pkl")
+            BERT_SAFER = wrapping_model(safer_model,tokenizer,"safer",ensemble_num=args.ensemble_num,batch_size=args.ensemble_batch_size,safer_aug_set="model/weights/tmd_ckpts/imdb/perturbation_constraint_pca0.8_100_imdb.pkl")
     if args.model == "roberta":
         if args.defense == "mask":
             mask_model = model_lib.TextDefense_model_builder("roberta","roberta-base","mask",device)
-            load_path = "model/weights/tmd_ckpts/imdb/imdb_roberta/mask-len256-epo10-batch32-rate0.3-best.pth"
+            load_path = "model/weights/tmd_ckpts/imdb/roberta_mask-len256-epo10-batch32-rate0.3-best.pth"
             tokenizer_roberta.model_max_length=256
             print(mask_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
             ROBERTA_MASK = wrapping_model(mask_model,tokenizer_roberta,"mask",ensemble_num=args.ensemble_num,batch_size=args.ensemble_batch_size,ran_mask=args.random_mask_rate,safer_aug_set=None,mask_token="<mask>")
@@ -257,7 +257,8 @@ if __name__ == "__main__":
             load_path = "model/weights/tmd_ckpts/TextDefender/saved_models/imdb_roberta/safer-len256-epo10-batch32-best.pth"
             tokenizer_roberta.model_max_length=256
             print(safer_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
-            ROBERTA_SAFER = wrapping_model(safer_model,tokenizer_roberta,"safer",ensemble_num=args.ensemble_num,batch_size=args.ensemble_batch_size,safer_aug_set="model/weights/tmd_ckpts/imdb/perturbation_constraint_pca0.8_100.pkl")
+            ROBERTA_SAFER = wrapping_model(safer_model,tokenizer_roberta,"safer",ensemble_num=args.ensemble_num,batch_size=args.ensemble_batch_size,safer_aug_set="model/weights/tmd_ckpts/imdb/perturbation_constraint_pca0.8_100_imdb.pkl")
+
         
     #roberta_freelb_model = model_lib.TextDefense_model_builder("roberta","roberta-base","freelb",device,dataset_name="agnews")
     #load_path = "/home/khoa/duyhc/TextDefender/saved_models/ag_news_roberta/freelb-len128-epo10-batch32-advstep5-advlr0.03-norm0.0-best.pth"
