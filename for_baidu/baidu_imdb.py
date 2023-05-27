@@ -247,7 +247,7 @@ if __name__ == "__main__":
     if args.model == "roberta":
         if args.defense == "mask":
             mask_model = model_lib.TextDefense_model_builder("roberta","roberta-base","mask",device)
-            load_path = "/home/ubuntu/RobustExperiment/model/weights/tmd_ckpts/imdb/roberta_mask-len256-epo10-batch32-rate0.3-best.pth"
+            load_path = "model/weights/tmd_ckpts/imdb/roberta_mask-len256-epo10-batch32-rate0.3-best.pth"
             tokenizer_roberta.model_max_length=256
             print(mask_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
             ROBERTA_MASK = wrapping_model(mask_model,tokenizer_roberta,"mask",ensemble_num=args.ensemble_num,batch_size=args.ensemble_batch_size,ran_mask=args.random_mask_rate,safer_aug_set=None)
@@ -277,7 +277,7 @@ if __name__ == "__main__":
         
         noise_pos = {"pre_att_cls": [0.6,0.7],"post_att_cls": [0.8,0.9,1]}
         
-        list_attacks = ["textfooler","textbugger","bertattack"]
+        list_attacks = ["textbugger"]
         for i in range(0, 1):
             set_seed(i)
             dataset = gen_dataset(test_data)
