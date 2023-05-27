@@ -223,15 +223,6 @@ if __name__ == "__main__":
     )
     device = "cuda"
     
-    config = AutoConfig.from_pretrained("textattack/bert-base-uncased-ag-news")
-    model = BertForSequenceClassification(config)
-    state = AutoModelForSequenceClassification.from_pretrained(
-        "textattack/bert-base-uncased-ag-news"
-    )
-    model.load_state_dict(state.state_dict())
-    model.to("cuda")
-    model.eval()
-    BERT = HuggingFaceModelWrapper(model, tokenizer)
     if args.model == "bert":
         print("bert")
         if args.defense == "mask":
@@ -256,7 +247,7 @@ if __name__ == "__main__":
             load_path = "model/weights/tmd_ckpts/agnews/roberta_mask-len128-epo10-batch32-rate0.9-best.pth"
             tokenizer_roberta.model_max_length=128
             print(mask_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
-            ROBERTA_MASK = wrapping_model(mask_model,tokenizer_roberta,"mask",ensemble_num=args.ensemble_num,batch_size=args.ensemble_batch_size,ran_mask=args.random_mask_rate,safer_aug_set=None)
+            ROBERTA_MASK = wrapping_model(mask_model,tokenizer_roberta,"mask",ensemble_num=args.ensemble_num,batch_size=args.ensemble_batch_size,ran_mask=args.random_mask_rate,safer_aug_set=None,mask_token="<mask>")
         
         if args.defense == "safer":
             print("safer")
