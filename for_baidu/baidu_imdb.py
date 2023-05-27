@@ -258,6 +258,7 @@ if __name__ == "__main__":
             tokenizer_roberta.model_max_length=256
             print(safer_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
             ROBERTA_SAFER = wrapping_model(safer_model,tokenizer_roberta,"safer",ensemble_num=args.ensemble_num,batch_size=args.ensemble_batch_size,safer_aug_set="model/weights/tmd_ckpts/imdb/perturbation_constraint_pca0.8_100_imdb.pkl")
+
         
     #roberta_freelb_model = model_lib.TextDefense_model_builder("roberta","roberta-base","freelb",device,dataset_name="agnews")
     #load_path = "/home/khoa/duyhc/TextDefender/saved_models/ag_news_roberta/freelb-len128-epo10-batch32-advstep5-advlr0.03-norm0.0-best.pth"
@@ -277,7 +278,7 @@ if __name__ == "__main__":
         
         noise_pos = {"pre_att_cls": [0.6,0.7],"post_att_cls": [0.8,0.9,1]}
         
-        list_attacks = ["textbugger"]
+        list_attacks = [args.attack_method]
         for i in range(0, 1):
             set_seed(i)
             dataset = gen_dataset(test_data)
