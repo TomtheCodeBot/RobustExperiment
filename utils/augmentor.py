@@ -32,9 +32,9 @@ TEXTFOOLER_SET = set(
             )
 
 class Augmentor(object):
-    def __init__(self, training_type,safer_aug_set="cache/embed/perturbation_constraint_pca0.8_100.pkl",mask_ratio=0.7):
+    def __init__(self, training_type,safer_aug_set="cache/embed/perturbation_constraint_pca0.8_100.pkl",mask_ratio=0.7,mask_token="[MASK]"):
         self.training_type = training_type
-        self.mask_token = '[MASK]'
+        self.mask_token = mask_token
         self.safer_aug_set = safer_aug_set
         self.mask_ratio = mask_ratio
         if self.safer_aug_set is not  None:
