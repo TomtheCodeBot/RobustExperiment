@@ -15,9 +15,9 @@ from textattack.models.wrappers import (
     SklearnModelWrapper,
     HuggingFaceModelWrapper,
 )
-def wrapping_model(model,tokenizer,training_type=None,model_type="bert",batch_size: int = 32,ensemble_num=100,ran_mask=0.7,safer_aug_set="/home/ubuntu/TextDefender/dataset/ag_news/perturbation_constraint_pca0.8_100.pkl"):
+def wrapping_model(model,tokenizer,training_type=None,model_type="bert",batch_size: int = 32,ensemble_num=100,ran_mask=0.7,safer_aug_set="/home/ubuntu/TextDefender/dataset/ag_news/perturbation_constraint_pca0.8_100.pkl",mask_token="[MASK]"):
     if training_type in ['dne', 'safer', 'mask']:
-           model_wrapper = HuggingFaceModelEnsembleWrapper(model,training_type, tokenizer,batch_size=batch_size,ensemble_num=ensemble_num,mask_ratio=ran_mask,safer_aug_set=safer_aug_set)
+           model_wrapper = HuggingFaceModelEnsembleWrapper(model,training_type, tokenizer,batch_size=batch_size,ensemble_num=ensemble_num,mask_ratio=ran_mask,safer_aug_set=safer_aug_set,mask_token=mask_token)
     elif model_type != 'lstm':
         model_wrapper = HuggingFaceModelWrapper(model, tokenizer)
     return model_wrapper
@@ -33,7 +33,9 @@ class HuggingFaceModelEnsembleWrapper(PyTorchModelWrapper):
                  ensemble_num = 100,
                  ensemble_method = "logits",
                  mask_ratio = 0.7,
-                 safer_aug_set = None ):
+                 safer_aug_set = None,
+                 mask_token = "[MASK]"):
+        print(mask_token)
         self.model = model
         self.tokenizer = tokenizer
         self.batch_size = batch_size
@@ -44,7 +46,7 @@ class HuggingFaceModelEnsembleWrapper(PyTorchModelWrapper):
             self.ensemble_num = ensemble_num
 
         self.ensemble_method = ensemble_method
-        self.augmenter = Augmentor(training_type,mask_ratio=mask_ratio,safer_aug_set = safer_aug_set)
+        self.augmenter = Augmentor(training_type,mask_ratio=mask_ratio,safer_aug_set = safer_aug_set,mask_token=mask_token)
         self.max_length = (
             512
             if self.tokenizer.model_max_length == int(1e30)

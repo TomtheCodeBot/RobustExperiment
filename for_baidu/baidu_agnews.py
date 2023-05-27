@@ -171,7 +171,7 @@ def attack(args, wrapper, name, dataset):
         num_examples=attack_args_dict["attack_examples"],
         log_to_txt=attack_args_dict["log_path"],
         csv_coloring_style="file",
-        num_workers_per_device=args.num_workers_per_device,
+        num_workers_per_device=int(args.num_workers_per_device),
         parallel=args.parallel
     )
     attacker = Attacker(attack, dataset, attack_args)
@@ -223,15 +223,6 @@ if __name__ == "__main__":
     )
     device = "cuda"
     
-    config = AutoConfig.from_pretrained("textattack/bert-base-uncased-ag-news")
-    model = BertForSequenceClassification(config)
-    state = AutoModelForSequenceClassification.from_pretrained(
-        "textattack/bert-base-uncased-ag-news"
-    )
-    model.load_state_dict(state.state_dict())
-    model.to("cuda")
-    model.eval()
-    BERT = HuggingFaceModelWrapper(model, tokenizer)
     if args.model == "bert":
         print("bert")
         if args.defense == "mask":
@@ -247,7 +238,7 @@ if __name__ == "__main__":
             load_path = "model/weights/tmd_ckpts/TextDefender/saved_models/agnews_bert/safer-len128-epo10-batch32-best.pth"
             tokenizer.model_max_length=128
             print(safer_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
-            BERT_SAFER = wrapping_model(safer_model,tokenizer,"safer",ensemble_num=args.ensemble_num,batch_size=args.ensemble_batch_size,safer_aug_set="/home/duy/RobustExperiment/model/weights/imdb/perturbation_constraint_pca0.8_100_imdb.pkl")
+            BERT_SAFER = wrapping_model(safer_model,tokenizer,"safer",ensemble_num=args.ensemble_num,batch_size=args.ensemble_batch_size,safer_aug_set="model/weights/tmd_ckpts/agnews/perturbation_constraint_pca0.8_100.pkl")
     if args.model == "roberta":
         print("roberta")
         if args.defense == "mask":
@@ -256,7 +247,7 @@ if __name__ == "__main__":
             load_path = "model/weights/tmd_ckpts/agnews/roberta_mask-len128-epo10-batch32-rate0.9-best.pth"
             tokenizer_roberta.model_max_length=128
             print(mask_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
-            ROBERTA_MASK = wrapping_model(mask_model,tokenizer_roberta,"mask",ensemble_num=args.ensemble_num,batch_size=args.ensemble_batch_size,ran_mask=args.random_mask_rate,safer_aug_set=None)
+            ROBERTA_MASK = wrapping_model(mask_model,tokenizer_roberta,"mask",ensemble_num=args.ensemble_num,batch_size=args.ensemble_batch_size,ran_mask=args.random_mask_rate,safer_aug_set=None,mask_token="<mask>")
         
         if args.defense == "safer":
             print("safer")
@@ -264,8 +255,7 @@ if __name__ == "__main__":
             load_path = "model/weights/tmd_ckpts/TextDefender/saved_models/agnews_roberta/safer-len128-epo10-batch32-best.pth"
             tokenizer_roberta.model_max_length=128
             print(safer_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
-            ROBERTA_SAFER = wrapping_model(safer_model,tokenizer_roberta,"safer",ensemble_num=args.ensemble_num,batch_size=args.ensemble_batch_size,safer_aug_set="/home/duy/RobustExperiment/model/weights/imdb/perturbation_constraint_pca0.8_100_imdb.pkl")
-        
+            ROBERTA_SAFER = wrapping_model(safer_model,tokenizer_roberta,"safer",ensemble_num=args.ensemble_num,batch_size=args.ensemble_batch_size,safer_aug_set="model/weights/tmd_ckpts/agnews/perturbation_constraint_pca0.8_100.pkl")
     
     with torch.no_grad():
         #noise_pos = {"pre_att_all": [0.2,0.3],"post_att_all": [0.2,0.3,0.4]}
@@ -273,7 +263,7 @@ if __name__ == "__main__":
         
         noise_pos = {"pre_att_cls": [0.6,0.7],"post_att_cls": [0.8,0.9,1]}
         
-        list_attacks = ["textfooler","textbugger","bertattack"]
+        list_attacks = [args.attack_method]
         for i in range(0, 1):
             set_seed(i)
             dataset = gen_dataset(test_data)
