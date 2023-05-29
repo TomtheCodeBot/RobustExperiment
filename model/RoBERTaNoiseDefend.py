@@ -382,6 +382,8 @@ class RobertaLayer(nn.Module):
         self.defense = defense
         self.defense_cls = defense_cls
         self.noise_sigma = noise_sigma
+        self.attention_output = None
+        self.save_output = False
     def defense_token(self, x):
         if self.defense_cls == 'gauss_filter':
             # gauss_x = gauss_filter(x.detach().cpu().numpy(), self.filter_sigma)
@@ -437,6 +439,8 @@ class RobertaLayer(nn.Module):
             elif self.def_position == 'post_att_all':
                 attention_output = self.defense_token(attention_output)
         # if decoder, the last output is tuple of self-attn cache
+        if self.save_output:
+            self.attention_output = attention_output
         if self.is_decoder:
             outputs = self_attention_outputs[1:-1]
             present_key_value = self_attention_outputs[-1]
@@ -493,6 +497,10 @@ class RobertaEncoder(nn.Module):
         self.config = config
         self.layer = nn.ModuleList([RobertaLayer(config,def_position,defense_cls,noise_sigma,defense) for _ in range(config.num_hidden_layers)])
         self.gradient_checkpointing = False
+    def apply_noise_std(self,path_to_std,device):
+        std_list = torch.load(path_to_std,map_location=device)
+        for i in range(len(self.layer)):
+            self.layer[i].noise_sigma = self.layer[i].noise_sigma*std_list[i]
     def change_defense(self,def_position=None,defense_cls=None,noise_sigma=None,defense=None):
         for layer in self.layer:
             layer.change_defense(def_position,defense_cls,noise_sigma,defense)
