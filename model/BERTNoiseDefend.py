@@ -409,7 +409,10 @@ class BertLayer(nn.Module):
             gauss_x = torch.tensor(gauss_x).cuda()
             return gauss_x
         elif self.defense_cls == 'random_noise':
-            noise = torch.randn_like(x) * self.noise_sigma
+            if type(self.noise_sigma) is torch.Tensor:
+                noise = torch.randn_like(x) * self.noise_sigma.to(x.device)
+            else:
+                noise = torch.randn_like(x) * self.noise_sigma
             return x + noise 
         elif self.defense_cls == 'laplace':
             d = torch.distributions.laplace.Laplace(torch.zeros_like(x), self.noise_sigma * torch.ones_like(x))
@@ -520,6 +523,10 @@ class BertEncoder(nn.Module):
         for layer in self.layer:
             layer.change_defense(def_position,defense_cls,noise_sigma,defense)
         pass
+    def apply_noise_std(self,path_to_std):
+        std_list = torch.load(path_to_std)
+        for i in range(len(self.layer)):
+            self.layer[i].noise_sigma = self.layer[i].noise_sigma*std_list[i]
     def forward(
         self,
         hidden_states: torch.Tensor,
