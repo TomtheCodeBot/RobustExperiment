@@ -176,7 +176,7 @@ def attack(args, wrapper, name, dataset):
         num_examples=attack_args_dict["attack_examples"],
         log_to_txt=attack_args_dict["log_path"],
         csv_coloring_style="file",
-        num_workers_per_device=args.num_workers_per_device,
+        num_workers_per_device=int(args.num_workers_per_device),
         parallel=args.parallel
     )
     attacker = Attacker(attack, dataset, attack_args)
@@ -327,9 +327,8 @@ if __name__ == "__main__":
         noise_pos = {"post_att_all": [0.45,0.5]}
         #noise_pos_roberta = {"post_att_all": [0.25]}
         #noise_pos_roberta = {"post_att_all": [0.25]}
-        
-        
-        list_attacks = ["textfooler","textbugger","bertattack"]
+                
+        list_attacks = ["textbugger","bertattack"]
         for i in range(0, 1):
             set_seed(i)
             dataset = gen_dataset(test_data)
