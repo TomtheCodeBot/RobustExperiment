@@ -176,7 +176,7 @@ def attack(args, wrapper, name, dataset):
         num_examples=attack_args_dict["attack_examples"],
         log_to_txt=attack_args_dict["log_path"],
         csv_coloring_style="file",
-        num_workers_per_device=args.num_workers_per_device,
+        num_workers_per_device=int(args.num_workers_per_device),
         parallel=args.parallel
     )
     attacker = Attacker(attack, dataset, attack_args)
@@ -322,13 +322,12 @@ if __name__ == "__main__":
     with torch.no_grad():
         #noise_pos = {"pre_att_all": [0.2,0.3],"post_att_all": [0.2,0.3,0.4]}
         #noise_pos_roberta = {"post_att_all": [0.2,0.3]}
-        
-        #noise_pos = {"pre_att_cls": [0.6,0.7],"post_att_cls": [0.7]}
-        #noise_pos = {"post_att_all": [0.45,0.5]}
-        noise_pos_roberta = {"post_att_cls": [0.4]}
-        
-        
-        list_attacks = ["textfooler","textbugger","bertattack"]
+        #noise_pos = {"pre_att_cls": [0.6,0.7],"post_att_cls": [0.8,0.9,1]}
+        noise_pos = {"post_att_all": [0.45,0.5]}
+        #noise_pos_roberta = {"post_att_all": [0.25]}
+        #noise_pos_roberta = {"post_att_all": [0.25]}
+                
+        list_attacks = ["textbugger","bertattack"]
         for i in range(0, 1):
             set_seed(i)
             dataset = gen_dataset(test_data)
