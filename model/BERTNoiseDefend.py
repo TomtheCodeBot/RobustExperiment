@@ -523,6 +523,13 @@ class BertEncoder(nn.Module):
         for layer in self.layer:
             layer.change_defense(def_position,defense_cls,noise_sigma,defense)
         pass
+    def specify_defense_layers(self,list_defense_layer):
+        for i in range(0,len(self.layer)):
+            if i in list_defense_layer:
+                self.layer[i].change_defense(None,None,None,True)
+            else:
+                self.layer[i].change_defense(None,None,None,False)
+        pass
     def apply_noise_std(self,path_to_std):
         std_list = torch.load(path_to_std)
         for i in range(len(self.layer)):
