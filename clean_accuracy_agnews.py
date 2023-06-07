@@ -358,6 +358,37 @@ if __name__ == "__main__":
     #    'logits':[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1]
     #}
     #positions = [ 'pre_att_cls','post_att_cls']
+    #noise_position={
+    #    'input_noise':[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2],
+    #    'pre_att_cls':[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2],
+    #    'pre_att_all':[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2],
+    #    "post_att_cls":[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2],
+    #    "post_att_all":[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2], 
+    #    'last_cls':[1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2], 
+    #    'logits':[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2]
+    #}
+    #positions = ["post_att_all","pre_att_all"]
+    #
+    #for repetitions in range(0,num_repetitions):
+    #    for position in positions:
+    #        for noise in noise_position[position]:
+    #            model.change_defense(defense_cls="random_noise",def_position=position,noise_sigma=noise,defense=True)
+    #            model.bert.encoder.apply_noise_std("/home/duy/BERT_AGNEWS_STD_FEATURE_DIM.pt",device)
+    #            y_pred_BERT = []
+    #            for i in tqdm(range(0,batch_iter)):
+    #                y_pred_BERT.extend(torch.argmax(BERT(bert_input[i*batch:(i+1)*batch]),dim=-1).tolist())
+    #            # Evaluation
+    #            acc = accuracy_score(test_labels, y_pred_BERT)
+    #            print(f"AGNEWS_BERT_{'random_noise'}_{position}_{str(noise)} = {acc*100:.2f}%")
+    #            clean_accuracy[f"AGNEWS_BERT_{'random_noise'}_{position}_{str(noise)}_weighted_std"] = f"{acc*100:.2f}%"
+    #            print(clean_accuracy)
+    #    
+    #    # Serializing json
+    #    json_object = json.dumps(clean_accuracy, indent=4)
+    #    # Writing to sample.json
+    #    with open(f"AGNEWS_BERT_0.1_scale_weighted_std_clean_accuracy_{repetitions}.json", "w") as outfile:
+    #        outfile.write(json_object)
+            
     noise_position={
         'input_noise':[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2],
         'pre_att_cls':[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2],
@@ -368,23 +399,25 @@ if __name__ == "__main__":
         'logits':[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2]
     }
     positions = ["post_att_all","pre_att_all"]
-    
+    layers = [0,5,11]
     for repetitions in range(0,num_repetitions):
         for position in positions:
             for noise in noise_position[position]:
-                model.change_defense(defense_cls="random_noise",def_position=position,noise_sigma=noise,defense=True)
-                model.bert.encoder.apply_noise_std("/home/duy/BERT_AGNEWS_STD_FEATURE_DIM.pt",device)
-                y_pred_BERT = []
-                for i in tqdm(range(0,batch_iter)):
-                    y_pred_BERT.extend(torch.argmax(BERT(bert_input[i*batch:(i+1)*batch]),dim=-1).tolist())
-                # Evaluation
-                acc = accuracy_score(test_labels, y_pred_BERT)
-                print(f"AGNEWS_BERT_{'random_noise'}_{position}_{str(noise)} = {acc*100:.2f}%")
-                clean_accuracy[f"AGNEWS_BERT_{'random_noise'}_{position}_{str(noise)}_weighted_std"] = f"{acc*100:.2f}%"
-                print(clean_accuracy)
+                for layer in layers:
+                    model.bert.encoder.specify_defense_layers([layer])
+                    model.change_defense(defense_cls="random_noise",def_position=position,noise_sigma=noise,defense=True)
+                    y_pred_BERT = []
+                    for i in tqdm(range(0,batch_iter)):
+                        y_pred_BERT.extend(torch.argmax(BERT(bert_input[i*batch:(i+1)*batch]),dim=-1).tolist())
+                    # Evaluation
+                    acc = accuracy_score(test_labels, y_pred_BERT)
+                    print(f"AGNEWS_BERT_{'random_noise'}_{position}_{str(noise)}_layer_{str(layer)} = {acc*100:.2f}%")
+                    clean_accuracy[f"AGNEWS_BERT_{'random_noise'}_{position}_{str(noise)}_layer_{str(layer)}"] = f"{acc*100:.2f}%"
+                    print(clean_accuracy)
         
         # Serializing json
         json_object = json.dumps(clean_accuracy, indent=4)
         # Writing to sample.json
-        with open(f"AGNEWS_BERT_0.1_scale_weighted_std_clean_accuracy_{repetitions}.json", "w") as outfile:
+        with open(f"AGNEWS_BERT_0.1_scale_layers_clean_accuracy_{repetitions}.json", "w") as outfile:
             outfile.write(json_object)
+                
