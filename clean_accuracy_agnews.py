@@ -9,6 +9,7 @@ from textattack.attack_recipes import (
     TextBuggerLi2018,
 )
 from sklearn.metrics import accuracy_score
+import model as model_lib
 
 from textattack.transformations import WordSwapEmbedding
 from textattack.constraints.semantics import WordEmbeddingDistance
@@ -203,11 +204,19 @@ if __name__ == "__main__":
         "-ad", "--attack_dataset", default="test"
     )  # attack dataset & accuracy dataset
     parser.add_argument("-ae", "--attack_examples", default=1000)
-    parser.add_argument("-mr", "--modify_ratio", default=0.1)
+    parser.add_argument("-mr", "--modify_ratio", default=0.3)
     parser.add_argument("-sm", "--similarity", default=0.84)
     parser.add_argument("-kn", "--k_neighbor", default=50)
+    parser.add_argument("-nd", "--num_workers_per_device", default=2)
+    parser.add_argument('-pr', '--parallel',action='store_true')
+    parser.add_argument("-en", "--ensemble_num", default=100)
+    parser.add_argument("-eb", "--ensemble_batch_size", default=32)
+    parser.add_argument("-rmr", "--random_mask_rate", default=0.9)
+    parser.add_argument("-spf", "--safer_pertubation_file", default="/home/ubuntu/TextDefender/dataset/ag_news/perturbation_constraint_pca0.8_100.pkl")
+    parser.add_argument("-md", "--model", default="bert")
+    parser.add_argument("-df", "--defense", default="mask")
     args = parser.parse_args()
-    batch=1500
+    batch=args.ensemble_num
     sst2_dataset = datasets.load_dataset("ag_news")
     train_data = sst2_dataset["train"]
     test_data = sst2_dataset["test"]    
@@ -217,27 +226,80 @@ if __name__ == "__main__":
     bert_input = list(test_data["text"])
     batch_iter = len(bert_input)//batch + (1 if len(bert_input)%batch!=0 else 0 )
     device = "cuda"
-    tokenizer = AutoTokenizer.from_pretrained("textattack/bert-base-uncased-ag-news",use_fast=True)
+    tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased",use_fast=True)
     tokenizer.model_max_length=128
     tokenizer_roberta = AutoTokenizer.from_pretrained("roberta-base",use_fast=True)
     
     
-    config = AutoConfig.from_pretrained("textattack/bert-base-uncased-ag-news")
-    model = BertForSequenceClassification(config)
-    state = AutoModelForSequenceClassification.from_pretrained(
-        "textattack/bert-base-uncased-ag-news"
-    )
-    model.load_state_dict(state.state_dict())
-    model.to("cuda")
-    model.eval()
-    BERT = HuggingFaceModelWrapper(model, tokenizer)
+    #config = AutoConfig.from_pretrained("textattack/bert-base-uncased-ag-news")
+    #model = BertForSequenceClassification(config)
+    #state = AutoModelForSequenceClassification.from_pretrained(
+    #    "textattack/bert-base-uncased-ag-news"
+    #)
+    #model.load_state_dict(state.state_dict())
+    #model.to("cuda")
+    #model.eval()
+    #BERT = HuggingFaceModelWrapper(model, tokenizer)
+    #y_pred_BERT = []
+    #for i in tqdm(range(0,batch_iter)):
+    #    y_pred_BERT.extend(torch.argmax(BERT(bert_input[i*batch:(i+1)*batch]),dim=-1).tolist())
+    ## Evaluation
+    #acc = accuracy_score(test_labels, y_pred_BERT)
+    #print(f"AGNEWS BERT (with noise module): {acc*100:.2f}%")
+    #clean_accuracy["AGNEWS_BERT"] = f"{acc*100:.2f}%"
+    
+
+    print("mask")
+    mask_model = model_lib.TextDefense_model_builder("bert","bert-base-uncased","mask",device,dataset_name="agnews")
+    load_path = "model/weights/tmd_ckpts/agnews/mask-len128-epo10-batch32-rate0.9-best.pth"
+    tokenizer.model_max_length=128
+    print(mask_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
+    BERT_MASK = wrapping_model(mask_model,tokenizer,"mask",ensemble_num=args.ensemble_num,batch_size=args.ensemble_batch_size,ran_mask=args.random_mask_rate,safer_aug_set=None)
     y_pred_BERT = []
     for i in tqdm(range(0,batch_iter)):
-        y_pred_BERT.extend(torch.argmax(BERT(bert_input[i*batch:(i+1)*batch]),dim=-1).tolist())
+        y_pred_BERT.extend(torch.argmax(torch.tensor(BERT_MASK(bert_input[i*batch:(i+1)*batch])),dim=-1).tolist())
     # Evaluation
     acc = accuracy_score(test_labels, y_pred_BERT)
-    print(f"AGNEWS BERT (with noise module): {acc*100:.2f}%")
-    clean_accuracy["AGNEWS_BERT"] = f"{acc*100:.2f}%"
+    print(f"AGNEWS BERT_MASK (with noise module): {acc*100:.2f}%")
+    
+    print("safer")
+    safer_model = model_lib.TextDefense_model_builder("bert","bert-base-uncased","safer",device,dataset_name="agnews")
+    load_path = "model/weights/tmd_ckpts/TextDefender/saved_models/agnews_bert/safer-len128-epo10-batch32-best.pth"
+    tokenizer.model_max_length=128
+    print(safer_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
+    BERT_SAFER = wrapping_model(safer_model,tokenizer,"safer",ensemble_num=args.ensemble_num,batch_size=args.ensemble_batch_size,safer_aug_set="model/weights/tmd_ckpts/agnews/perturbation_constraint_pca0.8_100.pkl")
+    y_pred_BERT = []
+    for i in tqdm(range(0,batch_iter)):
+        y_pred_BERT.extend(torch.argmax(torch.tensor(BERT_SAFER(bert_input[i*batch:(i+1)*batch])),dim=-1).tolist())
+    # Evaluation
+    acc = accuracy_score(test_labels, y_pred_BERT)
+    print(f"AGNEWS BERT_SAFER (with noise module): {acc*100:.2f}%")
+    
+    print("mask")
+    mask_model = model_lib.TextDefense_model_builder("roberta","roberta-base","mask",device,dataset_name="agnews")
+    load_path = "model/weights/tmd_ckpts/agnews/roberta_mask-len128-epo10-batch32-rate0.9-best.pth"
+    tokenizer_roberta.model_max_length=128
+    print(mask_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
+    ROBERTA_MASK = wrapping_model(mask_model,tokenizer_roberta,"mask",ensemble_num=args.ensemble_num,batch_size=args.ensemble_batch_size,ran_mask=args.random_mask_rate,safer_aug_set=None,mask_token="<mask>")
+    y_pred_BERT = []
+    for i in tqdm(range(0,batch_iter)):
+        y_pred_BERT.extend(torch.argmax(torch.tensor(ROBERTA_MASK(bert_input[i*batch:(i+1)*batch])),dim=-1).tolist())
+    # Evaluation
+    acc = accuracy_score(test_labels, y_pred_BERT)
+    print(f"AGNEWS ROBERTA_MASK (with noise module): {acc*100:.2f}%")
+    
+    print("safer")
+    safer_model = model_lib.TextDefense_model_builder("roberta","roberta-base","safer",device,dataset_name="agnews")
+    load_path = "model/weights/tmd_ckpts/TextDefender/saved_models/agnews_roberta/safer-len128-epo10-batch32-best.pth"
+    tokenizer_roberta.model_max_length=128
+    print(safer_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
+    ROBERTA_SAFER = wrapping_model(safer_model,tokenizer_roberta,"safer",ensemble_num=args.ensemble_num,batch_size=args.ensemble_batch_size,safer_aug_set="model/weights/tmd_ckpts/agnews/perturbation_constraint_pca0.8_100.pkl")
+    y_pred_BERT = []
+    for i in tqdm(range(0,batch_iter)):
+        y_pred_BERT.extend(torch.argmax(torch.tensor(ROBERTA_SAFER(bert_input[i*batch:(i+1)*batch])),dim=-1).tolist())
+    # Evaluation
+    acc = accuracy_score(test_labels, y_pred_BERT)
+    print(f"AGNEWS ROBERTA_SAFER (with noise module): {acc*100:.2f}%")
     
     #ascc_model = model.TextDefense_model_builder("bert","bert-base-uncased","ascc",device,dataset_name="agnews")
     #load_path = "model/weights/VinAI_weights/tmd_ckpts/TextDefender/saved_models/agnews_bert/ascc-len128-epo10-batch32-best.pth"
@@ -388,36 +450,35 @@ if __name__ == "__main__":
     #    # Writing to sample.json
     #    with open(f"AGNEWS_BERT_0.1_scale_weighted_std_clean_accuracy_{repetitions}.json", "w") as outfile:
     #        outfile.write(json_object)
-            
-    noise_position={
-        'input_noise':[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2],
-        'pre_att_cls':[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2],
-        'pre_att_all':[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2],
-        "post_att_cls":[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2],
-        "post_att_all":[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2], 
-        'last_cls':[1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2], 
-        'logits':[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2]
-    }
-    positions = ["post_att_all","pre_att_all"]
-    layers = [0,5,11]
-    for repetitions in range(0,num_repetitions):
-        for position in positions:
-            for noise in noise_position[position]:
-                for layer in layers:
-                    model.bert.encoder.specify_defense_layers([layer])
-                    model.change_defense(defense_cls="random_noise",def_position=position,noise_sigma=noise,defense=True)
-                    y_pred_BERT = []
-                    for i in tqdm(range(0,batch_iter)):
-                        y_pred_BERT.extend(torch.argmax(BERT(bert_input[i*batch:(i+1)*batch]),dim=-1).tolist())
-                    # Evaluation
-                    acc = accuracy_score(test_labels, y_pred_BERT)
-                    print(f"AGNEWS_BERT_{'random_noise'}_{position}_{str(noise)}_layer_{str(layer)} = {acc*100:.2f}%")
-                    clean_accuracy[f"AGNEWS_BERT_{'random_noise'}_{position}_{str(noise)}_layer_{str(layer)}"] = f"{acc*100:.2f}%"
-                    print(clean_accuracy)
-        
-        # Serializing json
-        json_object = json.dumps(clean_accuracy, indent=4)
-        # Writing to sample.json
-        with open(f"AGNEWS_BERT_0.1_scale_layers_clean_accuracy_{repetitions}.json", "w") as outfile:
-            outfile.write(json_object)
-                
+    #        
+    #noise_position={
+    #    'input_noise':[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2],
+    #    'pre_att_cls':[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2],
+    #    'pre_att_all':[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2],
+    #    "post_att_cls":[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2],
+    #    "post_att_all":[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2], 
+    #    'last_cls':[1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2], 
+    #    'logits':[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2]
+    #}
+    #positions = ["post_att_all","pre_att_all"]
+    #layers = [0,5,11]
+    #for repetitions in range(0,num_repetitions):
+    #    for position in positions:
+    #        for noise in noise_position[position]:
+    #            for layer in layers:
+    #                model.bert.encoder.specify_defense_layers([layer])
+    #                model.change_defense(defense_cls="random_noise",def_position=position,noise_sigma=noise,defense=True)
+    #                y_pred_BERT = []
+    #                for i in tqdm(range(0,batch_iter)):
+    #                    y_pred_BERT.extend(torch.argmax(BERT(bert_input[i*batch:(i+1)*batch]),dim=-1).tolist())
+    #                # Evaluation
+    #                acc = accuracy_score(test_labels, y_pred_BERT)
+    #                print(f"AGNEWS_BERT_{'random_noise'}_{position}_{str(noise)}_layer_{str(layer)} = {acc*100:.2f}%")
+    #                clean_accuracy[f"AGNEWS_BERT_{'random_noise'}_{position}_{str(noise)}_layer_{str(layer)}"] = f"{acc*100:.2f}%"
+    #                print(clean_accuracy)
+    #    
+    #    # Serializing json
+    #    json_object = json.dumps(clean_accuracy, indent=4)
+    #    # Writing to sample.json
+    #    with open(f"AGNEWS_BERT_0.1_scale_layers_clean_accuracy_{repetitions}.json", "w") as outfile:
+    #        outfile.write(json_object)
