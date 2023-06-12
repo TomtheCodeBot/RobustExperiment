@@ -238,10 +238,10 @@ if __name__ == "__main__":
     tokenizer_roberta = AutoTokenizer.from_pretrained("roberta-base",use_fast=True)
     tokenizer.model_max_length=256
     
-    tokenizer = AutoTokenizer.from_pretrained("/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/bert-base-uncased-imdb",use_fast=True)
-    config = AutoConfig.from_pretrained("/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/bert-base-uncased-imdb")
+    tokenizer = AutoTokenizer.from_pretrained("/vinserver_user/duy.hc/RobustExperiment/model/weights/bert-base-uncased-imdb",use_fast=True)
+    config = AutoConfig.from_pretrained("/vinserver_user/duy.hc/RobustExperiment/model/weights/bert-base-uncased-imdb")
     model = BertForSequenceClassification(config)
-    state = AutoModelForSequenceClassification.from_pretrained("/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/bert-base-uncased-imdb")
+    state = AutoModelForSequenceClassification.from_pretrained("/vinserver_user/duy.hc/RobustExperiment/model/weights/bert-base-uncased-imdb")
     model.load_state_dict(state.state_dict())
     model.eval()
     BERT = HuggingFaceModelWrapper(model,tokenizer)
@@ -299,7 +299,7 @@ if __name__ == "__main__":
     
     #bert_input = list(test_data["text"])
     #ascc_model = model_lib.TextDefense_model_builder("bert","bert-base-uncased","ascc",device)
-    #load_path = "/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/tmd_ckpts/TextDefender/saved_models/imdb_bert/ascc-len256-epo10-batch32-best.pth"
+    #load_path = "/vinserver_user/duy.hc/RobustExperiment/model/weights/tmd_ckpts/TextDefender/saved_models/imdb_bert/ascc-len256-epo10-batch32-best.pth"
     #print(ascc_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
     #ascc_model.to("cuda")
     #ascc_model = wrapping_model(ascc_model,tokenizer,"ascc")
@@ -326,7 +326,7 @@ if __name__ == "__main__":
     #clean_accuracy["IMDB_ROBERTA"] = f"{acc*100:.2f}%"
     
     #freelb_model = model_lib.TextDefense_model_builder("bert","bert-base-uncased","freelb",device)
-    #load_path = "/home/ubuntu/TextDefender/saved_models/imdb_bert/freelb-len256-epo10-batch32-advstep5-advlr0.03-norm0.0-best.pth"
+    #load_path = "/shared/duy.hc/TextDefender/saved_models/imdb_bert/freelb-len256-epo10-batch32-advstep5-advlr0.03-norm0.0-best.pth"
     #tokenizer.model_max_length=256
     #print(freelb_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
     #BERT_FREELB = wrapping_model(freelb_model,tokenizer,"freelb")
@@ -336,10 +336,10 @@ if __name__ == "__main__":
     #acc = accuracy_score(test_labels, y_pred_BERT)
     #print(f"IMDB BERT_FREELB: {acc*100:.2f}%")
     
-    #load_path = "/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/bert-base-uncased-imdb"
-    #gm_path = "/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/tmd_ckpts/tmd/outputs/infogan_bert_imdb/manifold-defense/yutbyyz5/checkpoints/epoch=99-step=2199.ckpt"
+    #load_path = "/vinserver_user/duy.hc/RobustExperiment/model/weights/bert-base-uncased-imdb"
+    #gm_path = "/vinserver_user/duy.hc/RobustExperiment/model/weights/tmd_ckpts/tmd/outputs/infogan_bert_imdb/manifold-defense/yutbyyz5/checkpoints/epoch=99-step=2199.ckpt"
     #tmd = model_lib.TextDefense_model_builder("bert",load_path,"tmd",gm_path = gm_path,device="cuda")
-    #tokenizer_tmd = AutoTokenizer.from_pretrained("/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/bert-base-uncased-imdb",use_fast=True)
+    #tokenizer_tmd = AutoTokenizer.from_pretrained(load_path,use_fast=True)
     #BERT_TMD = wrapping_model(tmd,tokenizer_tmd,"tmd")
     #y_pred_BERT = []
     #for i in tqdm(range(0,len(bert_input)//batch)):
@@ -423,26 +423,26 @@ if __name__ == "__main__":
     #    'logits':[0.001,0.0025,0.005,0.01,0.025,0.05,0.1,0.25,0.5,1]
     #}
     #positions = [ 'input_noise', 'pre_att_cls', 'pre_att_all',"post_att_cls","post_att_all", 'last_cls', 'logits']
-    noise_position={
-        'input_noise':[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1],
-        'pre_att_cls':[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1],
-        'pre_att_all':[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1],
-        "post_att_cls":[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1],
-        "post_att_all":[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1], 
-        'last_cls':[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1], 
-        'logits':[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1]
-    }
-    positions = ["input_noise"]
     #noise_position={
-    #    'input_noise':[1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2],
-    #    'pre_att_cls':[1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2],
-    #    'pre_att_all':[1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2],
-    #    "post_att_cls":[1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2],
-    #    "post_att_all":[1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2], 
-    #    'last_cls':[1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2], 
-    #    'logits':[1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2]
+    #    'input_noise':[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1],
+    #    'pre_att_cls':[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1],
+    #    'pre_att_all':[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1],
+    #    "post_att_cls":[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1],
+    #    "post_att_all":[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1], 
+    #    'last_cls':[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1], 
+    #    'logits':[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1]
     #}
-    #positions = [ 'pre_att_cls','post_att_cls', 'last_cls', 'logits']
+    #positions = ["input_noise"]
+    noise_position={
+        'input_noise':[1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2],
+        'pre_att_cls':[1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2],
+        'pre_att_all':[1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2],
+        "post_att_cls":[1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2],
+        "post_att_all":[1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2], 
+        'last_cls':[1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2], 
+        'logits':[1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2]
+    }
+    positions = [ 'post_att_cls', 'last_cls', 'logits']
     for repetitions in range(0,num_repetitions):
         for position in positions:
             for noise in noise_position[position]:
