@@ -327,7 +327,7 @@ if __name__ == "__main__":
         #noise_pos_roberta = {"post_att_all": [0.25]}
         #noise_pos_roberta = {"input_noise": [0.1]}
                 
-        list_attacks = ["textfooler","textbugger","bertattack"]
+        list_attacks = ["bertattack"]
         for i in range(0, 1):
             set_seed(i)
             dataset = gen_dataset(test_data)
