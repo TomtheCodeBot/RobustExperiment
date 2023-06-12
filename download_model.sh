@@ -1,7 +1,7 @@
 mkdir data
 cd data
 wget https://ai.stanford.edu/~amaas/data/sentiment/aclImdb_v1.tar.gz
-tar - xvzf aclImdb_v1.tar.gz
+tar -xvzf aclImdb_v1.tar.gz
 cd ..
 cd model
 mkdir weights
