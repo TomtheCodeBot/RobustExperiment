@@ -6,3 +6,6 @@ plot
 weights
 */__pycache__
 __pycache__/
+result.out
+job.sh
+run.sh
