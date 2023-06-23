@@ -226,13 +226,13 @@ if __name__ == "__main__":
         "data/aclImdb"
     )
 
-    config = AutoConfig.from_pretrained("/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/bert-base-uncased-imdb")
+    config = AutoConfig.from_pretrained("model/weights/bert-base-uncased-imdb")
     tokenizer_tmd = AutoTokenizer.from_pretrained(
-        "/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/bert-base-uncased-imdb", use_fast=True
+        "model/weights/bert-base-uncased-imdb", use_fast=True
     )
     model = BertForSequenceClassification(config)
     state = AutoModelForSequenceClassification.from_pretrained(
-        "/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/bert-base-uncased-imdb"
+        "model/weights/bert-base-uncased-imdb"
     )
     model.load_state_dict(state.state_dict())
     model.to("cuda")
@@ -270,6 +270,27 @@ if __name__ == "__main__":
     #freelb_model.to("cuda")
     #BERT_FREELB = wrapping_model(freelb_model,tokenizer,"freelb")
     
+    #freelb_model = model_lib.TextDefense_model_builder("bert","bert-base-uncased","freelb",device)
+    #load_path = "/home/ubuntu/TextDefender/saved_models/imdb_bert/freelb-len256-epo10-batch32-advstep5-advlr0.03-norm0.0-best.pth"
+    #tokenizer.model_max_length=256
+    #print(freelb_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
+    #freelb_model.to("cuda")
+    #BERT_FREELB = wrapping_model(freelb_model,tokenizer,"freelb")
+    
+    tokenizer = AutoTokenizer.from_pretrained(
+        "bert-base-uncased", use_fast=True
+    )
+    load_path = "/shared/duy.hc/TextDefender/saved_models/imdb_bert/freelb-len256-epo10-batch32-advstep5-advlr0.03-norm0.0-best.pth"
+    tokenizer.model_max_length=256
+    config = AutoConfig.from_pretrained("model/weights/bert-base-uncased-imdb")
+    freelb_model_rnd = BertForSequenceClassification(config)
+    print(freelb_model_rnd.load_state_dict(torch.load(load_path,map_location = device), strict=False))
+    freelb_model_rnd.to("cuda")
+    freelb_model_rnd.eval()
+    freelb_model_rnd.change_defense(defense_cls="random_noise",def_position="post_att_cls",noise_sigma=0.45,defense=True)
+    BERT_FREELB_RND = HuggingFaceModelWrapper(freelb_model_rnd, tokenizer)
+    
+    
     #info_model = model_lib.TextDefense_model_builder("bert","bert-base-uncased","infobert",device)
     #load_path = "/home/ubuntu/TextDefender/saved_models/imdb_bert/infobert-len256-epo10-batch32-advstep3-advlr0.04-norm0-best.pth"
     #tokenizer.model_max_length=256
@@ -277,26 +298,36 @@ if __name__ == "__main__":
     #info_model.to("cuda")
     #BERT_INFOBERT = wrapping_model(info_model,tokenizer,"infobert")
     
-    #load_path = "/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/bert-base-uncased-imdb"
+    load_path = "/shared/duy.hc/TextDefender/saved_models/imdb_bert/infobert-len256-epo10-batch32-advstep3-advlr0.04-norm0-best.pth"
+    tokenizer.model_max_length=256
+    config = AutoConfig.from_pretrained("model/weights/bert-base-uncased-imdb")
+    infobert_model_rnd = BertForSequenceClassification(config)
+    print(infobert_model_rnd.load_state_dict(torch.load(load_path,map_location = device), strict=False))
+    infobert_model_rnd.to("cuda")
+    infobert_model_rnd.eval()
+    infobert_model_rnd.change_defense(defense_cls="random_noise",def_position="post_att_cls",noise_sigma=0.45,defense=True)
+    BERT_INFOBERT_RND = HuggingFaceModelWrapper(infobert_model_rnd, tokenizer)
+    
+    #load_path = "model/weights/bert-base-uncased-imdb"
     #gm_path = "/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/tmd_ckpts/tmd/outputs/infogan_bert_imdb/manifold-defense/yutbyyz5/checkpoints/epoch=99-step=2199.ckpt"
     #tmd = model_lib.TextDefense_model_builder("bert",load_path,"tmd",gm_path = gm_path,device="cuda")
-    #tokenizer = AutoTokenizer.from_pretrained("/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/bert-base-uncased-imdb",use_fast=True)
+    #tokenizer = AutoTokenizer.from_pretrained("model/weights/bert-base-uncased-imdb",use_fast=True)
     #BERT_TMD = wrapping_model(tmd,tokenizer,"tmd")
     
-    #config = AutoConfig.from_pretrained("/home/ubuntu/RobustExperiment/model/weights/tmd_ckpts/manifold_defense/models/roberta-base-imdb")
+    #config = AutoConfig.from_pretrained("/vinserver_user/duy.hc/RobustExperiment/model/weights/tmd_ckpts/manifold_defense/models/roberta-base-imdb")
     #model_roberta = RobertaForSequenceClassification(config)
     #tokenizer_tmd_roberta = AutoTokenizer.from_pretrained(
-    #   "/home/ubuntu/RobustExperiment/model/weights/tmd_ckpts/manifold_defense/models/roberta-base-imdb", use_fast=True
+    #   "/vinserver_user/duy.hc/RobustExperiment/model/weights/tmd_ckpts/manifold_defense/models/roberta-base-imdb", use_fast=True
     #)
     #state = AutoModelForSequenceClassification.from_pretrained(
-    #    "/home/ubuntu/RobustExperiment/model/weights/tmd_ckpts/manifold_defense/models/roberta-base-imdb"
+    #    "/vinserver_user/duy.hc/RobustExperiment/model/weights/tmd_ckpts/manifold_defense/models/roberta-base-imdb"
     #)
     #model_roberta.load_state_dict(state.state_dict())
     #model_roberta.to("cuda")
     #model_roberta.eval()
     #ROBERTA = HuggingFaceModelWrapper(model_roberta, tokenizer_tmd_roberta)
     
-    #load_path = "/home/ubuntu/RobustExperiment/model/weights/tmd_ckpts/manifold_defense/models/roberta-base-imdb"
+    #load_path = "/vinserver_user/duy.hc/RobustExperiment/model/weights/tmd_ckpts/manifold_defense/models/roberta-base-imdb"
     #gm_path = "/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/tmd_ckpts/manifold_defense/outputs/infogan_roberta_imdb/bvi8ln2v/checkpoints/epoch=99-step=2199.ckpt"
     #tmd = model_lib.TextDefense_model_builder("roberta",load_path,"tmd",gm_path = gm_path,device="cuda",dataset_name="imdb")
     #tokenizer = AutoTokenizer.from_pretrained(load_path,use_fast=True)
@@ -335,35 +366,37 @@ if __name__ == "__main__":
     
     with torch.no_grad():
         
-        #noise_pos = { "pre_att_all": [0.1,0.2], "post_att_all": [0.1,0.2, 0.3]}
+        noise_pos = {"post_att_all": [0.4,0.5,0.6,0.7,0.8,0.9,1]}
         #noise_pos_roberta = { "pre_att_all": [0.1,0.2], "post_att_all": [0.2, 0.3]}
         
-        noise_pos = {"input_noise": [0.6]}
+        #noise_pos = { "post_att_cls": [0.55]}
         #noise_pos_roberta = {"post_att_cls": [0.9, 1], "pre_att_cls": [0.3,0.4]}
-        #noise_pos_roberta = {"input_noise": [0.4]}
+        #noise_pos_roberta = {"post_att_cls": [1.2,1.4]}
         #noise_pos_roberta = {"post_att_cls": [1.15,1.25]}
         
-        list_attacks = ["textfooler","textbugger","bertattack"]
+        list_attacks = ["bertattack"]
         for i in range(0, 1):
             set_seed(i)
             dataset = gen_dataset(test_data)
             args.load_path = (
-                f"noise_defense_attack_result/paper_default setting/IMDB/{i}/"
+                f"noise_defense_attack_result/test_extra/IMDB/{i}/"
             )
             for attack_method in list_attacks:
                 args.attack_method = attack_method
                 #attack(args, BERT, "BERT", dataset)
-                for key in noise_pos.keys():
-                    for noise_intensity in noise_pos[key]:
-                        model.change_defense(defense_cls="random_noise",def_position=key,noise_sigma=noise_intensity,defense=True)
-                        BERT = HuggingFaceModelWrapper(model, tokenizer_tmd)
-                        attack(args, BERT, f"BERT_{key}_{noise_intensity}", dataset)
+                #for key in noise_pos.keys():
+                #    for noise_intensity in noise_pos[key]:
+                #        model.change_defense(defense_cls="random_noise",def_position=key,noise_sigma=noise_intensity,defense=True)
+                #        BERT = HuggingFaceModelWrapper(model, tokenizer_tmd)
+                #        attack(args, BERT, f"BERT_{key}_{noise_intensity}", dataset)
                 #model.change_defense(defense=False)
                 #attack(args, BERT_ASCC, "BERT_ASCC", dataset)
                 #attack(args, BERT_FREELB, "BERT_FREELB", dataset)
                 #attack(args, BERT_INFOBERT, "BERT_INFOBERT", dataset)
                 #attack(args, BERT_TMD, "BERT_TMD", dataset)
                 #attack(args, BERT_MASK, "BERT_MASK", dataset)
+                attack(args, BERT_FREELB_RND, "BERT_FREELB_RND", dataset)
+                attack(args, BERT_INFOBERT_RND, "BERT_INFOBERT_RND", dataset)
                 
                 #attack(args, ROBERTA, "ROBERTA", dataset)
                 #for key in noise_pos_roberta.keys():

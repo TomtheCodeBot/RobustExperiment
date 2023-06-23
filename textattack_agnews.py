@@ -219,7 +219,7 @@ if __name__ == "__main__":
     test_data = sst2_dataset["test"]
 
     tokenizer = AutoTokenizer.from_pretrained(
-        "textattack/bert-base-uncased-ag-news", use_fast=True
+        "bert-base-uncased", use_fast=True
     )
     
     tokenizer_roberta = AutoTokenizer.from_pretrained(
@@ -269,11 +269,31 @@ if __name__ == "__main__":
     #print(freelb_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
     #BERT_FREELB = wrapping_model(freelb_model,tokenizer,"freelb")
     
+    #load_path = "/shared/duy.hc/TextDefender/saved_models/ag_news_bert/freelb-len128-epo10-batch32-advstep5-advlr0.03-norm0.0-best.pth"
+    #tokenizer.model_max_length=128
+    #config = AutoConfig.from_pretrained("textattack/bert-base-uncased-ag-news")
+    #freelb_model_rnd = BertForSequenceClassification(config)
+    #print(freelb_model_rnd.load_state_dict(torch.load(load_path,map_location = device), strict=False))
+    #freelb_model_rnd.to("cuda")
+    #freelb_model_rnd.eval()
+    #freelb_model_rnd.change_defense(defense_cls="random_noise",def_position="post_att_cls",noise_sigma=0.6,defense=True)
+    #BERT_FREELB_RND = HuggingFaceModelWrapper(freelb_model_rnd, tokenizer)
+    
     #infobert_model = model_lib.TextDefense_model_builder("bert","bert-base-uncased","infobert",device,dataset_name="agnews")
     #load_path = "/home/ubuntu/TextDefender/saved_models/ag_news_bert/infobert-len128-epo10-batch32-advstep3-advlr0.04-norm0-best.pth"
     #tokenizer.model_max_length=128
     #print(infobert_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
     #BERT_INFOBERT = wrapping_model(infobert_model,tokenizer,"infobert")
+    
+    #load_path = "/shared/duy.hc/TextDefender/saved_models/ag_news_bert/infobert-len128-epo10-batch32-advstep3-advlr0.04-norm0-best.pth"
+    #tokenizer.model_max_length=128
+    #config = AutoConfig.from_pretrained("textattack/bert-base-uncased-ag-news")
+    #infobert_model_rnd = BertForSequenceClassification(config)
+    #print(infobert_model_rnd.load_state_dict(torch.load(load_path,map_location = device), strict=False))
+    #infobert_model_rnd.to("cuda")
+    #infobert_model_rnd.eval()
+    #infobert_model_rnd.change_defense(defense_cls="random_noise",def_position="post_att_cls",noise_sigma=0.6,defense=True)
+    #BERT_INFOBERT_RND = HuggingFaceModelWrapper(infobert_model_rnd, tokenizer)
     
     #load_path = "/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/bert-base-uncased-ag-news"
     #gm_path = "/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/tmd_ckpts/tmd/outputs/infogan_bert_agnews/manifold-defense/42b0465v/checkpoints/epoch=99-step=10599.ckpt"
@@ -320,10 +340,10 @@ if __name__ == "__main__":
     #ROBERTA_INFOBERT = wrapping_model(roberta_infobert_model,tokenizer_roberta,"infobert")
     
     with torch.no_grad():
-        #noise_pos = {"pre_att_all": [0.2,0.3],"post_att_all": [0.2,0.3,0.4]}
+        #noise_pos = {"post_att_all": [0.1,0.5,0.6,0.7,0.8,0.9,1]}
         #noise_pos_roberta = {"post_att_all": [0.2,0.3]}
-        #noise_pos = {"pre_att_cls": [0.6,0.7],"post_att_cls": [0.8,0.9,1]}
-        noise_pos = {"input_noise": [0.4,0.5,0.6]}
+        noise_pos = {"post_att_cls": [0.1,0.2,0.3,0.4,0.5]}
+        #noise_pos = {"input_noise": [0.4,0.5,0.6]}
         #noise_pos_roberta = {"post_att_all": [0.25]}
         #noise_pos_roberta = {"input_noise": [0.1]}
                 
@@ -360,6 +380,8 @@ if __name__ == "__main__":
                 #attack(args, BERT_FREELB, "BERT_FREELB", dataset)
                 #attack(args, BERT_INFOBERT, "BERT_INFOBERT", dataset)
                 #attack(args, BERT_TMD, "BERT_TMD", dataset)
+                #attack(args, BERT_FREELB_RND, "BERT_FREELB_RND", dataset)
+                #attack(args, BERT_INFOBERT_RND, "BERT_INFOBERT_RND", dataset)
                 
                 #attack(args, ROBERTA, "ROBERTA", dataset)
                 #for key in noise_pos_roberta.keys():
