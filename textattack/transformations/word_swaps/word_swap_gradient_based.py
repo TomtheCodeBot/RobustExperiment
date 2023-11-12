@@ -63,16 +63,16 @@ class WordSwapGradientBased(WordSwap):
             word_index (int): index of the word to replace
         """
 
-        lookup_table = self.model.get_input_embeddings().weight.data.cpu()
+        lookup_table = self.model.get_input_embeddings().weight.data
 
         grad_output = self.model_wrapper.get_grad(attacked_text.tokenizer_input)
-        emb_grad = torch.tensor(grad_output["gradient"])
-        text_ids = grad_output["ids"]
+        emb_grad = torch.tensor(grad_output["gradient"]).to(self.model_wrapper.model.device)
+        text_ids = grad_output["ids"].to(self.model_wrapper.model.device).squeeze()
         # grad differences between all flips and original word (eq. 1 from paper)
         vocab_size = lookup_table.size(0)
-        diffs = torch.zeros(len(indices_to_replace), vocab_size)
+        diffs = torch.zeros(len(indices_to_replace), vocab_size).to(self.model_wrapper.model.device)
         indices_to_replace = list(indices_to_replace)
-
+        
         for j, word_idx in enumerate(indices_to_replace):
             # Make sure the word is in bounds.
             if word_idx >= len(emb_grad):
@@ -94,14 +94,14 @@ class WordSwapGradientBased(WordSwap):
             idx_in_diffs = idx // num_words_in_vocab
             idx_in_vocab = idx % (num_words_in_vocab)
             idx_in_sentence = indices_to_replace[idx_in_diffs]
-            word = self.tokenizer.convert_id_to_word(idx_in_vocab)
+            #word = self.tokenizer.convert_id_to_word(idx_in_vocab)
+            word = self.tokenizer.decode(idx_in_vocab)
             if (not utils.has_letter(word)) or (len(utils.words_from_text(word)) != 1):
                 # Do not consider words that are solely letters or punctuation.
                 continue
             candidates.append((word, idx_in_sentence))
-            if len(candidates) == self.top_n:
-                break
-
+            #if len(candidates) == self.top_n:
+            #    break
         return candidates
 
     def _get_transformations(self, attacked_text, indices_to_replace):

@@ -88,10 +88,7 @@ def validate_model_gradient_word_swap_compatibility(model):
     We can only take the gradient with respect to an individual word if
     the model uses a word-based tokenizer.
     """
-    if isinstance(model, textattack.models.helpers.LSTMForClassification):
-        return True
-    else:
-        raise ValueError(f"Cannot perform GradientBasedWordSwap on model {model}.")
+    return True
 
 
 def transformation_consists_of(transformation, transformation_classes):

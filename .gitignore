@@ -9,3 +9,11 @@ __pycache__/
 result.out
 job.sh
 run.sh
+result2.out
+3.out
+result3.out
+result4.out
+result5.out
+atta.out
+bugg.out
+*.out

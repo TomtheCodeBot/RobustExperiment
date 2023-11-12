@@ -238,20 +238,20 @@ if __name__ == "__main__":
     tokenizer_roberta = AutoTokenizer.from_pretrained("roberta-base",use_fast=True)
     tokenizer.model_max_length=256
     
-    tokenizer = AutoTokenizer.from_pretrained("/vinserver_user/duy.hc/RobustExperiment/model/weights/bert-base-uncased-imdb",use_fast=True)
-    config = AutoConfig.from_pretrained("/vinserver_user/duy.hc/RobustExperiment/model/weights/bert-base-uncased-imdb")
-    model = BertForSequenceClassification(config)
-    state = AutoModelForSequenceClassification.from_pretrained("/vinserver_user/duy.hc/RobustExperiment/model/weights/bert-base-uncased-imdb")
-    model.load_state_dict(state.state_dict())
-    model.eval()
-    BERT = HuggingFaceModelWrapper(model,tokenizer)
-    BERT.to("cuda")
-    y_pred_BERT = []
-    for i in tqdm(range(0,len(bert_input)//batch)):
-        y_pred_BERT.extend(torch.argmax(torch.tensor(BERT(bert_input[i*batch:(i+1)*batch])),dim=-1).tolist())
-    acc = accuracy_score(test_labels, y_pred_BERT)
-    print(f"IMDB BERT: {acc*100:.2f}%")
-    clean_accuracy["IMDB_BERT"] = f"{acc*100:.2f}%"
+    #tokenizer = AutoTokenizer.from_pretrained("/vinserver_user/duy.hc/RobustExperiment/model/weights/bert-base-uncased-imdb",use_fast=True)
+    #config = AutoConfig.from_pretrained("/vinserver_user/duy.hc/RobustExperiment/model/weights/bert-base-uncased-imdb")
+    #model = BertForSequenceClassification(config)
+    #state = AutoModelForSequenceClassification.from_pretrained("/vinserver_user/duy.hc/RobustExperiment/model/weights/bert-base-uncased-imdb")
+    #model.load_state_dict(state.state_dict())
+    #model.eval()
+    #BERT = HuggingFaceModelWrapper(model,tokenizer)
+    #BERT.to("cuda")
+    #y_pred_BERT = []
+    #for i in tqdm(range(0,len(bert_input)//batch)):
+    #    y_pred_BERT.extend(torch.argmax(torch.tensor(BERT(bert_input[i*batch:(i+1)*batch])),dim=-1).tolist())
+    #acc = accuracy_score(test_labels, y_pred_BERT)
+    #print(f"IMDB BERT: {acc*100:.2f}%")
+    #clean_accuracy["IMDB_BERT"] = f"{acc*100:.2f}%"
     
     #mask_model = model_lib.TextDefense_model_builder("bert","bert-base-uncased","mask",device)
     #load_path = "model/weights/tmd_ckpts/imdb/mask-len256-epo10-batch32-rate0.3-best.pth"
@@ -297,6 +297,39 @@ if __name__ == "__main__":
     #acc = accuracy_score(test_labels, y_pred_BERT)
     #print(f"IMDB ROBERTA_SAFER: {acc*100:.2f}%")
     
+    tokenizer = AutoTokenizer.from_pretrained(
+        "bert-base-uncased", use_fast=True
+    )
+    load_path = "/shared/duy.hc/TextDefender/saved_models/imdb_bert/freelb-len256-epo10-batch32-advstep5-advlr0.03-norm0.0-best.pth"
+    tokenizer.model_max_length=256
+    config = AutoConfig.from_pretrained("model/weights/bert-base-uncased-imdb")
+    freelb_model_rnd = BertForSequenceClassification(config)
+    print(freelb_model_rnd.load_state_dict(torch.load(load_path,map_location = device), strict=False))
+    freelb_model_rnd.to("cuda")
+    freelb_model_rnd.eval()
+    freelb_model_rnd.change_defense(defense_cls="random_noise",def_position="post_att_cls",noise_sigma=0.45,defense=True)
+    BERT_FREELB_RND = HuggingFaceModelWrapper(freelb_model_rnd, tokenizer)
+    y_pred_BERT = []
+    for i in tqdm(range(0,len(bert_input)//batch)):
+        y_pred_BERT.extend(torch.argmax(torch.tensor(BERT_FREELB_RND(bert_input[i*batch:(i+1)*batch])),dim=-1).tolist())
+    acc = accuracy_score(test_labels, y_pred_BERT)
+    print(f"IMDB BERT_FREELB_RND: {acc*100:.2f}%")
+    
+    load_path = "/shared/duy.hc/TextDefender/saved_models/imdb_bert/infobert-len256-epo10-batch32-advstep3-advlr0.04-norm0-best.pth"
+    tokenizer.model_max_length=256
+    config = AutoConfig.from_pretrained("model/weights/bert-base-uncased-imdb")
+    infobert_model_rnd = BertForSequenceClassification(config)
+    print(infobert_model_rnd.load_state_dict(torch.load(load_path,map_location = device), strict=False))
+    infobert_model_rnd.to("cuda")
+    infobert_model_rnd.eval()
+    infobert_model_rnd.change_defense(defense_cls="random_noise",def_position="post_att_cls",noise_sigma=0.45,defense=True)
+    BERT_INFOBERT_RND = HuggingFaceModelWrapper(infobert_model_rnd, tokenizer)
+    y_pred_BERT = []
+    for i in tqdm(range(0,len(bert_input)//batch)):
+        y_pred_BERT.extend(torch.argmax(torch.tensor(BERT_INFOBERT_RND(bert_input[i*batch:(i+1)*batch])),dim=-1).tolist())
+    acc = accuracy_score(test_labels, y_pred_BERT)
+    print(f"IMDB BERT_INFOBERT_RND: {acc*100:.2f}%")
+    
     #bert_input = list(test_data["text"])
     #ascc_model = model_lib.TextDefense_model_builder("bert","bert-base-uncased","ascc",device)
     #load_path = "/vinserver_user/duy.hc/RobustExperiment/model/weights/tmd_ckpts/TextDefender/saved_models/imdb_bert/ascc-len256-epo10-batch32-best.pth"
@@ -336,16 +369,16 @@ if __name__ == "__main__":
     #acc = accuracy_score(test_labels, y_pred_BERT)
     #print(f"IMDB BERT_FREELB: {acc*100:.2f}%")
     
-    #load_path = "/vinserver_user/duy.hc/RobustExperiment/model/weights/bert-base-uncased-imdb"
-    #gm_path = "/vinserver_user/duy.hc/RobustExperiment/model/weights/tmd_ckpts/tmd/outputs/infogan_bert_imdb/manifold-defense/yutbyyz5/checkpoints/epoch=99-step=2199.ckpt"
-    #tmd = model_lib.TextDefense_model_builder("bert",load_path,"tmd",gm_path = gm_path,device="cuda")
-    #tokenizer_tmd = AutoTokenizer.from_pretrained(load_path,use_fast=True)
-    #BERT_TMD = wrapping_model(tmd,tokenizer_tmd,"tmd")
-    #y_pred_BERT = []
-    #for i in tqdm(range(0,len(bert_input)//batch)):
-    #    y_pred_BERT.extend(torch.argmax(BERT_TMD(bert_input[i*batch:(i+1)*batch]),dim=-1).tolist())
-    #acc = accuracy_score(test_labels, y_pred_BERT)
-    #print(f"IMDB BERT_TMD: {acc*100:.2f}%")
+    load_path = "/vinserver_user/duy.hc/RobustExperiment/model/weights/bert-base-uncased-imdb"
+    gm_path = "/vinserver_user/duy.hc/RobustExperiment/model/weights/tmd_ckpts/tmd/outputs/infogan_bert_imdb/manifold-defense/yutbyyz5/checkpoints/epoch=99-step=2199.ckpt"
+    tmd = model_lib.TextDefense_model_builder("bert",load_path,"tmd",gm_path = gm_path,device="cuda")
+    tokenizer_tmd = AutoTokenizer.from_pretrained(load_path,use_fast=True)
+    BERT_TMD = wrapping_model(tmd,tokenizer_tmd,"tmd")
+    y_pred_BERT = []
+    for i in tqdm(range(0,len(bert_input)//batch)):
+        y_pred_BERT.extend(torch.argmax(BERT_TMD(bert_input[i*batch:(i+1)*batch]),dim=-1).tolist())
+    acc = accuracy_score(test_labels, y_pred_BERT)
+    print(f"IMDB BERT_TMD: {acc*100:.2f}%")
     
     #info_model = model_lib.TextDefense_model_builder("bert","bert-base-uncased","infobert",device)
     #load_path = "/home/ubuntu/TextDefender/saved_models/imdb_bert/infobert-len256-epo10-batch32-advstep3-advlr0.04-norm0-best.pth"
@@ -433,34 +466,34 @@ if __name__ == "__main__":
     #    'logits':[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1]
     #}
     #positions = ["input_noise"]
-    noise_position={
-        'input_noise':[1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2],
-        'pre_att_cls':[1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2],
-        'pre_att_all':[1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2],
-        "post_att_cls":[1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2],
-        "post_att_all":[1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2], 
-        'last_cls':[1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2], 
-        'logits':[1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2]
-    }
-    positions = [ 'post_att_cls', 'last_cls', 'logits']
-    for repetitions in range(0,num_repetitions):
-        for position in positions:
-            for noise in noise_position[position]:
-                model.change_defense(defense_cls="random_noise",def_position=position,noise_sigma=noise,defense=True)
-                BERT = HuggingFaceModelWrapper(model,tokenizer)
-                BERT.to("cuda")
-                y_pred_BERT = []
-                for i in tqdm(range(0,len(bert_input)//batch)):
-                    y_pred_BERT.extend(torch.argmax(BERT(bert_input[i*batch:(i+1)*batch]),dim=-1).tolist())
-                # Evaluation
-                acc = accuracy_score(test_labels, y_pred_BERT)
-                print(f"IMDB_BERT_{'random_noise'}_{position}_{str(noise)} = {acc*100:.2f}%")
-                clean_accuracy[f"IMDB_BERT-WITH-0.1-SCALE_{'random_noise'}_{position}_{str(noise)}"] = f"{acc*100:.2f}%"
-                print(clean_accuracy)
-        
-        # Serializing json
-        json_object = json.dumps(clean_accuracy, indent=4)
-        
-        # Writing to sample.json
-        with open(f"IMDB_BERT_0.1_scale_clean__{repetitions}.json", "w") as outfile:
-            outfile.write(json_object)
+    #noise_position={
+    #    'input_noise':[1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2],
+    #    'pre_att_cls':[1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2],
+    #    'pre_att_all':[1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2],
+    #    "post_att_cls":[1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2],
+    #    "post_att_all":[1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2], 
+    #    'last_cls':[1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2], 
+    #    'logits':[1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2]
+    #}
+    #positions = [ 'post_att_cls', 'last_cls', 'logits']
+    #for repetitions in range(0,num_repetitions):
+    #    for position in positions:
+    #        for noise in noise_position[position]:
+    #            model.change_defense(defense_cls="random_noise",def_position=position,noise_sigma=noise,defense=True)
+    #            BERT = HuggingFaceModelWrapper(model,tokenizer)
+    #            BERT.to("cuda")
+    #            y_pred_BERT = []
+    #            for i in tqdm(range(0,len(bert_input)//batch)):
+    #                y_pred_BERT.extend(torch.argmax(BERT(bert_input[i*batch:(i+1)*batch]),dim=-1).tolist())
+    #            # Evaluation
+    #            acc = accuracy_score(test_labels, y_pred_BERT)
+    #            print(f"IMDB_BERT_{'random_noise'}_{position}_{str(noise)} = {acc*100:.2f}%")
+    #            clean_accuracy[f"IMDB_BERT-WITH-0.1-SCALE_{'random_noise'}_{position}_{str(noise)}"] = f"{acc*100:.2f}%"
+    #            print(clean_accuracy)
+    #    
+    #    # Serializing json
+    #    json_object = json.dumps(clean_accuracy, indent=4)
+    #    
+    #    # Writing to sample.json
+    #    with open(f"IMDB_BERT_0.1_scale_clean__{repetitions}.json", "w") as outfile:
+    #        outfile.write(json_object)
