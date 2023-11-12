@@ -37,7 +37,7 @@ class HotFlipEbrahimi2017(AttackRecipe):
         # "HotFlip ... uses the gradient with respect to a one-hot input
         # representation to efficiently estimate which individual change has the
         # highest estimated loss."
-        transformation = WordSwapGradientBased(model_wrapper, top_n=1)
+        transformation = WordSwapGradientBased(model_wrapper, top_n=50)
         #
         # Don't modify the same word twice or stopwords
         #
@@ -46,7 +46,6 @@ class HotFlipEbrahimi2017(AttackRecipe):
         # 0. "We were able to create only 41 examples (2% of the correctly-
         # classified instances of the SST test set) with one or two flips."
         #
-        constraints.append(MaxWordsPerturbed(max_num_words=2))
         #
         # 1. "The cosine similarity between the embedding of words is bigger than a
         #   threshold (0.8)."

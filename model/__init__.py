@@ -43,7 +43,10 @@ DATASET_LABEL_NUM = {
     'mr': 2,
     'onlineshopping': 2,
     'snli': 3,
+    'yelp':2
 }
+
+
 
 LABEL_MAP = {
     'nli': {'entailment': 0, 'contradiction': 1, 'neutral': 2},
@@ -679,7 +682,7 @@ def TextDefense_model_builder(model_type,model_name_or_path,training_type,device
             from_tf=bool('ckpt' in model_name_or_path),
             config=config
         ).to(device)
-    elif training_type == 'dne':
+    elif training_type == 'dne' and model_type == 'bert':
         model_args = DNE_SETUP[dataset_name]
         config_class, model_class, _ = MODEL_CLASSES[model_type]
         config = config_class.from_pretrained(
@@ -693,7 +696,7 @@ def TextDefense_model_builder(model_type,model_name_or_path,training_type,device
             from_tf=bool('ckpt' in model_name_or_path),
             config=config
         ).to(device)
-        bert_vocab = VOCAB[model_type]()
+        bert_vocab = get_bert_vocab()
         hull = DecayAlphaHull.build(
             alpha=model_args["dir_alpha"],
             decay=model_args["dir_decay"],
@@ -703,7 +706,6 @@ def TextDefense_model_builder(model_type,model_name_or_path,training_type,device
             second_order=True,
             device=device
         )
-        # here we just focus on bert model
         model.bert.embeddings.word_embeddings = WeightedEmbedding(
             num_embeddings=bert_vocab.get_vocab_size('tokens'),
             embedding_dim=768,
@@ -711,6 +713,38 @@ def TextDefense_model_builder(model_type,model_name_or_path,training_type,device
             _weight=model.bert.embeddings.word_embeddings.weight,
             hull=hull,
             sparse=False)
+    elif training_type == 'dne' and model_type == 'roberta':
+        model_args = DNE_SETUP[dataset_name]
+        config_class, model_class, _ = MODEL_CLASSES[model_type]
+        config = config_class.from_pretrained(
+            model_name_or_path,
+            num_labels=DATASET_LABEL_NUM[dataset_name],
+            finetuning_task=dataset_name,
+            output_hidden_states=True,
+        )
+        model = model_class.from_pretrained(
+            model_name_or_path,
+            from_tf=bool('ckpt' in model_name_or_path),
+            config=config
+        ).to(device)
+        roberta_vocab = get_roberta_vocab()
+        hull = DecayAlphaHull.build(
+            alpha=model_args["dir_alpha"],
+            decay=model_args["dir_decay"],
+            nbr_file="model/weights/nbr_file.json",
+            vocab=roberta_vocab,
+            nbr_num=model_args["nbr_num"],
+            second_order=True,
+            device=device
+        )
+        model.roberta.embeddings.word_embeddings = WeightedEmbedding(
+            num_embeddings=roberta_vocab.get_vocab_size('tokens'),
+            embedding_dim=768,
+            padding_idx=model.roberta.embeddings.word_embeddings.padding_idx,
+            _weight=model.roberta.embeddings.word_embeddings.weight,
+            hull=hull,
+            sparse=False)
+
     elif training_type == 'ascc':
         config_class, _, _ = MODEL_CLASSES[model_type]
         config = config_class.from_pretrained(

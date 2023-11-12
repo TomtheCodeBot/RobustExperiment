@@ -307,7 +307,7 @@ if __name__ == "__main__":
     print(freelb_model_rnd.load_state_dict(torch.load(load_path,map_location = device), strict=False))
     freelb_model_rnd.to("cuda")
     freelb_model_rnd.eval()
-    freelb_model_rnd.change_defense(defense_cls="random_noise",def_position="post_att_cls",noise_sigma=0,defense=True)
+    freelb_model_rnd.change_defense(defense_cls="random_noise",def_position="post_att_cls",noise_sigma=0.45,defense=True)
     BERT_FREELB_RND = HuggingFaceModelWrapper(freelb_model_rnd, tokenizer)
     y_pred_BERT = []
     for i in tqdm(range(0,len(bert_input)//batch)):
@@ -322,7 +322,7 @@ if __name__ == "__main__":
     print(infobert_model_rnd.load_state_dict(torch.load(load_path,map_location = device), strict=False))
     infobert_model_rnd.to("cuda")
     infobert_model_rnd.eval()
-    infobert_model_rnd.change_defense(defense_cls="random_noise",def_position="post_att_cls",noise_sigma=0,defense=True)
+    infobert_model_rnd.change_defense(defense_cls="random_noise",def_position="post_att_cls",noise_sigma=0.45,defense=True)
     BERT_INFOBERT_RND = HuggingFaceModelWrapper(infobert_model_rnd, tokenizer)
     y_pred_BERT = []
     for i in tqdm(range(0,len(bert_input)//batch)):
@@ -369,16 +369,16 @@ if __name__ == "__main__":
     #acc = accuracy_score(test_labels, y_pred_BERT)
     #print(f"IMDB BERT_FREELB: {acc*100:.2f}%")
     
-    #load_path = "/vinserver_user/duy.hc/RobustExperiment/model/weights/bert-base-uncased-imdb"
-    #gm_path = "/vinserver_user/duy.hc/RobustExperiment/model/weights/tmd_ckpts/tmd/outputs/infogan_bert_imdb/manifold-defense/yutbyyz5/checkpoints/epoch=99-step=2199.ckpt"
-    #tmd = model_lib.TextDefense_model_builder("bert",load_path,"tmd",gm_path = gm_path,device="cuda")
-    #tokenizer_tmd = AutoTokenizer.from_pretrained(load_path,use_fast=True)
-    #BERT_TMD = wrapping_model(tmd,tokenizer_tmd,"tmd")
-    #y_pred_BERT = []
-    #for i in tqdm(range(0,len(bert_input)//batch)):
-    #    y_pred_BERT.extend(torch.argmax(BERT_TMD(bert_input[i*batch:(i+1)*batch]),dim=-1).tolist())
-    #acc = accuracy_score(test_labels, y_pred_BERT)
-    #print(f"IMDB BERT_TMD: {acc*100:.2f}%")
+    load_path = "/vinserver_user/duy.hc/RobustExperiment/model/weights/bert-base-uncased-imdb"
+    gm_path = "/vinserver_user/duy.hc/RobustExperiment/model/weights/tmd_ckpts/tmd/outputs/infogan_bert_imdb/manifold-defense/yutbyyz5/checkpoints/epoch=99-step=2199.ckpt"
+    tmd = model_lib.TextDefense_model_builder("bert",load_path,"tmd",gm_path = gm_path,device="cuda")
+    tokenizer_tmd = AutoTokenizer.from_pretrained(load_path,use_fast=True)
+    BERT_TMD = wrapping_model(tmd,tokenizer_tmd,"tmd")
+    y_pred_BERT = []
+    for i in tqdm(range(0,len(bert_input)//batch)):
+        y_pred_BERT.extend(torch.argmax(BERT_TMD(bert_input[i*batch:(i+1)*batch]),dim=-1).tolist())
+    acc = accuracy_score(test_labels, y_pred_BERT)
+    print(f"IMDB BERT_TMD: {acc*100:.2f}%")
     
     #info_model = model_lib.TextDefense_model_builder("bert","bert-base-uncased","infobert",device)
     #load_path = "/home/ubuntu/TextDefender/saved_models/imdb_bert/infobert-len256-epo10-batch32-advstep3-advlr0.04-norm0-best.pth"

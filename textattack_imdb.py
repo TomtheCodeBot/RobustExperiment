@@ -10,6 +10,7 @@ from textattack.attack_recipes import (
     HotFlipEbrahimi2017,
     DeepWordBugGao2018,
     TextBuggerLi2018,
+    HardLabelMaheshwary2021
 )
 from textattack.transformations import WordSwapEmbedding
 from textattack.constraints.semantics import WordEmbeddingDistance
@@ -54,6 +55,38 @@ import numpy as np
 import os
 import model as model_lib
 from model.TextDefenseExtraWrapper import wrapping_model
+from textattack.transformations import (
+    WordSwapNeighboringCharacterSwap,
+    WordSwapRandomCharacterDeletion,
+    WordSwapRandomCharacterInsertion,
+    WordSwapRandomCharacterSubstitution,
+)
+
+from textattack.transformations import CompositeTransformation
+
+class RandomCompositeTransformation(CompositeTransformation):
+    """A transformation which applies each of a list of transformations,
+    returning a set of all optoins.
+
+    Args:
+        transformations: The list of ``Transformation`` to apply.
+    """
+
+    def __init__(self, transformations, total_count=20):
+        super().__init__(transformations)
+        self.total_count = total_count
+
+    def __call__(self, *args, **kwargs):
+        new_attacked_texts = set()
+        transformation_num = len(self.transformations)
+        if transformation_num <= 0:
+            raise ValueError
+        index = np.random.choice(transformation_num, self.total_count, replace=True)
+
+        for i in index:
+            new_attacked_texts.update(self.transformations[i](*args, **kwargs))
+        return list(new_attacked_texts)
+
 class CustomModelWrapper(PyTorchModelWrapper):
     def __init__(self, model, tokenizer):
         super(CustomModelWrapper, self).__init__(model, tokenizer)
@@ -90,7 +123,7 @@ class CustomModelWrapper(PyTorchModelWrapper):
 
 def build_attacker_from_textdefender(model: HuggingFaceModelWrapper,args) -> Attack:
     if args["attack_method"] == 'hotflip':
-        return HotFlipEbrahimi2017.build(model)
+        attacker = HotFlipEbrahimi2017.build(model)
     if args["attack_method"] == 'textfooler':
         attacker = TextFoolerJin2019.build(model)
     elif args["attack_method"] == 'bertattack':
@@ -98,6 +131,8 @@ def build_attacker_from_textdefender(model: HuggingFaceModelWrapper,args) -> Att
         attacker.transformation = WordSwapMaskedLM(method="bert-attack", max_candidates=args["k_neighbor"])
     elif args["attack_method"] == 'textbugger':
         attacker = TextBuggerLi2018.build(model)
+    elif args["attack_method"] == 'hardlabel':
+        attacker = HardLabelMaheshwary2021.build(model)
     else:
         attacker = TextFoolerJin2019.build(model)
 
@@ -117,9 +152,7 @@ def build_attacker_from_textdefender(model: HuggingFaceModelWrapper,args) -> Att
     attacker.goal_function = UntargetedClassification(model, query_budget=args["k_neighbor"])
     return Attack(attacker.goal_function, attacker.constraints + attacker.pre_transformation_constraints,
                   attacker.transformation, attacker.search_method)
-    
 
-    return attacker
 def build_attacker(model, args):
     if args["attack_method"] == "textfooler":
         attacker = TextFoolerJin2019.build(model)
@@ -129,8 +162,10 @@ def build_attacker(model, args):
         attacker = DeepWordBugGao2018.build(model)
     elif args["attack_method"] == "bertattack":
         attacker = BERTAttackLi2020.build(model)
+    
     else:
         attacker = TextFoolerJin2019.build(model)
+    
     if args["modify_ratio"] != 0:
         print(args["modify_ratio"])
         attacker.constraints.append(MaxWordsPerturbed(max_percent=args["modify_ratio"]))
@@ -230,11 +265,12 @@ if __name__ == "__main__":
     tokenizer_tmd = AutoTokenizer.from_pretrained(
         "model/weights/bert-base-uncased-imdb", use_fast=True
     )
+    tokenizer_tmd.model_max_length=256
     model = BertForSequenceClassification(config)
     state = AutoModelForSequenceClassification.from_pretrained(
         "model/weights/bert-base-uncased-imdb"
     )
-    model.load_state_dict(state.state_dict())
+    model.load_state_dict(state.state_dict(),strict=False)
     model.to("cuda")
     model.eval()
     BERT = HuggingFaceModelWrapper(model, tokenizer_tmd)
@@ -245,9 +281,13 @@ if __name__ == "__main__":
     #ascc_model.to("cuda")
     #BERT_ASCC = wrapping_model(ascc_model,tokenizer,"ascc")
     
-    #tokenizer = AutoTokenizer.from_pretrained(
-    #    "bert-base-uncased", use_fast=True
-    #)
+    tokenizer = AutoTokenizer.from_pretrained(
+        "bert-base-uncased", use_fast=True
+    )
+    dne_model = model_lib.TextDefense_model_builder("bert","bert-base-uncased","dne",device)
+    load_path = "/vinserver_user/duy.hc/RobustExperiment/model/weights/tmd_ckpts/TextDefender/saved_models/imdb_bert/dne-len256-epo10-batch32-best.pth"
+    print(dne_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
+    BERT_DNE = wrapping_model(dne_model,tokenizer,"dne")
     #mask_model = model_lib.TextDefense_model_builder("bert","bert-base-uncased","mask",device)
     #load_path = "/home/ubuntu/RobustExperiment//home/ubuntu/RobustExperiment/model/weights/VinAI_weights/tmd_ckpts/imdb/mask-len256-epo10-batch32-rate0.3-best.pth"
     #tokenizer.model_max_length=256
@@ -264,7 +304,7 @@ if __name__ == "__main__":
     #BERT_SAFER = wrapping_model(safer_model,tokenizer,"safer",ensemble_num=args.ensemble_num,batch_size=args.ensemble_batch_size,safer_aug_set=args.safer_pertubation_file)
     
     #freelb_model = model_lib.TextDefense_model_builder("bert","bert-base-uncased","freelb",device)
-    #load_path = "/home/ubuntu/TextDefender/saved_models/imdb_bert/freelb-len256-epo10-batch32-advstep5-advlr0.03-norm0.0-best.pth"
+    #load_path = "/shared/duy.hc/TextDefender/saved_models/imdb_bert/freelb-len256-epo10-batch32-advstep5-advlr0.03-norm0.0-best.pth"
     #tokenizer.model_max_length=256
     #print(freelb_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
     #freelb_model.to("cuda")
@@ -277,36 +317,36 @@ if __name__ == "__main__":
     #freelb_model.to("cuda")
     #BERT_FREELB = wrapping_model(freelb_model,tokenizer,"freelb")
     
-    tokenizer = AutoTokenizer.from_pretrained(
-        "bert-base-uncased", use_fast=True
-    )
-    load_path = "/shared/duy.hc/TextDefender/saved_models/imdb_bert/freelb-len256-epo10-batch32-advstep5-advlr0.03-norm0.0-best.pth"
-    tokenizer.model_max_length=256
-    config = AutoConfig.from_pretrained("model/weights/bert-base-uncased-imdb")
-    freelb_model_rnd = BertForSequenceClassification(config)
-    print(freelb_model_rnd.load_state_dict(torch.load(load_path,map_location = device), strict=False))
-    freelb_model_rnd.to("cuda")
-    freelb_model_rnd.eval()
-    freelb_model_rnd.change_defense(defense_cls="random_noise",def_position="post_att_cls",noise_sigma=0.45,defense=True)
-    BERT_FREELB_RND = HuggingFaceModelWrapper(freelb_model_rnd, tokenizer)
+    #tokenizer = AutoTokenizer.from_pretrained(
+    #    "bert-base-uncased", use_fast=True
+    #)
+    #load_path = "/shared/duy.hc/TextDefender/saved_models/imdb_bert/freelb-len256-epo10-batch32-advstep5-advlr0.03-norm0.0-best.pth"
+    #tokenizer.model_max_length=256
+    #config = AutoConfig.from_pretrained("model/weights/bert-base-uncased-imdb")
+    #freelb_model_rnd = BertForSequenceClassification(config)
+    #print(freelb_model_rnd.load_state_dict(torch.load(load_path,map_location = device), strict=False))
+    #freelb_model_rnd.to("cuda")
+    #freelb_model_rnd.eval()
+    #freelb_model_rnd.change_defense(defense_cls="random_noise",def_position="post_att_cls",noise_sigma=0.45,defense=True)
+    #BERT_FREELB_RND = HuggingFaceModelWrapper(freelb_model_rnd, tokenizer)
     
     
     #info_model = model_lib.TextDefense_model_builder("bert","bert-base-uncased","infobert",device)
-    #load_path = "/home/ubuntu/TextDefender/saved_models/imdb_bert/infobert-len256-epo10-batch32-advstep3-advlr0.04-norm0-best.pth"
+    #load_path = "/shared/duy.hc/TextDefender/saved_models/imdb_bert/infobert-len256-epo10-batch32-advstep3-advlr0.04-norm0-best.pth"
     #tokenizer.model_max_length=256
     #print(info_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
     #info_model.to("cuda")
     #BERT_INFOBERT = wrapping_model(info_model,tokenizer,"infobert")
     
-    load_path = "/shared/duy.hc/TextDefender/saved_models/imdb_bert/infobert-len256-epo10-batch32-advstep3-advlr0.04-norm0-best.pth"
-    tokenizer.model_max_length=256
-    config = AutoConfig.from_pretrained("model/weights/bert-base-uncased-imdb")
-    infobert_model_rnd = BertForSequenceClassification(config)
-    print(infobert_model_rnd.load_state_dict(torch.load(load_path,map_location = device), strict=False))
-    infobert_model_rnd.to("cuda")
-    infobert_model_rnd.eval()
-    infobert_model_rnd.change_defense(defense_cls="random_noise",def_position="post_att_cls",noise_sigma=0.45,defense=True)
-    BERT_INFOBERT_RND = HuggingFaceModelWrapper(infobert_model_rnd, tokenizer)
+    #load_path = "/shared/duy.hc/TextDefender/saved_models/imdb_bert/infobert-len256-epo10-batch32-advstep3-advlr0.04-norm0-best.pth"
+    #tokenizer.model_max_length=256
+    #config = AutoConfig.from_pretrained("model/weights/bert-base-uncased-imdb")
+    #infobert_model_rnd = BertForSequenceClassification(config)
+    #print(infobert_model_rnd.load_state_dict(torch.load(load_path,map_location = device), strict=False))
+    #infobert_model_rnd.to("cuda")
+    #infobert_model_rnd.eval()
+    #infobert_model_rnd.change_defense(defense_cls="random_noise",def_position="post_att_cls",noise_sigma=0.45,defense=True)
+    #BERT_INFOBERT_RND = HuggingFaceModelWrapper(infobert_model_rnd, tokenizer)
     
     #load_path = "model/weights/bert-base-uncased-imdb"
     #gm_path = "/home/ubuntu/RobustExperiment/model/weights/VinAI_weights/tmd_ckpts/tmd/outputs/infogan_bert_imdb/manifold-defense/yutbyyz5/checkpoints/epoch=99-step=2199.ckpt"
@@ -366,20 +406,20 @@ if __name__ == "__main__":
     
     with torch.no_grad():
         
-        noise_pos = {"post_att_all": [0.4,0.5,0.6,0.7,0.8,0.9,1]}
+        #noise_pos = {"post_att_all": [0.4,0.5,0.6,0.7,0.8,0.9,1]}
         #noise_pos_roberta = { "pre_att_all": [0.1,0.2], "post_att_all": [0.2, 0.3]}
         
-        #noise_pos = { "post_att_cls": [0.55]}
+        noise_pos = { "post_att_cls": [0.55]}
         #noise_pos_roberta = {"post_att_cls": [0.9, 1], "pre_att_cls": [0.3,0.4]}
         #noise_pos_roberta = {"post_att_cls": [1.2,1.4]}
         #noise_pos_roberta = {"post_att_cls": [1.15,1.25]}
         
-        list_attacks = ["bertattack"]
+        list_attacks = ["textfooler"]
         for i in range(0, 1):
             set_seed(i)
             dataset = gen_dataset(test_data)
             args.load_path = (
-                f"noise_defense_attack_result/test_extra/IMDB/{i}/"
+                f"noise_defense_attack_result/test4/IMDB/{i}/"
             )
             for attack_method in list_attacks:
                 args.attack_method = attack_method
@@ -391,12 +431,13 @@ if __name__ == "__main__":
                 #        attack(args, BERT, f"BERT_{key}_{noise_intensity}", dataset)
                 #model.change_defense(defense=False)
                 #attack(args, BERT_ASCC, "BERT_ASCC", dataset)
+                attack(args, BERT_DNE, "BERT_DNE", dataset)
                 #attack(args, BERT_FREELB, "BERT_FREELB", dataset)
                 #attack(args, BERT_INFOBERT, "BERT_INFOBERT", dataset)
                 #attack(args, BERT_TMD, "BERT_TMD", dataset)
                 #attack(args, BERT_MASK, "BERT_MASK", dataset)
-                attack(args, BERT_FREELB_RND, "BERT_FREELB_RND", dataset)
-                attack(args, BERT_INFOBERT_RND, "BERT_INFOBERT_RND", dataset)
+                #attack(args, BERT_FREELB_RND, "BERT_FREELB_RND", dataset)
+                #attack(args, BERT_INFOBERT_RND, "BERT_INFOBERT_RND", dataset)
                 
                 #attack(args, ROBERTA, "ROBERTA", dataset)
                 #for key in noise_pos_roberta.keys():

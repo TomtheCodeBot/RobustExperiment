@@ -5071,3 +5071,51 @@ Japanese Bank Makes Hostile Bid in Takeover Battle The biggest-ever takeover bat
 
 Al-Sadr Calls on Militia to Stop Fighting BAGHDAD, Iraq - Rebel Shiite cleric Muqtada al-Sadr called for his followers across Iraq to end fighting against U.S. and Iraqi forces and is planning to join the political process in the coming days, an al-Sadr aide said Monday...
 --------------------------------------------- Result 992 ---------------------------------------------
+[[3 (57%)]] --> [[[SKIPPED]]]
+
+Telephone Tag (Forbes.com) Forbes.com - ARRIS GROUP (5, ARRS) saw its market cap unjustifiably halved recently when Comcast, a huge customer (24 of Arris' sales), hinted it might buy next-generation technology from Cisco Systems. Arris supplies the technical guts that cable companies use to provide phone service. (For the reverse phenomenon, see story on p. 162.)
+--------------------------------------------- Result 993 ---------------------------------------------
+[[1 (100%)]] --> [[[FAILED]]]
+
+Martinez leaves bitter Like Roger Clemens did almost exactly eight years earlier, Pedro Martinez has left the Red Sox apparently bitter about the way he was treated by management.
+--------------------------------------------- Result 994 ---------------------------------------------
+[[2 (100%)]] --> [[[FAILED]]]
+
+Update 8: Ford, GM Set Production Cuts on Sales Drop Another disappointing sales month at General Motors Corp. and Ford Motor Co. led the nation #39;s two largest automakers to cut planned vehicle production in the fourth quarter, which could hurt profits.
+--------------------------------------------- Result 995 ---------------------------------------------
+[[3 (100%)]] --> [[2 (51%)]]
+
+[[Update]]: PeopleSoft [[board]] won't negotiate Oracle takeover PeopleSoft [[executives]] said over the weekend that they won't discuss a sale to Oracle at a price of \$24 per share but would consider an offer at a higher [[price]].
+
+[[Discounted]]: PeopleSoft [[gasket]] won't negotiate Oracle takeover PeopleSoft [[executive]] said over the weekend that they won't discuss a sale to Oracle at a price of \$24 per share but would consider an offer at a higher [[prize]].
+--------------------------------------------- Result 996 ---------------------------------------------
+[[0 (100%)]] --> [[[SKIPPED]]]
+
+Philippines mourns dead in Russian school siege The Philippines Saturday expressed quot;deepest sympathy quot; to the families of the dead in the Russian school siege on Friday, in which 322 people were killed when Russian troops stormed 
+--------------------------------------------- Result 997 ---------------------------------------------
+[[0 (62%)]] --> [[[SKIPPED]]]
+
+Colombia back in business, needs reforms-Uribe Colombia is back in business and the Andean country has ample room for growth backed by aggressive and transparent government policies but with some challenges 
+--------------------------------------------- Result 998 ---------------------------------------------
+[[2 (100%)]] --> [[[FAILED]]]
+
+Kroger Profit Falls, Warns on Sales  NEW YORK (Reuters) - Kroger Co. &lt;A HREF="http://www.investor.reuters.com/FullQuote.aspx?ticker=KR.N target=/stocks/quickinfo/fullquote"&gt;KR.N&lt;/A&gt;, the largest U.S.  grocer, on Tuesday reported a 25 percent drop in quarterly  profit, hurt by debt redemption costs.
+--------------------------------------------- Result 999 ---------------------------------------------
+[[3 (100%)]] --> [[2 (57%)]]
+
+Studios [[Attack]] BitTorrent The Motion [[Picture]] [[Association]] of America is retargeting its legal battle against [[file]] swappers by [[launching]] [[attacks]] against the [[server]] [[operators]] behind the BitTorrent and eDonkey services.
+
+Studios [[Strikes]] BitTorrent The Motion [[Landscaping]] [[Unions]] of America is retargeting its legal battle against [[record]] swappers by [[onset]] [[attacking]] against the [[officials]] [[shopkeepers]] behind the BitTorrent and eDonkey services.
+--------------------------------------------- Result 1000 ---------------------------------------------
+[[1 (100%)]] --> [[[FAILED]]]
+
+PSG lead race for second Group H berth Such has been Chelsea #39;s dominance of their Champions League group that the other three teams including holders Porto are still all vying for a place in the knockout stage going into their final games next month.
+Number of successful attacks: 556
+Number of failed attacks: 384
+Number of skipped attacks: 60
+Original accuracy: 94.0%
+Accuracy under attack: 38.4%
+Attack success rate: 59.15%
+Average perturbed word %: 13.05%
+Average num. words per input: 38.55
+Avg num queries: 444.11

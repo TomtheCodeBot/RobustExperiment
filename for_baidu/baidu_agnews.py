@@ -104,7 +104,7 @@ def build_attacker_from_textdefender(model: HuggingFaceModelWrapper,args) -> Att
     )
     attacker.constraints.append(use_constraint)
     print(attacker.constraints)
-    attacker.goal_function = UntargetedClassification(model, query_budget=args["k_neighbor"])
+    attacker.goal_function = UntargetedClassification(model, query_budget=args["k_neighbor"] // (1 if args['same_niters'] else args['ensemble_num']))
     return Attack(attacker.goal_function, attacker.constraints + attacker.pre_transformation_constraints,
                   attacker.transformation, attacker.search_method)
 
@@ -165,6 +165,8 @@ def attack(args, wrapper, name, dataset):
         "log_path": "{}/{}/{}_{}-{}.txt".format(
             args.load_path, attackMethod, args.attack_dataset, args.modify_ratio, name
         ),
+        "ensemble_num": args.ensemble_num,
+        "same_niters": args.same_niters,
     }
     attack = build_attacker_from_textdefender(wrapper, attack_args_dict)
     attack_args = AttackArgs(
@@ -203,12 +205,14 @@ if __name__ == "__main__":
     parser.add_argument("-kn", "--k_neighbor", default=50)
     parser.add_argument("-nd", "--num_workers_per_device", default=2)
     parser.add_argument('-pr', '--parallel',action='store_true')
-    parser.add_argument("-en", "--ensemble_num", default=100)
+    parser.add_argument("-en", "--ensemble_num", default=100, type=int)
     parser.add_argument("-eb", "--ensemble_batch_size", default=32)
     parser.add_argument("-rmr", "--random_mask_rate", default=0.9)
     parser.add_argument("-spf", "--safer_pertubation_file", default="/home/ubuntu/TextDefender/dataset/ag_news/perturbation_constraint_pca0.8_100.pkl")
     parser.add_argument("-md", "--model", default="bert")
     parser.add_argument("-df", "--defense", default="mask")
+    parser.add_argument("--noise", default=0, type=float)
+    parser.add_argument("--same-niters", action="store_true")
     args = parser.parse_args()
     sst2_dataset = datasets.load_dataset("ag_news")
     train_data = sst2_dataset["train"]
@@ -228,17 +232,41 @@ if __name__ == "__main__":
         if args.defense == "mask":
             print("mask")
             mask_model = model_lib.TextDefense_model_builder("bert","bert-base-uncased","mask",device,dataset_name="agnews")
-            load_path = "model/weights/tmd_ckpts/agnews/mask-len128-epo10-batch32-rate0.9-best.pth"
+            load_path = "model/weights/agnews/mask-len128-epo10-batch32-rate0.9-best.pth"
             tokenizer.model_max_length=128
             print(mask_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
             BERT_MASK = wrapping_model(mask_model,tokenizer,"mask",ensemble_num=args.ensemble_num,batch_size=args.ensemble_batch_size,ran_mask=args.random_mask_rate,safer_aug_set=None)
-        if args.defense == "safer":
-            print("safer")
-            safer_model = model_lib.TextDefense_model_builder("bert","bert-base-uncased","safer",device,dataset_name="agnews")
-            load_path = "model/weights/tmd_ckpts/TextDefender/saved_models/agnews_bert/safer-len128-epo10-batch32-best.pth"
+        elif args.defense == "safer":
+            #print("safer")
+            #safer_model = model_lib.TextDefense_model_builder("bert","bert-base-uncased","safer",device,dataset_name="agnews")
+            #load_path = "model/weights/tmd_ckpts/TextDefender/saved_models/agnews_bert/safer-len128-epo10-batch32-best.pth"
+            #tokenizer.model_max_length=128
+            #print(safer_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
+            #BERT_SAFER = wrapping_model(safer_model,tokenizer,"safer",ensemble_num=args.ensemble_num,batch_size=args.ensemble_batch_size,safer_aug_set="model/weights/agnews/perturbation_constraint_pca0.8_100.pkl")
+            config = AutoConfig.from_pretrained("textattack/bert-base-uncased-ag-news")
+            safer_model = BertForSequenceClassification(config)
+            state = AutoModelForSequenceClassification.from_pretrained(
+    	        "textattack/bert-base-uncased-ag-news"
+    	    )
             tokenizer.model_max_length=128
-            print(safer_model.load_state_dict(torch.load(load_path,map_location = device), strict=False))
-            BERT_SAFER = wrapping_model(safer_model,tokenizer,"safer",ensemble_num=args.ensemble_num,batch_size=args.ensemble_batch_size,safer_aug_set="model/weights/tmd_ckpts/agnews/perturbation_constraint_pca0.8_100.pkl")
+            safer_model.load_state_dict(state.state_dict(), strict=False)
+            safer_model.change_defense(defense_cls="random_noise",def_position="post_att_cls",noise_sigma=args.noise,defense=True)
+            safer_model.to("cuda")
+            safer_model.eval()
+            BERT_SAFER = wrapping_model(safer_model,tokenizer,"safer",ensemble_num=args.ensemble_num,batch_size=args.ensemble_batch_size,safer_aug_set="model/weights/agnews/perturbation_constraint_pca0.8_100.pkl")
+
+        elif args.defense == "advfooler":
+            config = AutoConfig.from_pretrained("textattack/bert-base-uncased-ag-news")
+            model = BertForSequenceClassification(config)
+            state = AutoModelForSequenceClassification.from_pretrained(
+    	        "textattack/bert-base-uncased-ag-news"
+    	    )
+            tokenizer.model_max_length=128
+            model.load_state_dict(state.state_dict(), strict=False)
+            model.change_defense(defense_cls="random_noise",def_position="post_att_cls",noise_sigma=args.noise,defense=True)
+            model.to("cuda")
+            model.eval()
+            BERT_FOOLER = wrapping_model(model,tokenizer,"ensemble",ensemble_num=args.ensemble_num,batch_size=args.ensemble_batch_size)
     if args.model == "roberta":
         print("roberta")
         if args.defense == "mask":
@@ -268,16 +296,19 @@ if __name__ == "__main__":
             set_seed(i)
             dataset = gen_dataset(test_data)
             args.load_path = (
-                f"noise_defense_attack_result/paper_default setting/AGNEWS/{i}/"
+                f"noise_defense_attack_result/rebuttal_trueiter/AGNEWS/{i}/"
             )
             for attack_method in list_attacks:
                 args.attack_method = attack_method
                 if args.model == "bert":
                     if args.defense == "mask":
-                        attack(args, BERT_MASK, "BERT_MASK", dataset)
+                        attack(args, BERT_MASK, f"BERT_MASK_{str(args.ensemble_num)}", dataset)
                 
                     if args.defense == "safer":
-                        attack(args, BERT_SAFER, "BERT_SAFER", dataset)
+                        attack(args, BERT_SAFER, f"BERT_SAFER_untrained_{str(args.ensemble_num)}", dataset)
+
+                    if args.defense == "advfooler":
+                        attack(args, BERT_FOOLER, "BERT_FOOLER", dataset)
                 if args.model == "roberta":
                     if args.defense == "mask":
                         attack(args, ROBERTA_MASK, "ROBERTA_MASK", dataset)

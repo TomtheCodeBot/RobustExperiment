@@ -7,6 +7,7 @@ from transformers import PreTrainedTokenizer
 
 import textattack
 from typing import List
+
 # from fastaug import Augmentor, WordEmbedSub, WordMorphSub, WordNetSub
 from utils.augmentor import Augmentor
 from textattack.models.wrappers import (
@@ -15,44 +16,74 @@ from textattack.models.wrappers import (
     SklearnModelWrapper,
     HuggingFaceModelWrapper,
 )
-def wrapping_model(model,tokenizer,training_type=None,model_type="bert",batch_size: int = 32,ensemble_num=100,ran_mask=0.7,safer_aug_set="/home/ubuntu/TextDefender/dataset/ag_news/perturbation_constraint_pca0.8_100.pkl",mask_token="[MASK]"):
-    if training_type in ['dne', 'safer', 'mask']:
-           model_wrapper = HuggingFaceModelEnsembleWrapper(model,training_type, tokenizer,batch_size=batch_size,ensemble_num=ensemble_num,mask_ratio=ran_mask,safer_aug_set=safer_aug_set,mask_token=mask_token)
-    elif model_type != 'lstm':
+
+
+def wrapping_model(
+    model,
+    tokenizer,
+    training_type=None,
+    model_type="bert",
+    batch_size: int = 32,
+    ensemble_num=100,
+    ran_mask=0.7,
+    safer_aug_set=None,
+    mask_token="[MASK]",
+):
+    if training_type in ["dne", "safer", "mask", "ensemble"]:
+        model_wrapper = HuggingFaceModelEnsembleWrapper(
+            model,
+            training_type,
+            tokenizer,
+            batch_size=batch_size,
+            ensemble_num=ensemble_num,
+            mask_ratio=ran_mask,
+            safer_aug_set=safer_aug_set,
+            mask_token=mask_token,
+        )
+    elif model_type != "lstm":
         model_wrapper = HuggingFaceModelWrapper(model, tokenizer)
     return model_wrapper
+
+
 class HuggingFaceModelEnsembleWrapper(PyTorchModelWrapper):
     """Loads a HuggingFace ``transformers`` model and tokenizer."""
 
-    def __init__(self,
-                 
-                 model: nn.Module,
-                 training_type,
-                 tokenizer: PreTrainedTokenizer,
-                 batch_size=24,
-                 ensemble_num = 100,
-                 ensemble_method = "logits",
-                 mask_ratio = 0.7,
-                 safer_aug_set = None,
-                 mask_token = "[MASK]"):
+    def __init__(
+        self,
+        model: nn.Module,
+        training_type,
+        tokenizer: PreTrainedTokenizer,
+        batch_size=24,
+        ensemble_num=100,
+        ensemble_method="logits",
+        mask_ratio=0.7,
+        safer_aug_set=None,
+        mask_token="[MASK]",
+    ):
         print(mask_token)
         self.model = model
         self.tokenizer = tokenizer
         self.batch_size = batch_size
         self.device = next(self.model.parameters()).device
-        if training_type == 'dne':
+        if training_type == "dne":
             self.ensemble_num = 12
         else:
             self.ensemble_num = ensemble_num
 
         self.ensemble_method = ensemble_method
-        self.augmenter = Augmentor(training_type,mask_ratio=mask_ratio,safer_aug_set = safer_aug_set,mask_token=mask_token)
+        self.augmenter = Augmentor(
+            training_type,
+            mask_ratio=mask_ratio,
+            safer_aug_set=safer_aug_set,
+            mask_token=mask_token,
+        )
         self.max_length = (
             512
             if self.tokenizer.model_max_length == int(1e30)
             else self.tokenizer.model_max_length
         )
         print(self.max_length)
+
     def _augment_sentence(self, sentence, ensemble_num) -> List[str]:
         return self.augmenter.augment(sentence, n=ensemble_num)
 
@@ -61,6 +92,7 @@ class HuggingFaceModelEnsembleWrapper(PyTorchModelWrapper):
         for sen in sentences:
             ret_list.extend(self._augment_sentence(sen, ensemble_num))
         return ret_list
+
     def encode(self, inputs):
         """Helper method that calls ``tokenizer.batch_encode`` if possible, and
         if not, falls back to calling ``tokenizer.encode`` for each input.
@@ -74,7 +106,17 @@ class HuggingFaceModelEnsembleWrapper(PyTorchModelWrapper):
         if hasattr(self.tokenizer, "batch_encode"):
             return self.tokenizer.batch_encode(inputs)
         else:
-            return [self.tokenizer(x,add_special_tokens=True,padding="max_length",max_length=self.max_length,truncation=True) for x in inputs]
+            return [
+                self.tokenizer(
+                    x,
+                    add_special_tokens=True,
+                    padding="max_length",
+                    max_length=self.max_length,
+                    truncation=True,
+                )
+                for x in inputs
+            ]
+
     def _model_predict(self, inputs):
         """Turn a list of dicts into a dict of lists.
 
@@ -114,12 +156,18 @@ class HuggingFaceModelEnsembleWrapper(PyTorchModelWrapper):
             )
 
         label_nums = outputs.shape[1]
-        ensemble_logits_for_each_input = np.split(outputs, indices_or_sections=len(text_input_list) / self.ensemble_num,
-                                                  axis=0)
+        ensemble_logits_for_each_input = np.split(
+            outputs,
+            indices_or_sections=len(text_input_list) / self.ensemble_num,
+            axis=0,
+        )
         logits_list = []
         for logits in ensemble_logits_for_each_input:
-            if self.ensemble_method == 'votes':
-                probs = np.bincount(np.argmax(logits, axis=-1), minlength=label_nums) / self.ensemble_num
+            if self.ensemble_method == "votes":
+                probs = (
+                    np.bincount(np.argmax(logits, axis=-1), minlength=label_nums)
+                    / self.ensemble_num
+                )
                 logits_list.append(np.expand_dims(probs, axis=0))
             else:
                 probs = normalize(logits, axis=1)
